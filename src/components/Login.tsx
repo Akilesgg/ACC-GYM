@@ -22,7 +22,7 @@ export default function Login({ onLogin }: LoginProps) {
 
       {/* Logo */}
       <header className="fixed top-0 w-full z-50 flex justify-center py-10">
-        <div className="font-headline text-4xl font-black italic text-primary tracking-tighter">KINETIC</div>
+        <div className="font-headline text-4xl font-black italic text-primary tracking-tighter">ACC GYM</div>
       </header>
 
       {/* Main Content */}
@@ -82,7 +82,7 @@ export default function Login({ onLogin }: LoginProps) {
             className="w-full py-8 rounded-full bg-surface-variant text-secondary font-headline font-bold tracking-wide hover:bg-surface active:scale-95 transition-all"
           >
             <LogIn size={20} className="mr-2" />
-            Enter Kinetic Lab
+            Enter ACC GYM
           </Button>
         </div>
 

@@ -15,7 +15,7 @@ export default function TopNav({ userPhoto }: TopNavProps) {
         </Avatar>
       </div>
       <h1 className="text-2xl font-black italic text-primary tracking-tighter font-headline">
-        KINETIC
+        ACC GYM
       </h1>
       <button className="text-primary hover:opacity-80 transition-opacity active:scale-95 duration-200">
         <Bell size={24} />

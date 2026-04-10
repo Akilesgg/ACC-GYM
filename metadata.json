@@ -1,5 +1,7 @@
 {
-  "name": "KINETIC | High-Performance Fitness Lab",
+  "name": "ACC GYM",
   "description": "An elite fitness dashboard for tracking biometrics, nutrition, and physical evolution with AI-powered insights.",
-  "requestFramePermissions": ["camera"]
+  "requestFramePermissions": [
+    "camera"
+  ]
 }
