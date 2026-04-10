@@ -1,4 +1,5 @@
 export type Screen = 'dashboard' | 'nutrition' | 'gallery' | 'workout' | 'login' | 'onboarding';
+export type Language = 'es' | 'en';
 
 export interface SportConfig {
   sport: string;
@@ -7,6 +8,21 @@ export interface SportConfig {
   experienceLevel?: 'principiante' | 'intermedio' | 'avanzado' | 'elite';
   plan?: TrainingPlan;
   isCombined?: boolean;
+}
+
+export interface NutritionPlan {
+  reasoning: string;
+  meals: {
+    type: string;
+    name: string;
+    ingredients: string[];
+    macros: { p: number, c: number, f: number, kcal: number };
+  }[];
+}
+
+export interface WeightEntry {
+  date: string;
+  weight: number;
 }
 
 export interface UserProfile {
@@ -20,6 +36,14 @@ export interface UserProfile {
   injuries: string;
   daysPerWeek: number;
   selectedSports: SportConfig[];
+  // Nutrition
+  nutritionGoal?: string;
+  nutritionTimeframe?: string;
+  allergies?: string;
+  nutritionPlan?: NutritionPlan;
+  // Evolution
+  weightHistory?: WeightEntry[];
+  photos?: GalleryItem[];
 }
 
 export interface TrainingPlan {

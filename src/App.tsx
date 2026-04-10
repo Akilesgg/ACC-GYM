@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Screen, UserProfile } from './types';
+import { Screen, UserProfile, Language } from './types';
 import TopNav from './components/TopNav';
 import BottomNav from './components/BottomNav';
 import Dashboard from './components/Dashboard';
@@ -17,6 +17,7 @@ export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [language, setLanguage] = useState<Language>('es');
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -79,23 +80,29 @@ export default function App() {
       return <Onboarding onComplete={handleOnboardingComplete} />;
     }
 
+    if (!profile) return <Onboarding onComplete={handleOnboardingComplete} />;
+
     switch (activeScreen) {
-      case 'dashboard': return profile ? <Dashboard profile={profile} onUpdateProfile={handleProfileUpdate} onAddSport={() => setActiveScreen('workout')} /> : <Onboarding onComplete={handleOnboardingComplete} />;
-      case 'workout': return profile ? <SportsTab profile={profile} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} /> : <Onboarding onComplete={handleOnboardingComplete} />;
-      case 'nutrition': return <Nutrition onBack={() => setActiveScreen('dashboard')} />;
-      case 'gallery': return <Gallery onBack={() => setActiveScreen('dashboard')} />;
-      case 'login': return <Login />;
-      default: return <Dashboard profile={profile!} onUpdateProfile={handleProfileUpdate} onAddSport={() => setActiveScreen('workout')} />;
+      case 'dashboard': return <Dashboard profile={profile} onUpdateProfile={handleProfileUpdate} onAddSport={() => setActiveScreen('workout')} language={language} />;
+      case 'workout': return <SportsTab profile={profile} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
+      case 'nutrition': return <Nutrition profile={profile} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
+      case 'gallery': return <Gallery profile={profile} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
+      case 'login': return <Login language={language} />;
+      default: return <Dashboard profile={profile} onUpdateProfile={handleProfileUpdate} onAddSport={() => setActiveScreen('workout')} language={language} />;
     }
   };
 
   if (!user && activeScreen === 'login') {
-    return <Login />;
+    return <Login language={language} />;
   }
 
   return (
     <div className="min-h-screen bg-background text-on-surface">
-      <TopNav userPhoto={user?.photoURL || undefined} />
+      <TopNav 
+        userPhoto={user?.photoURL || undefined} 
+        language={language} 
+        onLanguageChange={setLanguage} 
+      />
       
       <main className="pt-24 pb-32 px-6 max-w-5xl mx-auto">
         <AnimatePresence mode="wait">
@@ -115,6 +122,7 @@ export default function App() {
         <BottomNav 
           activeScreen={activeScreen} 
           onScreenChange={setActiveScreen} 
+          language={language}
         />
       )}
     </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { UserProfile, SportConfig, TrainingPlan } from '../types';
+import { UserProfile, SportConfig, TrainingPlan, Language } from '../types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { generateTrainingPlan } from '../services/geminiService';
@@ -7,9 +7,11 @@ import { motion, AnimatePresence } from 'motion/react';
 import { 
   Dumbbell, Target, Loader2, Search, ChevronRight, Info, 
   ArrowLeft, Bike, Waves, Zap, Heart, Activity, 
-  Flame, Timer, Trophy, Calendar
+  Flame, Timer, Trophy, Calendar, Footprints, Sword, 
+  Mountain, Wind, Anchor, MountainSnow, Palette
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { useTranslation } from '../lib/i18n';
 
 const SPORTS_LIST = [
   "Musculación", "Ciclismo", "Natación", "Running", "CrossFit", "Yoga", "Pilates", "Boxeo", "HIIT", "Tenis",
@@ -23,11 +25,22 @@ const SPORT_ICONS: Record<string, any> = {
   "Musculación": Dumbbell,
   "Ciclismo": Bike,
   "Natación": Waves,
-  "Running": Zap,
+  "Running": Footprints,
   "CrossFit": Flame,
   "Yoga": Heart,
   "Boxeo": Trophy,
   "Triatlón": Timer,
+  "Fútbol": Activity,
+  "Baloncesto": Activity,
+  "Tenis": Activity,
+  "Senderismo": Mountain,
+  "Escalada": Mountain,
+  "Surf": Wind,
+  "Artes Marciales": Sword,
+  "Esgrima": Sword,
+  "Remo": Anchor,
+  "Esquí": MountainSnow,
+  "Danza": Palette,
   "default": Activity
 };
 
@@ -42,9 +55,11 @@ interface SportsTabProps {
   profile: UserProfile;
   onUpdateProfile: (profile: UserProfile) => void;
   onBack?: () => void;
+  language: Language;
 }
 
-export default function SportsTab({ profile, onUpdateProfile, onBack }: SportsTabProps) {
+export default function SportsTab({ profile, onUpdateProfile, onBack, language }: SportsTabProps) {
+  const t = useTranslation(language);
   const [search, setSearch] = useState('');
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
   const [step, setStep] = useState<'list' | 'goal' | 'frequency' | 'combined'>('list');
@@ -160,7 +175,7 @@ export default function SportsTab({ profile, onUpdateProfile, onBack }: SportsTa
                 <Target className="text-tertiary" size={32} />
               </div>
               <h3 className="text-3xl font-headline font-black text-on-surface">{selectedSport?.toUpperCase()}</h3>
-              <p className="text-on-surface-variant mt-2">Define tu objetivo para esta disciplina.</p>
+              <p className="text-on-surface-variant mt-2">{t('cualEsObjetivo')}</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {(GOALS_BY_SPORT[selectedSport!] || GOALS_BY_SPORT["default"]).map(goal => (
@@ -216,7 +231,7 @@ export default function SportsTab({ profile, onUpdateProfile, onBack }: SportsTa
             <Card className="bg-surface border-l-4 border-secondary p-8 relative overflow-hidden">
               <div className="flex items-center gap-3 mb-4">
                 <Info className="text-secondary" />
-                <h3 className="font-headline text-xl font-bold text-secondary uppercase tracking-widest">Análisis del Entrenador</h3>
+                <h3 className="font-headline text-xl font-bold text-secondary uppercase tracking-widest">{t('razonamiento')}</h3>
               </div>
               <p className="text-on-surface leading-relaxed text-lg italic">"{activePlan.reasoning}"</p>
             </Card>

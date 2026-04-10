@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { UserProfile, TrainingPlan, SportConfig } from "../types";
+import { UserProfile, TrainingPlan, SportConfig, NutritionPlan } from "../types";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
@@ -61,20 +61,59 @@ export async function generateTrainingPlan(profile: UserProfile, sportConfig: Sp
   }
 }
 
-export async function getNutritionAdvice(macros: { protein: number, carbs: number, fats: number }, activity: string) {
-  // ... existing code ...
+export async function generateNutritionPlan(profile: UserProfile): Promise<NutritionPlan> {
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `As an elite fitness nutrition advisor, provide a one-sentence insight based on these macros: Protein ${macros.protein}g, Carbs ${macros.carbs}g, Fats ${macros.fats}g. Today's activity: ${activity}. Focus on recovery and performance.`,
+      contents: `Genera un plan de nutrición profesional y equilibrado.
+      Perfil del Usuario:
+      - Nombre: ${profile.username}
+      - Peso: ${profile.weight}kg, Altura: ${profile.height}cm, Edad: ${profile.age}
+      - Objetivo Nutricional: ${profile.nutritionGoal}
+      - Plazo deseado: ${profile.nutritionTimeframe}
+      - Alergias/Restricciones: ${profile.allergies || 'Ninguna'}
+      - Nivel de Actividad: ${profile.experienceLevel}
+      
+      El plan debe incluir razonamiento científico y 4 comidas diarias (Desayuno, Almuerzo, Merienda, Cena).
+      Cada comida debe tener nombre, ingredientes y macros (proteínas, carbohidratos, grasas, kcal).`,
       config: {
-        systemInstruction: "You are an elite high-performance fitness coach. Your tone is professional, scientific, and motivating. Keep responses to exactly one sentence.",
+        systemInstruction: "Eres un nutricionista deportivo de élite. Diseñas planes de alimentación precisos, saludables y efectivos. Responde en formato JSON estructurado que coincida con la interfaz NutritionPlan.",
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            reasoning: { type: Type.STRING },
+            meals: {
+              type: Type.ARRAY,
+              items: {
+                type: Type.OBJECT,
+                properties: {
+                  type: { type: Type.STRING },
+                  name: { type: Type.STRING },
+                  ingredients: { type: Type.ARRAY, items: { type: Type.STRING } },
+                  macros: {
+                    type: Type.OBJECT,
+                    properties: {
+                      p: { type: Type.NUMBER },
+                      c: { type: Type.NUMBER },
+                      f: { type: Type.NUMBER },
+                      kcal: { type: Type.NUMBER }
+                    },
+                    required: ["p", "c", "f", "kcal"]
+                  }
+                },
+                required: ["type", "name", "ingredients", "macros"]
+              }
+            }
+          },
+          required: ["reasoning", "meals"]
+        }
       }
     });
-    return response.text;
+    return JSON.parse(response.text);
   } catch (error) {
-    console.error("Gemini Error:", error);
-    return "Increase protein intake by 15g to support today's high-intensity recovery window.";
+    console.error("Gemini Nutrition Error:", error);
+    throw error;
   }
 }
 

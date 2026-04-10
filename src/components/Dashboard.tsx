@@ -1,18 +1,21 @@
 import { useState, useEffect } from 'react';
-import { UserProfile, TrainingPlan, SportConfig } from '../types';
+import { UserProfile, TrainingPlan, SportConfig, Language } from '../types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { generateTrainingPlan } from '../services/geminiService';
 import { motion, AnimatePresence } from 'motion/react';
 import { Dumbbell, Info, CheckCircle2, Loader2, Trash2, Plus, RotateCcw } from 'lucide-react';
+import { useTranslation } from '../lib/i18n';
 
 interface DashboardProps {
   profile: UserProfile;
   onUpdateProfile: (profile: UserProfile) => void;
   onAddSport: () => void;
+  language: Language;
 }
 
-export default function Dashboard({ profile, onUpdateProfile, onAddSport }: DashboardProps) {
+export default function Dashboard({ profile, onUpdateProfile, onAddSport, language }: DashboardProps) {
+  const t = useTranslation(language);
   const [selectedSportIndex, setSelectedSportIndex] = useState(0);
   const [plan, setPlan] = useState<TrainingPlan | null>(null);
   const [loading, setLoading] = useState(false);
@@ -46,10 +49,10 @@ export default function Dashboard({ profile, onUpdateProfile, onAddSport }: Dash
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
           <div>
             <p className="font-headline text-secondary font-bold uppercase tracking-widest text-sm mb-2">
-              Tu Laboratorio de Rendimiento
+              {t('tuLaboratorio')}
             </p>
             <h2 className="font-headline text-5xl md:text-7xl font-extrabold tracking-tighter leading-none">
-              ACC <span className="text-primary italic">GYM.</span>
+              ACF <span className="text-primary italic">SPORT.</span>
             </h2>
           </div>
           <div className="flex gap-2">
@@ -59,16 +62,16 @@ export default function Dashboard({ profile, onUpdateProfile, onAddSport }: Dash
               onClick={resetSports}
               className="rounded-full border-tertiary/30 text-tertiary hover:bg-tertiary/10"
             >
-              <RotateCcw size={16} className="mr-2" /> Resetear
+              <RotateCcw size={16} className="mr-2" /> {t('resetear')}
             </Button>
           </div>
         </div>
 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-headline text-xl font-black uppercase tracking-tight">Tus Deportes</h3>
+            <h3 className="font-headline text-xl font-black uppercase tracking-tight">{t('tusDeportes')}</h3>
             <p className="text-xs text-on-surface-variant font-bold uppercase tracking-widest">
-              {profile.selectedSports.length} Activos
+              {profile.selectedSports.length} {t('activos')}
             </p>
           </div>
           
@@ -132,7 +135,7 @@ export default function Dashboard({ profile, onUpdateProfile, onAddSport }: Dash
             <Card className="bg-surface border-l-4 border-secondary p-8 relative overflow-hidden">
               <div className="flex items-center gap-3 mb-4">
                 <Info className="text-secondary" />
-                <h3 className="font-headline text-xl font-bold text-secondary uppercase tracking-widest">Razonamiento Científico</h3>
+                <h3 className="font-headline text-xl font-bold text-secondary uppercase tracking-widest">{t('razonamiento')}</h3>
               </div>
               <p className="text-on-surface leading-relaxed text-lg italic">
                 "{plan.reasoning}"
@@ -144,14 +147,14 @@ export default function Dashboard({ profile, onUpdateProfile, onAddSport }: Dash
 
             {/* Training Table */}
             <section className="space-y-6">
-              <h3 className="font-headline text-2xl font-black uppercase italic tracking-tighter">Tu Rutina Semanal</h3>
+              <h3 className="font-headline text-2xl font-black uppercase italic tracking-tighter">{t('rutinaSemanal')}</h3>
               <div className="grid grid-cols-1 gap-6">
                 {plan.table.map((day, idx) => (
                   <Card key={idx} className="bg-surface border-none p-6 overflow-hidden">
                     <div className="flex items-center justify-between mb-6">
                       <h4 className="font-headline text-xl font-bold text-primary">{day.day}</h4>
                       <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">
-                        {day.exercises.length} Ejercicios
+                        {day.exercises.length} {t('ejercicios')}
                       </span>
                     </div>
                     <div className="space-y-4">

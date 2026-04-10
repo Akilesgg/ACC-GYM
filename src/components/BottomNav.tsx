@@ -1,19 +1,22 @@
 import { Home, Dumbbell, Utensils, Image, User } from 'lucide-react';
-import { Screen } from '@/src/types';
+import { Screen, Language } from '@/src/types';
 import { cn } from '@/lib/utils';
+import { useTranslation } from '../lib/i18n';
 
 interface BottomNavProps {
   activeScreen: Screen;
   onScreenChange: (screen: Screen) => void;
+  language: Language;
 }
 
-export default function BottomNav({ activeScreen, onScreenChange }: BottomNavProps) {
+export default function BottomNav({ activeScreen, onScreenChange, language }: BottomNavProps) {
+  const t = useTranslation(language);
   const navItems = [
-    { id: 'dashboard', label: 'Home', icon: Home },
-    { id: 'workout', label: 'Deportes', icon: Dumbbell },
-    { id: 'nutrition', label: 'Nutrición', icon: Utensils },
-    { id: 'gallery', label: 'Evolución', icon: Image },
-    { id: 'login', label: 'Perfil', icon: User },
+    { id: 'dashboard', label: t('inicio'), icon: Home },
+    { id: 'workout', label: t('deportes'), icon: Dumbbell },
+    { id: 'nutrition', label: t('nutricion'), icon: Utensils },
+    { id: 'gallery', label: t('evolucion'), icon: Image },
+    { id: 'login', label: t('perfil'), icon: User },
   ] as const;
 
   return (

@@ -1,6 +1,6 @@
 {
-  "name": "ACC GYM",
-  "description": "An elite fitness dashboard for tracking biometrics, nutrition, and physical evolution with AI-powered insights.",
+  "name": "ACF Sport",
+  "description": "Plataforma de élite para el seguimiento biométrico, nutrición y evolución física con inteligencia artificial.",
   "requestFramePermissions": [
     "camera"
   ]
