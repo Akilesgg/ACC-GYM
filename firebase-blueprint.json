@@ -1,0 +1,37 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "User profile and training data",
+      "type": "object",
+      "properties": {
+        "username": { "type": "string" },
+        "age": { "type": "number" },
+        "gender": { "type": "string" },
+        "weight": { "type": "number" },
+        "height": { "type": "number" },
+        "experienceLevel": { "type": "string" },
+        "injuries": { "type": "string" },
+        "daysPerWeek": { "type": "number" },
+        "selectedSports": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sport": { "type": "string" },
+              "goal": { "type": "string" },
+              "plan": { "type": "object" }
+            }
+          }
+        }
+      },
+      "required": ["username", "weight", "height", "selectedSports"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "User profile document"
+    }
+  }
+}

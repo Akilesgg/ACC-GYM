@@ -1,10 +1,14 @@
-import { Sparkles, PlusCircle } from 'lucide-react';
+import { Sparkles, PlusCircle, ArrowLeft } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import { getNutritionAdvice } from '@/src/services/geminiService';
 
-export default function Nutrition() {
+interface NutritionProps {
+  onBack?: () => void;
+}
+
+export default function Nutrition({ onBack }: NutritionProps) {
   const [advice, setAdvice] = useState("Loading AI insights...");
 
   useEffect(() => {
@@ -20,7 +24,14 @@ export default function Nutrition() {
   return (
     <div className="space-y-12 pb-24">
       <section>
-        <h2 className="font-headline text-sm font-bold uppercase tracking-[0.2em] text-on-surface-variant">Performance Streak</h2>
+        <div className="flex items-center gap-4 mb-2">
+          {onBack && (
+            <Button variant="ghost" size="icon" onClick={onBack} className="rounded-full bg-surface">
+              <ArrowLeft size={20} />
+            </Button>
+          )}
+          <h2 className="font-headline text-sm font-bold uppercase tracking-[0.2em] text-on-surface-variant">Performance Streak</h2>
+        </div>
         <div className="flex items-end gap-2 mt-2">
           <span className="font-headline text-5xl font-black italic text-primary leading-none">14</span>
           <span className="font-headline text-lg font-bold uppercase text-primary mb-1">Days In Zone</span>

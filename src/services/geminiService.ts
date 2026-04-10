@@ -7,14 +7,18 @@ export async function generateTrainingPlan(profile: UserProfile, sportConfig: Sp
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Generate a personalized training plan for ${sportConfig.sport}. 
+      contents: `Generate a highly structured and professional training plan for ${sportConfig.sport}.
       User Profile: 
+      - Name: ${profile.username}
       - Weight: ${profile.weight}kg
       - Height: ${profile.height}cm
-      - Days per week: ${profile.daysPerWeek}
+      - Experience Level: ${profile.experienceLevel}
+      - Injuries: ${profile.injuries || 'None'}
+      - Days per week for this specific sport: ${sportConfig.daysPerWeek || profile.daysPerWeek}
       - Specific Goal for this sport: ${sportConfig.goal || 'General performance'}
+      ${sportConfig.isCombined ? '- NOTE: This is a COMBINED plan. Integrate this sport intelligently with the user\'s other activities.' : ''}
       
-      Provide a detailed reasoning and a structured weekly table.`,
+      Provide a detailed scientific reasoning and a structured weekly table with exercises, sets, reps, and technical notes.`,
       config: {
         systemInstruction: "You are an elite sports scientist and personal trainer. Create highly effective, data-driven training plans. Return the response in a structured JSON format matching the TrainingPlan interface.",
         responseMimeType: "application/json",

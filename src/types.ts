@@ -3,8 +3,10 @@ export type Screen = 'dashboard' | 'nutrition' | 'gallery' | 'workout' | 'login'
 export interface SportConfig {
   sport: string;
   goal?: string;
+  daysPerWeek?: number;
   experienceLevel?: 'principiante' | 'intermedio' | 'avanzado' | 'elite';
   plan?: TrainingPlan;
+  isCombined?: boolean;
 }
 
 export interface UserProfile {

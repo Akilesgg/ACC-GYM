@@ -7,6 +7,8 @@ import { Card } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronRight, User, Activity, ShieldAlert } from 'lucide-react';
 
+import { auth, signOut } from '../lib/firebase';
+
 interface OnboardingProps {
   onComplete: (profile: UserProfile) => void;
 }
@@ -26,7 +28,13 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
   });
 
   const nextStep = () => setStep(prev => prev + 1);
-  const prevStep = () => setStep(prev => prev - 1);
+  const prevStep = () => {
+    if (step === 1) {
+      signOut(auth);
+    } else {
+      setStep(prev => prev - 1);
+    }
+  };
 
   return (
     <div className="min-h-[80vh] flex flex-col items-center justify-center py-10">
@@ -89,13 +97,16 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                     </div>
                   </div>
                 </div>
-                <Button 
-                  onClick={nextStep} 
-                  disabled={!profile.username}
-                  className="w-full bg-primary text-background font-black h-14 rounded-full group"
-                >
-                  CONTINUAR <ChevronRight className="ml-2 group-hover:translate-x-1 transition-transform" />
-                </Button>
+                <div className="flex gap-3">
+                  <Button onClick={prevStep} variant="ghost" className="flex-1 h-14 rounded-full font-bold">Atrás</Button>
+                  <Button 
+                    onClick={nextStep} 
+                    disabled={!profile.username}
+                    className="flex-1 bg-primary text-background font-black h-14 rounded-full group"
+                  >
+                    CONTINUAR <ChevronRight className="ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </div>
               </div>
             )}
 

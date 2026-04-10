@@ -1,23 +1,28 @@
 import { Mail, Lock, LogIn } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { auth, googleProvider, signInWithPopup } from '../lib/firebase';
 
-interface LoginProps {
-  onLogin: () => void;
-}
+export default function Login() {
+  const handleGoogleLogin = async () => {
+    try {
+      await signInWithPopup(auth, googleProvider);
+    } catch (error) {
+      console.error("Error logging in with Google:", error);
+    }
+  };
 
-export default function Login({ onLogin }: LoginProps) {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center relative overflow-hidden -mx-6">
       {/* Background Layer */}
       <div className="absolute inset-0 z-0">
         <img 
-          src="https://picsum.photos/seed/gym-bg/1200/1600" 
+          src="https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=1200&auto=format&fit=crop" 
           alt="Fitness Motivation" 
-          className="w-full h-full object-cover opacity-30 grayscale"
+          className="w-full h-full object-cover opacity-40 grayscale contrast-125"
           referrerPolicy="no-referrer"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
       </div>
 
       {/* Logo */}
@@ -38,7 +43,7 @@ export default function Login({ onLogin }: LoginProps) {
 
         <div className="w-full space-y-6">
           <Button 
-            onClick={onLogin}
+            onClick={handleGoogleLogin}
             className="w-full flex items-center justify-center gap-3 bg-primary text-background py-8 rounded-full font-headline font-bold text-lg active:scale-95 transition-all duration-200 shadow-[0_0_40px_rgba(243,255,202,0.2)]"
           >
             <svg className="w-6 h-6" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -78,7 +83,6 @@ export default function Login({ onLogin }: LoginProps) {
           </div>
 
           <Button 
-            onClick={onLogin}
             className="w-full py-8 rounded-full bg-surface-variant text-secondary font-headline font-bold tracking-wide hover:bg-surface active:scale-95 transition-all"
           >
             <LogIn size={20} className="mr-2" />

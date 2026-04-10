@@ -1,4 +1,4 @@
-import { EyeOff, Camera, Brain, Lock, Heart, MessageCircle, Upload, Loader2 } from 'lucide-react';
+import { EyeOff, Camera, Brain, Lock, Heart, MessageCircle, Upload, Loader2, ArrowLeft } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -6,12 +6,16 @@ import { useEffect, useState } from 'react';
 import { getPhysicalAnalysis } from '@/src/services/geminiService';
 import { motion } from 'motion/react';
 
-export default function Gallery() {
+interface GalleryProps {
+  onBack?: () => void;
+}
+
+export default function Gallery({ onBack }: GalleryProps) {
   const [analysis, setAnalysis] = useState("Analizando tu evolución física...");
   const [analyzing, setAnalyzing] = useState(false);
   const [photos, setPhotos] = useState([
-    { id: 1, url: 'https://picsum.photos/seed/physique1/800/800', date: 'Hoy', weight: 82.4 },
-    { id: 2, url: 'https://picsum.photos/seed/physique2/400/400', date: 'Oct 10', weight: 83.1 },
+    { id: 1, url: 'https://picsum.photos/seed/bodybuilding1/800/800', date: 'Hoy', weight: 82.4 },
+    { id: 2, url: 'https://picsum.photos/seed/gym2/400/400', date: 'Oct 10', weight: 83.1 },
   ]);
 
   useEffect(() => {
@@ -32,7 +36,7 @@ export default function Gallery() {
     // Simulate photo capture
     const newPhoto = {
       id: Date.now(),
-      url: `https://picsum.photos/seed/physique${Date.now()}/800/800`,
+      url: `https://picsum.photos/seed/fitness${Date.now()}/800/800`,
       date: 'Ahora',
       weight: 82.2
     };
@@ -44,9 +48,16 @@ export default function Gallery() {
     <div className="space-y-12 pb-32">
       <section>
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
-          <div>
-            <span className="text-secondary font-headline font-bold tracking-widest text-sm uppercase">Evolución Visual</span>
-            <h2 className="text-4xl md:text-5xl font-headline font-black mt-2 tracking-tight">Tu Progreso</h2>
+          <div className="flex items-center gap-4">
+            {onBack && (
+              <Button variant="ghost" size="icon" onClick={onBack} className="rounded-full bg-surface">
+                <ArrowLeft size={20} />
+              </Button>
+            )}
+            <div>
+              <span className="text-secondary font-headline font-bold tracking-widest text-sm uppercase">Evolución Visual</span>
+              <h2 className="text-4xl md:text-5xl font-headline font-black mt-2 tracking-tight">Tu Progreso</h2>
+            </div>
           </div>
           <div className="flex gap-4">
             <Button 

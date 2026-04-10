@@ -5,44 +5,74 @@ import BottomNav from './components/BottomNav';
 import Dashboard from './components/Dashboard';
 import Nutrition from './components/Nutrition';
 import Gallery from './components/Gallery';
-import WorkoutSession from './components/WorkoutSession';
 import Login from './components/Login';
 import Onboarding from './components/Onboarding';
 import { motion, AnimatePresence } from 'motion/react';
+import { auth, db, onAuthStateChanged, doc, getDoc, setDoc, onSnapshot, User } from './lib/firebase';
 
 import SportsTab from './components/SportsTab';
 
 export default function App() {
   const [activeScreen, setActiveScreen] = useState<Screen>('login');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedProfile = localStorage.getItem('kinetic_profile');
-    if (savedProfile) {
-      setProfile(JSON.parse(savedProfile));
-    }
-  }, []);
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        // Listen to profile changes in real-time
+        const profileRef = doc(db, 'users', currentUser.uid);
+        const unsubProfile = onSnapshot(profileRef, (docSnap) => {
+          if (docSnap.exists()) {
+            setProfile(docSnap.data() as UserProfile);
+            if (activeScreen === 'login') setActiveScreen('dashboard');
+          } else {
+            setProfile(null);
+            setActiveScreen('onboarding');
+          }
+          setLoading(false);
+        });
+        return () => unsubProfile();
+      } else {
+        setProfile(null);
+        setActiveScreen('login');
+        setLoading(false);
+      }
+    });
 
-  const handleLogin = () => {
-    setIsLoggedIn(true);
-    if (!profile) {
-      setActiveScreen('onboarding');
-    } else {
+    return () => unsubscribe();
+  }, [activeScreen]);
+
+  const handleOnboardingComplete = async (newProfile: UserProfile) => {
+    if (!user) return;
+    try {
+      await setDoc(doc(db, 'users', user.uid), newProfile);
+      setProfile(newProfile);
       setActiveScreen('dashboard');
+    } catch (error) {
+      console.error("Error saving profile:", error);
     }
   };
 
-  const handleOnboardingComplete = (newProfile: UserProfile) => {
-    setProfile(newProfile);
-    localStorage.setItem('kinetic_profile', JSON.stringify(newProfile));
-    setActiveScreen('dashboard');
+  const handleProfileUpdate = async (updatedProfile: UserProfile) => {
+    if (!user) return;
+    try {
+      await setDoc(doc(db, 'users', user.uid), updatedProfile);
+      setProfile(updatedProfile);
+    } catch (error) {
+      console.error("Error updating profile:", error);
+    }
   };
 
-  const handleProfileUpdate = (updatedProfile: UserProfile) => {
-    setProfile(updatedProfile);
-    localStorage.setItem('kinetic_profile', JSON.stringify(updatedProfile));
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   const renderScreen = () => {
     if (activeScreen === 'onboarding') {
@@ -50,24 +80,24 @@ export default function App() {
     }
 
     switch (activeScreen) {
-      case 'dashboard': return profile ? <Dashboard profile={profile} /> : <Onboarding onComplete={handleOnboardingComplete} />;
-      case 'workout': return profile ? <SportsTab profile={profile} onUpdateProfile={handleProfileUpdate} /> : <Onboarding onComplete={handleOnboardingComplete} />;
-      case 'nutrition': return <Nutrition />;
-      case 'gallery': return <Gallery />;
-      case 'login': return <Login onLogin={handleLogin} />;
-      default: return <Dashboard profile={profile!} />;
+      case 'dashboard': return profile ? <Dashboard profile={profile} onUpdateProfile={handleProfileUpdate} onAddSport={() => setActiveScreen('workout')} /> : <Onboarding onComplete={handleOnboardingComplete} />;
+      case 'workout': return profile ? <SportsTab profile={profile} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} /> : <Onboarding onComplete={handleOnboardingComplete} />;
+      case 'nutrition': return <Nutrition onBack={() => setActiveScreen('dashboard')} />;
+      case 'gallery': return <Gallery onBack={() => setActiveScreen('dashboard')} />;
+      case 'login': return <Login />;
+      default: return <Dashboard profile={profile!} onUpdateProfile={handleProfileUpdate} onAddSport={() => setActiveScreen('workout')} />;
     }
   };
 
-  if (!isLoggedIn && activeScreen === 'login') {
-    return <Login onLogin={handleLogin} />;
+  if (!user && activeScreen === 'login') {
+    return <Login />;
   }
 
   return (
     <div className="min-h-screen bg-background text-on-surface">
-      <TopNav userPhoto="https://picsum.photos/seed/athlete/200/200" />
+      <TopNav userPhoto={user?.photoURL || undefined} />
       
-      <main className="pt-24 px-6 max-w-5xl mx-auto">
+      <main className="pt-24 pb-32 px-6 max-w-5xl mx-auto">
         <AnimatePresence mode="wait">
           <motion.div
             key={activeScreen}
