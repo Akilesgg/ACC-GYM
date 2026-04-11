@@ -27,12 +27,25 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     selectedSports: []
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const nextStep = () => setStep(prev => prev + 1);
   const prevStep = () => {
     if (step === 1) {
       signOut(auth);
     } else {
       setStep(prev => prev - 1);
+    }
+  };
+
+  const handleComplete = async () => {
+    setIsSubmitting(true);
+    try {
+      await onComplete(profile);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -194,8 +207,14 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                   </div>
                 </div>
                 <div className="flex gap-3">
-                  <Button onClick={prevStep} variant="ghost" className="flex-1 h-14 rounded-full font-bold">Atrás</Button>
-                  <Button onClick={() => onComplete(profile)} className="flex-1 bg-tertiary text-background font-black h-14 rounded-full">FINALIZAR</Button>
+                  <Button onClick={prevStep} variant="ghost" className="flex-1 h-14 rounded-full font-bold" disabled={isSubmitting}>Atrás</Button>
+                  <Button 
+                    onClick={handleComplete} 
+                    disabled={isSubmitting}
+                    className="flex-1 bg-tertiary text-background font-black h-14 rounded-full"
+                  >
+                    {isSubmitting ? 'GUARDANDO...' : 'FINALIZAR'}
+                  </Button>
                 </div>
               </div>
             )}

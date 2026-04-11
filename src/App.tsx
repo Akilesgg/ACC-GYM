@@ -176,10 +176,25 @@ export default function App() {
   const handleOnboardingComplete = async (newProfile: UserProfile) => {
     if (!user) return;
     try {
-      await createUserProfile({ ...newProfile, uid: user.uid, email: user.email || '' });
+      const fullProfile: UserProfile = { 
+        ...newProfile, 
+        uid: user.uid, 
+        email: user.email || '',
+        role: 'user',
+        selectedSports: [],
+        progress: {},
+        streak: 0,
+        status: 'online',
+        lastSeen: new Date().toISOString(),
+        weightHistory: [{ date: new Date().toISOString().split('T')[0], weight: newProfile.weight }],
+        photos: []
+      };
+      await createUserProfile(fullProfile);
+      setProfile(fullProfile);
       setActiveScreen('dashboard');
     } catch (error) {
       console.error("Error saving profile:", error);
+      throw error;
     }
   };
 

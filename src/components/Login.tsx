@@ -1,7 +1,8 @@
-import { Mail, Lock, LogIn } from 'lucide-react';
+import { useState } from 'react';
+import { Mail, Lock, LogIn, UserPlus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { auth, googleProvider, signInWithPopup } from '../lib/firebase';
+import { auth, googleProvider, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword } from '../lib/firebase';
 import { Language } from '../types';
 import { useTranslation } from '../lib/i18n';
 
@@ -11,11 +12,35 @@ interface LoginProps {
 
 export default function Login({ language }: LoginProps) {
   const t = useTranslation(language);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const handleGoogleLogin = async () => {
     try {
       await signInWithPopup(auth, googleProvider);
     } catch (error) {
       console.error("Error logging in with Google:", error);
+      setError("Error con Google Login");
+    }
+  };
+
+  const handleEmailAuth = async () => {
+    setError(null);
+    if (!email || !password) {
+      setError("Completa todos los campos");
+      return;
+    }
+    try {
+      if (isRegistering) {
+        await createUserWithEmailAndPassword(auth, email, password);
+      } else {
+        await signInWithEmailAndPassword(auth, email, password);
+      }
+    } catch (err: any) {
+      console.error("Auth error:", err);
+      setError(err.message || "Error de autenticación");
     }
   };
 
@@ -67,6 +92,7 @@ export default function Login({ language }: LoginProps) {
           </div>
 
           <div className="space-y-4">
+            {error && <p className="text-red-500 text-xs text-center font-bold">{error}</p>}
             <div className="relative group">
               <div className="absolute inset-y-0 left-5 flex items-center text-outline-variant group-focus-within:text-secondary">
                 <Mail size={20} />
@@ -75,6 +101,8 @@ export default function Login({ language }: LoginProps) {
                 className="w-full bg-surface border-none rounded-xl py-8 pl-14 pr-6 text-on-surface placeholder:text-outline-variant focus:ring-2 focus:ring-secondary/20 transition-all" 
                 placeholder={t('correo')} 
                 type="email" 
+                value={email}
+                onChange={e => setEmail(e.target.value)}
               />
             </div>
             <div className="relative group">
@@ -85,22 +113,30 @@ export default function Login({ language }: LoginProps) {
                 className="w-full bg-surface border-none rounded-xl py-8 pl-14 pr-6 text-on-surface placeholder:text-outline-variant focus:ring-2 focus:ring-secondary/20 transition-all" 
                 placeholder={t('contrasena')} 
                 type="password" 
+                value={password}
+                onChange={e => setPassword(e.target.value)}
               />
             </div>
           </div>
 
           <Button 
+            onClick={handleEmailAuth}
             className="w-full py-8 rounded-full bg-surface-variant text-secondary font-headline font-bold tracking-wide hover:bg-surface active:scale-95 transition-all"
           >
-            <LogIn size={20} className="mr-2" />
-            {t('entrar')}
+            {isRegistering ? <UserPlus size={20} className="mr-2" /> : <LogIn size={20} className="mr-2" />}
+            {isRegistering ? t('registrateHoy') : t('entrar')}
           </Button>
         </div>
 
         <div className="mt-12 text-center">
           <p className="text-outline text-sm">
-            {t('noTienesPerfil')} 
-            <a className="text-primary font-bold ml-1 hover:underline underline-offset-4" href="#">{t('unete')}</a>
+            {isRegistering ? t('yaTienesCuenta') : t('noTienesPerfil')} 
+            <button 
+              onClick={() => setIsRegistering(!isRegistering)}
+              className="text-primary font-bold ml-1 hover:underline underline-offset-4"
+            >
+              {isRegistering ? t('entrar') : t('unete')}
+            </button>
           </p>
         </div>
       </main>
