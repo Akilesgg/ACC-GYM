@@ -1,5 +1,5 @@
 {
-  "name": "ACF Sport",
+  "name": "ACC Sport",
   "description": "Plataforma de élite para el seguimiento biométrico, nutrición y evolución física con inteligencia artificial.",
   "requestFramePermissions": [
     "camera"
