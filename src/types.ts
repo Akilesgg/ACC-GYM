@@ -1,5 +1,13 @@
-export type Screen = 'dashboard' | 'nutrition' | 'gallery' | 'workout' | 'login' | 'onboarding';
+export type Screen = 'dashboard' | 'nutrition' | 'gallery' | 'workout' | 'login' | 'onboarding' | 'news' | 'tracking';
 export type Language = 'es' | 'en';
+export type UserRole = 'user' | 'admin' | 'trainer';
+
+export interface Sport {
+  id: string;
+  name: string;
+  icon: string;
+  category: string;
+}
 
 export interface SportConfig {
   sport: string;
@@ -25,8 +33,19 @@ export interface WeightEntry {
   weight: number;
 }
 
+export interface DailyProgress {
+  date: string;
+  completedExercises: string[]; // IDs of exercises completed
+  caloriesBurned?: number;
+  steps?: number;
+  heartRate?: number;
+}
+
 export interface UserProfile {
+  uid: string;
   username: string;
+  email: string;
+  role: UserRole;
   age: number;
   gender: 'masculino' | 'femenino' | 'otro';
   weight: number;
@@ -44,17 +63,31 @@ export interface UserProfile {
   // Evolution
   weightHistory?: WeightEntry[];
   photos?: GalleryItem[];
+  // Tracking
+  progress?: Record<string, DailyProgress>; // Key is YYYY-MM-DD
+  streak?: number;
+  // Device Sync
+  deviceData?: {
+    steps: number;
+    calories: number;
+    heartRate: number;
+    lastSync: string;
+  };
 }
 
 export interface TrainingPlan {
+  id: string;
+  createdAt: string;
   reasoning: string;
   table: {
     day: string;
     exercises: {
+      id: string;
       name: string;
       sets: string;
       reps: string;
       notes: string;
+      completed?: boolean;
     }[];
   }[];
 }

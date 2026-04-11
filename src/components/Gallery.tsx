@@ -1,4 +1,4 @@
-import { Camera, Brain, Loader2, ArrowLeft, TrendingUp, Calendar as CalendarIcon, Scale } from 'lucide-react';
+import { Brain, Loader2, ArrowLeft, TrendingUp, Calendar as CalendarIcon, Scale } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
@@ -38,36 +38,6 @@ export default function Gallery({ profile, onUpdateProfile, onBack, language }: 
     } finally {
       setAnalyzing(false);
     }
-  };
-
-  const handleNewPhoto = () => {
-    const now = new Date();
-    const dateStr = now.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
-    
-    const newPhoto: GalleryItem = {
-      id: Date.now().toString(),
-      url: `https://picsum.photos/seed/fitness${Date.now()}/800/800`,
-      date: dateStr,
-      weight: profile.weight,
-      location: 'Gym',
-      isPrivate: true
-    };
-
-    const newWeightEntry: WeightEntry = {
-      date: dateStr,
-      weight: profile.weight
-    };
-
-    const updatedPhotos = [newPhoto, ...(profile.photos || [])];
-    const updatedWeightHistory = [...(profile.weightHistory || []), newWeightEntry];
-
-    onUpdateProfile({
-      ...profile,
-      photos: updatedPhotos,
-      weightHistory: updatedWeightHistory
-    });
-    
-    runAnalysis();
   };
 
   const chartData = profile.weightHistory && profile.weightHistory.length > 0 ? profile.weightHistory : [
@@ -133,16 +103,6 @@ export default function Gallery({ profile, onUpdateProfile, onBack, language }: 
               </Card>
 
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <button 
-                  onClick={handleNewPhoto}
-                  className="aspect-square rounded-3xl border-2 border-dashed border-outline-variant/30 flex flex-col items-center justify-center gap-3 hover:border-primary/50 hover:bg-primary/5 transition-all group"
-                >
-                  <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Camera className="text-primary" size={24} />
-                  </div>
-                  <span className="text-xs font-black uppercase tracking-widest text-on-surface-variant">{t('nuevaFoto')}</span>
-                </button>
-
                 {(profile.photos || []).map((photo, idx) => (
                   <motion.div 
                     key={photo.id}

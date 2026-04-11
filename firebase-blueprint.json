@@ -2,36 +2,53 @@
   "entities": {
     "UserProfile": {
       "title": "UserProfile",
-      "description": "User profile and training data",
+      "description": "User profile data including fitness goals and progress.",
       "type": "object",
       "properties": {
-        "username": { "type": "string" },
-        "age": { "type": "number" },
-        "gender": { "type": "string" },
+        "uid": { "type": "string" },
+        "email": { "type": "string" },
+        "displayName": { "type": "string" },
+        "photoURL": { "type": "string" },
+        "role": { "type": "string", "enum": ["user", "admin", "trainer"] },
+        "selectedSports": { "type": "array" },
         "weight": { "type": "number" },
         "height": { "type": "number" },
-        "experienceLevel": { "type": "string" },
-        "injuries": { "type": "string" },
-        "daysPerWeek": { "type": "number" },
-        "selectedSports": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "sport": { "type": "string" },
-              "goal": { "type": "string" },
-              "plan": { "type": "object" }
-            }
-          }
-        }
+        "age": { "type": "number" },
+        "gender": { "type": "string" },
+        "bodyFat": { "type": "number" },
+        "nutritionGoal": { "type": "string" },
+        "timeframe": { "type": "string" },
+        "allergies": { "type": "string" },
+        "nutritionPlan": { "type": "object" },
+        "weightHistory": { "type": "array" },
+        "photos": { "type": "array" },
+        "progress": { "type": "object" },
+        "streak": { "type": "number" },
+        "deviceData": { "type": "object" }
       },
-      "required": ["username", "weight", "height", "selectedSports"]
+      "required": ["uid", "email", "role"]
+    },
+    "Sport": {
+      "title": "Sport",
+      "description": "Sport definition.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "icon": { "type": "string" },
+        "category": { "type": "string" }
+      },
+      "required": ["id", "name", "icon", "category"]
     }
   },
   "firestore": {
     "/users/{userId}": {
       "schema": "UserProfile",
-      "description": "User profile document"
+      "description": "User profile documents."
+    },
+    "/sports/{sportId}": {
+      "schema": "Sport",
+      "description": "Available sports collection."
     }
   }
 }

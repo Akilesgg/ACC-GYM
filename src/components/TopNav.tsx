@@ -1,7 +1,8 @@
-import { Bell, Globe } from 'lucide-react';
+import { Bell, Globe, LogOut } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Language } from '../types';
 import { Button } from '@/components/ui/button';
+import { logout } from '../services/auth';
 
 interface TopNavProps {
   userPhoto?: string;
@@ -10,6 +11,14 @@ interface TopNavProps {
 }
 
 export default function TopNav({ userPhoto, language, onLanguageChange }: TopNavProps) {
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
+  };
+
   return (
     <header className="fixed top-0 w-full z-50 bg-background/60 backdrop-blur-xl flex justify-between items-center px-6 py-4 border-b border-outline-variant/10">
       <div className="flex items-center gap-4">
@@ -35,9 +44,15 @@ export default function TopNav({ userPhoto, language, onLanguageChange }: TopNav
           <Globe size={14} />
           {language === 'es' ? 'ES' : 'EN'}
         </Button>
-        <button className="text-primary hover:opacity-80 transition-opacity active:scale-95 duration-200 p-2">
-          <Bell size={20} />
-        </button>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={handleLogout}
+          className="text-on-surface-variant hover:text-destructive hover:bg-destructive/10 rounded-full h-8 w-8"
+          title="Cerrar sesión"
+        >
+          <LogOut size={18} />
+        </Button>
       </div>
     </header>
   );

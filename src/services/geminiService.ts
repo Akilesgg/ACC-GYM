@@ -18,7 +18,8 @@ export async function generateTrainingPlan(profile: UserProfile, sportConfig: Sp
       - Specific Goal for this sport: ${sportConfig.goal || 'General performance'}
       ${sportConfig.isCombined ? '- NOTE: This is a COMBINED plan. Integrate this sport intelligently with the user\'s other activities.' : ''}
       
-      Provide a detailed scientific reasoning and a structured weekly table with exercises, sets, reps, and technical notes.`,
+      Provide a detailed scientific reasoning and a structured weekly table with exercises, sets, reps, and technical notes.
+      IMPORTANT: Each exercise MUST have a unique 'id' (e.g., 'ex_1', 'ex_2').`,
       config: {
         systemInstruction: "You are an elite sports scientist and personal trainer. Create highly effective, data-driven training plans. Return the response in a structured JSON format matching the TrainingPlan interface.",
         responseMimeType: "application/json",
@@ -37,12 +38,13 @@ export async function generateTrainingPlan(profile: UserProfile, sportConfig: Sp
                     items: {
                       type: Type.OBJECT,
                       properties: {
+                        id: { type: Type.STRING },
                         name: { type: Type.STRING },
                         sets: { type: Type.STRING },
                         reps: { type: Type.STRING },
                         notes: { type: Type.STRING }
                       },
-                      required: ["name", "sets", "reps", "notes"]
+                      required: ["id", "name", "sets", "reps", "notes"]
                     }
                   }
                 },
@@ -54,7 +56,12 @@ export async function generateTrainingPlan(profile: UserProfile, sportConfig: Sp
         }
       }
     });
-    return JSON.parse(response.text);
+    const plan = JSON.parse(response.text);
+    return {
+      ...plan,
+      id: Math.random().toString(36).substr(2, 9),
+      createdAt: new Date().toISOString()
+    };
   } catch (error) {
     console.error("Gemini Error:", error);
     throw error;

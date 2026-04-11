@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { UserProfile, SportConfig, TrainingPlan, Language } from '../types';
+import { UserProfile, SportConfig, TrainingPlan, Language, Sport } from '../types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { generateTrainingPlan } from '../services/geminiService';
@@ -8,40 +8,29 @@ import {
   Dumbbell, Target, Loader2, Search, ChevronRight, Info, 
   ArrowLeft, Bike, Waves, Zap, Heart, Activity, 
   Flame, Timer, Trophy, Calendar, Footprints, Sword, 
-  Mountain, Wind, Anchor, MountainSnow, Palette
+  Mountain, Wind, Anchor, MountainSnow, Palette,
+  Plus, Trash2
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '../lib/i18n';
-
-const SPORTS_LIST = [
-  "Musculación", "Ciclismo", "Natación", "Running", "CrossFit", "Yoga", "Pilates", "Boxeo", "HIIT", "Tenis",
-  "Padel", "Fútbol", "Baloncesto", "Voleibol", "Golf", "Escalada", "Surf", "Skateboarding", "Artes Marciales", "Triatlón",
-  "Senderismo", "Remo", "Calistenia", "Powerlifting", "Halterofilia", "Danza", "Gimnasia", "Rugby", "Balonmano", "Hockey",
-  "Bádminton", "Squash", "Tenis de Mesa", "Esgrima", "Tiro con Arco", "Equitación", "Esquí", "Snowboarding", "Patinaje", "Ciclismo de Montaña",
-  "Kayak", "Windsurf", "Kitesurf", "Buceo", "Maratón", "Trail Running", "Spinning", "Zumba", "Kickboxing", "Atletismo"
-];
+import { getSports } from '../services/sports';
 
 const SPORT_ICONS: Record<string, any> = {
-  "Musculación": Dumbbell,
-  "Ciclismo": Bike,
-  "Natación": Waves,
-  "Running": Footprints,
-  "CrossFit": Flame,
-  "Yoga": Heart,
-  "Boxeo": Trophy,
-  "Triatlón": Timer,
-  "Fútbol": Activity,
-  "Baloncesto": Activity,
-  "Tenis": Activity,
-  "Senderismo": Mountain,
-  "Escalada": Mountain,
-  "Surf": Wind,
-  "Artes Marciales": Sword,
-  "Esgrima": Sword,
-  "Remo": Anchor,
-  "Esquí": MountainSnow,
-  "Danza": Palette,
-  "default": Activity
+  "Dumbbell": Dumbbell,
+  "Bike": Bike,
+  "Waves": Waves,
+  "Footprints": Footprints,
+  "Flame": Flame,
+  "Heart": Heart,
+  "Trophy": Trophy,
+  "Timer": Timer,
+  "Activity": Activity,
+  "Mountain": Mountain,
+  "Wind": Wind,
+  "Sword": Sword,
+  "Anchor": Anchor,
+  "MountainSnow": MountainSnow,
+  "Palette": Palette
 };
 
 const GOALS_BY_SPORT: Record<string, string[]> = {
@@ -61,17 +50,26 @@ interface SportsTabProps {
 export default function SportsTab({ profile, onUpdateProfile, onBack, language }: SportsTabProps) {
   const t = useTranslation(language);
   const [search, setSearch] = useState('');
-  const [selectedSport, setSelectedSport] = useState<string | null>(null);
+  const [sports, setSports] = useState<Sport[]>([]);
+  const [selectedSport, setSelectedSport] = useState<Sport | null>(null);
   const [step, setStep] = useState<'list' | 'goal' | 'frequency' | 'combined'>('list');
   const [currentConfig, setCurrentConfig] = useState<Partial<SportConfig>>({});
   const [loading, setLoading] = useState(false);
   const [activePlan, setActivePlan] = useState<TrainingPlan | null>(null);
 
-  const filteredSports = SPORTS_LIST.filter(s => s.toLowerCase().includes(search.toLowerCase()));
+  useEffect(() => {
+    const loadSports = async () => {
+      const data = await getSports();
+      setSports(data);
+    };
+    loadSports();
+  }, []);
 
-  const handleSportSelect = (sport: string) => {
+  const filteredSports = sports.filter(s => s.name.toLowerCase().includes(search.toLowerCase()));
+
+  const handleSportSelect = (sport: Sport) => {
     setSelectedSport(sport);
-    setCurrentConfig({ sport });
+    setCurrentConfig({ sport: sport.name });
     setStep('goal');
   };
 
@@ -95,7 +93,7 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
 
   const finalizePlan = async (config: SportConfig) => {
     setLoading(true);
-    setStep('list'); // Reset for next time or while loading
+    setStep('list');
     
     try {
       const plan = await generateTrainingPlan(profile, config);
@@ -117,6 +115,11 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
     }
   };
 
+  const removeSport = (sportName: string) => {
+    const updatedSports = profile.selectedSports.filter(s => s.sport !== sportName);
+    onUpdateProfile({ ...profile, selectedSports: updatedSports });
+  };
+
   const goBack = () => {
     if (step === 'goal') setStep('list');
     else if (step === 'frequency') setStep('goal');
@@ -125,7 +128,7 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
     else if (onBack) onBack();
   };
 
-  const getIcon = (sport: string) => SPORT_ICONS[sport] || SPORT_ICONS.default;
+  const getIcon = (iconName: string) => SPORT_ICONS[iconName] || SPORT_ICONS.Activity;
 
   return (
     <div className="space-y-12 pb-32">
@@ -140,7 +143,7 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
                 Laboratorio de Disciplinas
               </p>
               <h2 className="font-headline text-5xl md:text-7xl font-extrabold tracking-tighter leading-none">
-                DEPORTES <span className="text-primary italic">TOP 50.</span>
+                MIS <span className="text-primary italic">DEPORTES.</span>
               </h2>
             </div>
           </div>
@@ -158,6 +161,36 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
         </div>
       </section>
 
+      {/* Active Sports Section */}
+      {step === 'list' && !activePlan && !loading && profile.selectedSports.length > 0 && (
+        <section className="space-y-6">
+          <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">Tus Deportes Activos</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {profile.selectedSports.map((s, idx) => (
+              <Card key={idx} className="bg-surface border-none p-6 flex items-center justify-between group">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                    <Dumbbell className="text-primary" size={24} />
+                  </div>
+                  <div>
+                    <h4 className="font-headline font-bold text-lg uppercase">{s.sport}</h4>
+                    <p className="text-xs text-on-surface-variant">{s.daysPerWeek} días/semana • {s.goal}</p>
+                  </div>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => removeSport(s.sport)}
+                  className="text-on-surface-variant hover:text-destructive hover:bg-destructive/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Trash2 size={18} />
+                </Button>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
+
       <AnimatePresence mode="wait">
         {loading ? (
           <motion.div 
@@ -166,7 +199,7 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
             className="flex flex-col items-center justify-center py-20 gap-4"
           >
             <Loader2 className="w-12 h-12 text-primary animate-spin" />
-            <p className="text-on-surface-variant font-medium">La IA está diseñando tu plan de {selectedSport}...</p>
+            <p className="text-on-surface-variant font-medium">La IA está diseñando tu plan de {selectedSport?.name}...</p>
           </motion.div>
         ) : step === 'goal' ? (
           <motion.div key="goal" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="max-w-2xl mx-auto space-y-8">
@@ -174,11 +207,11 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
               <div className="w-16 h-16 bg-tertiary/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Target className="text-tertiary" size={32} />
               </div>
-              <h3 className="text-3xl font-headline font-black text-on-surface">{selectedSport?.toUpperCase()}</h3>
+              <h3 className="text-3xl font-headline font-black text-on-surface">{selectedSport?.name.toUpperCase()}</h3>
               <p className="text-on-surface-variant mt-2">{t('cualEsObjetivo')}</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {(GOALS_BY_SPORT[selectedSport!] || GOALS_BY_SPORT["default"]).map(goal => (
+              {(GOALS_BY_SPORT[selectedSport?.name!] || GOALS_BY_SPORT["default"]).map(goal => (
                 <Button key={goal} variant="outline" onClick={() => handleGoalSelect(goal)} className="h-20 rounded-2xl border-outline-variant/20 hover:border-tertiary/50 hover:bg-tertiary/5 transition-all font-bold text-lg">
                   {goal}
                 </Button>
@@ -192,7 +225,7 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
                 <Calendar className="text-primary" size={32} />
               </div>
               <h3 className="text-3xl font-headline font-black text-on-surface">FRECUENCIA</h3>
-              <p className="text-on-surface-variant mt-2">¿Cuántos días a la semana vas a practicar {selectedSport}?</p>
+              <p className="text-on-surface-variant mt-2">¿Cuántos días a la semana vas a practicar {selectedSport?.name}?</p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[1, 2, 3, 4, 5, 6, 7].map(days => (
@@ -218,14 +251,14 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
               </Button>
               <Button variant="outline" onClick={() => handleCombinedSelect(false)} className="h-24 rounded-2xl border-outline-variant/20 hover:bg-surface font-bold text-lg flex flex-col">
                 <span>No, plan independiente</span>
-                <span className="text-xs font-normal opacity-60">Solo para {selectedSport}</span>
+                <span className="text-xs font-normal opacity-60">Solo para {selectedSport?.name}</span>
               </Button>
             </div>
           </motion.div>
         ) : activePlan ? (
           <motion.div key="plan" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-8">
             <div className="flex items-center justify-between">
-              <h3 className="font-headline text-2xl font-black text-primary uppercase italic">{selectedSport} - Plan Generado</h3>
+              <h3 className="font-headline text-2xl font-black text-primary uppercase italic">{selectedSport?.name} - Plan Generado</h3>
               <Button variant="outline" onClick={() => setActivePlan(null)} className="rounded-full">Cambiar Deporte</Button>
             </div>
             <Card className="bg-surface border-l-4 border-secondary p-8 relative overflow-hidden">
@@ -256,20 +289,28 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
             </div>
           </motion.div>
         ) : (
-          <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {filteredSports.map(sport => {
-              const Icon = getIcon(sport);
-              return (
-                <Card key={sport} onClick={() => handleSportSelect(sport)} className="bg-surface border-none p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-primary/10 hover:scale-105 transition-all group">
-                  <div className="w-12 h-12 bg-background rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                    <Icon size={24} className="text-on-surface-variant group-hover:text-primary" />
-                  </div>
-                  <span className="font-headline font-bold text-sm uppercase tracking-tight">{sport}</span>
-                  <ChevronRight size={16} className="mt-2 text-outline-variant group-hover:text-primary" />
-                </Card>
-              );
-            })}
-          </motion.div>
+          <div className="space-y-8">
+            <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">Explorar Disciplinas</h3>
+            <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {filteredSports.map(sport => {
+                const Icon = getIcon(sport.icon);
+                return (
+                  <Card key={sport.id} onClick={() => handleSportSelect(sport)} className="bg-surface border-none p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-primary/10 hover:scale-105 transition-all group">
+                    <div className="w-12 h-12 bg-background rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
+                      <Icon size={24} className="text-on-surface-variant group-hover:text-primary" />
+                    </div>
+                    <span className="font-headline font-bold text-sm uppercase tracking-tight">{sport.name}</span>
+                    <ChevronRight size={16} className="mt-2 text-outline-variant group-hover:text-primary" />
+                  </Card>
+                );
+              })}
+              {filteredSports.length === 0 && (
+                <div className="col-span-full py-20 text-center text-on-surface-variant italic">
+                  No se encontraron deportes que coincidan con tu búsqueda.
+                </div>
+              )}
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>

@@ -1,35 +1,25 @@
-import { useState, useEffect } from 'react';
-import { UserProfile, TrainingPlan, SportConfig, Language } from '../types';
+import { useState } from 'react';
+import { UserProfile, TrainingPlan, Language } from '../types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { generateTrainingPlan } from '../services/geminiService';
 import { motion, AnimatePresence } from 'motion/react';
-import { Dumbbell, Info, CheckCircle2, Loader2, Trash2, Plus, RotateCcw } from 'lucide-react';
+import { Dumbbell, Info, CheckCircle2, Trash2, Plus, RotateCcw, Activity, ChevronRight } from 'lucide-react';
 import { useTranslation } from '../lib/i18n';
 
 interface DashboardProps {
   profile: UserProfile;
   onUpdateProfile: (profile: UserProfile) => void;
   onAddSport: () => void;
+  onGoToTracking: () => void;
   language: Language;
 }
 
-export default function Dashboard({ profile, onUpdateProfile, onAddSport, language }: DashboardProps) {
+export default function Dashboard({ profile, onUpdateProfile, onAddSport, onGoToTracking, language }: DashboardProps) {
   const t = useTranslation(language);
   const [selectedSportIndex, setSelectedSportIndex] = useState(0);
-  const [plan, setPlan] = useState<TrainingPlan | null>(null);
-  const [loading, setLoading] = useState(false);
 
   const currentSportConfig = profile.selectedSports[selectedSportIndex];
-
-  useEffect(() => {
-    if (currentSportConfig) {
-      setLoading(true);
-      generateTrainingPlan(profile, currentSportConfig)
-        .then(setPlan)
-        .finally(() => setLoading(false));
-    }
-  }, [selectedSportIndex, profile]);
+  const plan = currentSportConfig?.plan;
 
   const removeSport = (index: number) => {
     const updatedSports = profile.selectedSports.filter((_, i) => i !== index);
@@ -66,6 +56,20 @@ export default function Dashboard({ profile, onUpdateProfile, onAddSport, langua
             </Button>
           </div>
         </div>
+
+        {/* Quick Tracking Link */}
+        <Card className="bg-primary/10 border-none p-6 flex items-center justify-between group cursor-pointer hover:bg-primary/20 transition-all" onClick={onGoToTracking}>
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
+              <Activity className="text-on-primary" size={24} />
+            </div>
+            <div>
+              <h3 className="font-headline font-bold text-lg uppercase tracking-tight">Registro de Hoy</h3>
+              <p className="text-xs text-on-surface-variant font-medium uppercase tracking-widest">Marca tus ejercicios completados</p>
+            </div>
+          </div>
+          <ChevronRight className="text-primary group-hover:translate-x-1 transition-transform" />
+        </Card>
 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
@@ -113,17 +117,6 @@ export default function Dashboard({ profile, onUpdateProfile, onAddSport, langua
             <Dumbbell size={48} className="mx-auto text-outline-variant opacity-20" />
             <p className="text-on-surface-variant font-medium">No tienes deportes seleccionados.<br/>Añade uno para ver tu plan.</p>
           </motion.div>
-        ) : loading ? (
-          <motion.div 
-            key="loading"
-            initial={{ opacity: 0 }} 
-            animate={{ opacity: 1 }} 
-            exit={{ opacity: 0 }}
-            className="flex flex-col items-center justify-center py-20 gap-4"
-          >
-            <Loader2 className="w-12 h-12 text-primary animate-spin" />
-            <p className="text-on-surface-variant font-medium">Generando tu plan con IA...</p>
-          </motion.div>
         ) : plan ? (
           <motion.div
             key={currentSportConfig?.sport || 'plan'}
@@ -170,9 +163,6 @@ export default function Dashboard({ profile, onUpdateProfile, onAddSport, langua
                           <div className="text-right hidden md:block">
                             <p className="text-[10px] text-on-surface-variant italic">{ex.notes}</p>
                           </div>
-                          <Button variant="ghost" size="icon" className="text-on-surface-variant hover:text-primary">
-                            <CheckCircle2 size={20} />
-                          </Button>
                         </div>
                       ))}
                     </div>

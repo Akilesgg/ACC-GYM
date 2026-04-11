@@ -1,28 +1,89 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: {uid}
+    // Fields:
+    //   - uid: string (required)
+    //   - email: string (required)
+    //   - displayName: string (optional)
+    //   - photoURL: string (optional)
+    //   - role: string (required, enum: ['user', 'admin', 'trainer'])
+    //   - selectedSports: list (optional)
+    //   - weight: number (optional)
+    //   - height: number (optional)
+    //   - age: number (optional)
+    //   - gender: string (optional)
+    //   - bodyFat: number (optional)
+    //   - nutritionGoal: string (optional)
+    //   - timeframe: string (optional)
+    //   - allergies: string (optional)
+    //   - nutritionPlan: map (optional)
+    //   - weightHistory: list (optional)
+    //   - photos: list (optional)
+    //   - progress: map (optional)
+    //   - streak: number (optional)
+    //   - deviceData: map (optional)
+    //
+    // Collection: sports
+    // Document ID: {sportId}
+    // Fields:
+    //   - id: string (required)
+    //   - name: string (required)
+    //   - icon: string (required)
+    //   - category: string (required)
+    //
+    // ===============================================================
+
+    // ===============================================================
     // Helper Functions
+    // ===============================================================
+    
     function isAuthenticated() {
       return request.auth != null;
     }
-    
+
     function isOwner(userId) {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    function isValidUser(data) {
-      return data.keys().hasAll(['username', 'weight', 'height', 'selectedSports']) &&
-             data.username is string && data.username.size() > 0 && data.username.size() < 50 &&
-             data.weight is number && data.weight > 0 &&
-             data.height is number && data.height > 0 &&
-             data.selectedSports is list;
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         (request.auth.token.email == "acc08101970@gmail.com" && request.auth.token.email_verified == true));
     }
 
+    function isValidUser(data) {
+      return data.keys().hasAll(['uid', 'email', 'role']) &&
+             data.uid is string &&
+             data.email is string &&
+             data.role in ['user', 'admin', 'trainer'];
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
     match /users/{userId} {
-      allow read: if isOwner(userId);
-      allow create, update: if isOwner(userId) && isValidUser(request.resource.data);
-      allow delete: if isOwner(userId);
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && isValidUser(request.resource.data) && 
+                    (isOwner(userId) && request.resource.data.role == 'user' || isAdmin());
+      allow update: if isAuthenticated() && 
+                    (isOwner(userId) && request.resource.data.role == resource.data.role || isAdmin());
+    }
+
+    match /sports/{sportId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
+    }
+    
+    match /news/{newsId} {
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
     }
   }
 }
