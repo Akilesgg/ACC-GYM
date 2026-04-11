@@ -14,6 +14,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '../lib/i18n';
 import { getSports } from '../services/sports';
+import SportsList from './SportsList';
 
 const SPORT_ICONS: Record<string, any> = {
   "Dumbbell": Dumbbell,
@@ -84,7 +85,9 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
 
   const filteredSports = sports.filter(s => s.name.toLowerCase().includes(search.toLowerCase()));
 
-  const handleSportSelect = (sport: Sport) => {
+  const handleSportSelect = (sportName: string) => {
+    const sport = sports.find(s => s.name === sportName);
+    if (!sport) return;
     setSelectedSport(sport);
     setCurrentConfig({ sport: sport.name });
     setStep('goal');
@@ -307,26 +310,13 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
           </motion.div>
         ) : (
           <div className="space-y-8">
-            <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">Explorar Disciplinas</h3>
-            <motion.div key="list" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {filteredSports.map(sport => {
-                const Icon = getIcon(sport.icon);
-                return (
-                  <Card key={sport.id} onClick={() => handleSportSelect(sport)} className="bg-surface border-none p-6 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-primary/10 hover:scale-105 transition-all group">
-                    <div className="w-12 h-12 bg-background rounded-xl flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                      <Icon size={24} className="text-on-surface-variant group-hover:text-primary" />
-                    </div>
-                    <span className="font-headline font-bold text-sm uppercase tracking-tight">{sport.name}</span>
-                    <ChevronRight size={16} className="mt-2 text-outline-variant group-hover:text-primary" />
-                  </Card>
-                );
-              })}
-              {filteredSports.length === 0 && (
-                <div className="col-span-full py-20 text-center text-on-surface-variant italic">
-                  No se encontraron deportes que coincidan con tu búsqueda.
-                </div>
-              )}
-            </motion.div>
+            <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">{t('laboratorioDisciplinas')}</h3>
+            <SportsList 
+              sports={sports} 
+              selectedSports={profile.selectedSports.map(s => s.sport)}
+              onSelect={handleSportSelect}
+              language={language}
+            />
           </div>
         )}
       </AnimatePresence>

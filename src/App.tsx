@@ -10,11 +10,13 @@ import Login from './components/Login';
 import Onboarding from './components/Onboarding';
 import SportsTab from './components/SportsTab';
 import Profile from './components/Profile';
+import UserPanel from './components/UserPanel';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth, onAuthStateChanged } from './lib/firebase';
 import { subscribeToProfile, createUserProfile, updateUserProfile } from './services/users';
 import { useStore } from './store/useStore';
 import { seedSports } from './services/sports';
+import { chatService } from './services/chatService';
 
 const INITIAL_SPORTS = [
   { name: "Musculación", icon: "Dumbbell", category: "Fuerza" },
@@ -136,6 +138,9 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
+        // Set online status
+        chatService.updateUserStatus(currentUser.uid, 'online');
+
         const unsubProfile = subscribeToProfile(currentUser.uid, (fetchedProfile) => {
           setProfile(fetchedProfile);
           if (!fetchedProfile) {
@@ -145,7 +150,10 @@ export default function App() {
           }
           setLoading(false);
         });
-        return () => unsubProfile();
+        return () => {
+          unsubProfile();
+          chatService.updateUserStatus(currentUser.uid, 'offline');
+        };
       } else {
         setProfile(null);
         setActiveScreen('login');
@@ -197,6 +205,7 @@ export default function App() {
       case 'gallery': return <Gallery profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
       case 'tracking': return <Tracking profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
       case 'profile': return <Profile profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
+      case 'community': return <UserPanel currentUser={profile!} language={language} />;
       case 'login': return <Login language={language} />;
       default: return <Dashboard profile={profile!} onUpdateProfile={handleProfileUpdate} onAddSport={() => setActiveScreen('workout')} onGoToTracking={() => setActiveScreen('tracking')} language={language} />;
     }

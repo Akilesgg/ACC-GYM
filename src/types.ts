@@ -1,4 +1,4 @@
-export type Screen = 'dashboard' | 'nutrition' | 'gallery' | 'workout' | 'login' | 'onboarding' | 'news' | 'tracking' | 'profile';
+export type Screen = 'dashboard' | 'nutrition' | 'gallery' | 'workout' | 'login' | 'onboarding' | 'news' | 'tracking' | 'profile' | 'community';
 export type Language = 'es' | 'en';
 export type UserRole = 'user' | 'admin' | 'trainer';
 
@@ -66,6 +66,8 @@ export interface UserProfile {
   // Tracking
   progress?: Record<string, DailyProgress>; // Key is YYYY-MM-DD
   streak?: number;
+  status?: 'online' | 'offline' | 'invisible';
+  lastSeen?: string;
   // Device Sync
   deviceData?: {
     steps: number;
@@ -143,4 +145,20 @@ export interface GalleryItem {
   likes?: number;
   comments?: number;
   caption?: string;
+}
+
+export interface Message {
+  id: string;
+  senderId: string;
+  receiverId: string;
+  text: string;
+  timestamp: string;
+  read: boolean;
+}
+
+export interface Chat {
+  id: string;
+  participants: string[];
+  lastMessage?: Message;
+  updatedAt: string;
 }
