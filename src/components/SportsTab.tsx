@@ -113,14 +113,14 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
     setStep('list');
     
     try {
-      const plan = await generateTrainingPlan(profile, config);
+      const plan = await generateTrainingPlan(profile, config, language);
       setActivePlan(plan);
       
       // Ensure we don't have duplicates and update correctly
-      const updatedSports = profile.selectedSports.filter(s => s.sport !== config.sport);
+      const updatedSports = [...profile.selectedSports].filter(s => s.sport !== config.sport);
       updatedSports.push({ ...config, plan });
       
-      onUpdateProfile({ ...profile, selectedSports: updatedSports });
+      await onUpdateProfile({ ...profile, selectedSports: updatedSports });
     } catch (error) {
       console.error(error);
     } finally {
@@ -154,10 +154,10 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
             </Button>
             <div>
               <p className="font-headline text-secondary font-bold uppercase tracking-widest text-sm mb-1">
-                Laboratorio de Disciplinas
+                {t('laboratorioDisciplinas')}
               </p>
               <h2 className="font-headline text-5xl md:text-7xl font-extrabold tracking-tighter leading-none">
-                MIS <span className="text-primary italic">DEPORTES.</span>
+                {t('misDeportes').split(' ')[0]} <span className="text-primary italic">{t('misDeportes').split(' ')[1]}.</span>
               </h2>
             </div>
           </div>
@@ -165,7 +165,7 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
             <div className="relative w-full md:w-72">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-outline-variant" size={20} />
               <Input 
-                placeholder="Buscar deporte..." 
+                placeholder={t('buscarDeporte')} 
                 className="bg-surface border-none pl-12 h-12 rounded-full"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
@@ -178,7 +178,7 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
       {/* Active Sports Section */}
       {step === 'list' && !activePlan && !loading && profile.selectedSports.length > 0 && (
         <section className="space-y-6">
-          <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">Tus Deportes Activos</h3>
+          <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">{t('tusDeportesActivos')}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {profile.selectedSports.map((s, idx) => (
               <Card key={idx} className="bg-surface border-none p-6 flex items-center justify-between group">
@@ -188,7 +188,7 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
                   </div>
                   <div>
                     <h4 className="font-headline font-bold text-lg uppercase">{s.sport}</h4>
-                    <p className="text-xs text-on-surface-variant">{s.daysPerWeek} días/semana • {s.goal}</p>
+                    <p className="text-xs text-on-surface-variant">{s.daysPerWeek} {t('activos').toLowerCase()} • {s.goal}</p>
                   </div>
                 </div>
                 <Button 
@@ -240,8 +240,8 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
                 <Calendar className="text-primary" size={40} />
               </div>
               <div className="text-center md:text-left">
-                <h3 className="text-4xl font-headline font-black text-on-surface uppercase tracking-tight">FRECUENCIA</h3>
-                <p className="text-on-surface-variant mt-2 text-lg">¿Cuántos días a la semana vas a practicar {selectedSport?.name}?</p>
+                <h3 className="text-4xl font-headline font-black text-on-surface uppercase tracking-tight">{t('frecuencia')}</h3>
+                <p className="text-on-surface-variant mt-2 text-lg">{t('cuantosDias')} {selectedSport?.name}?</p>
               </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -258,25 +258,25 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
               <div className="w-16 h-16 bg-secondary/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
                 <Zap className="text-secondary" size={32} />
               </div>
-              <h3 className="text-3xl font-headline font-black text-on-surface">PLAN COMBINADO</h3>
-              <p className="text-on-surface-variant mt-2">Ya tienes otros deportes. ¿Quieres que la IA cree un plan combinado que los integre todos?</p>
+              <h3 className="text-3xl font-headline font-black text-on-surface">{t('planCombinado').toUpperCase()}</h3>
+              <p className="text-on-surface-variant mt-2">{t('yaTienesOtros')}</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Button variant="outline" onClick={() => handleCombinedSelect(true)} className="h-24 rounded-2xl border-secondary/30 hover:bg-secondary/10 font-bold text-lg flex flex-col">
-                <span>Sí, combinar planes</span>
-                <span className="text-xs font-normal opacity-60">Optimiza tu semana completa</span>
+                <span>{t('siCombinar')}</span>
+                <span className="text-xs font-normal opacity-60">{t('optimizaSemana')}</span>
               </Button>
               <Button variant="outline" onClick={() => handleCombinedSelect(false)} className="h-24 rounded-2xl border-outline-variant/20 hover:bg-surface font-bold text-lg flex flex-col">
-                <span>No, plan independiente</span>
-                <span className="text-xs font-normal opacity-60">Solo para {selectedSport?.name}</span>
+                <span>{t('noIndependiente')}</span>
+                <span className="text-xs font-normal opacity-60">{t('soloPara')} {selectedSport?.name}</span>
               </Button>
             </div>
           </motion.div>
         ) : activePlan ? (
           <motion.div key="plan" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-8">
             <div className="flex items-center justify-between">
-              <h3 className="font-headline text-2xl font-black text-primary uppercase italic">{selectedSport?.name} - Plan Generado</h3>
-              <Button variant="outline" onClick={() => setActivePlan(null)} className="rounded-full">Cambiar Deporte</Button>
+              <h3 className="font-headline text-2xl font-black text-primary uppercase italic">{selectedSport?.name} - {t('planGenerado')}</h3>
+              <Button variant="outline" onClick={() => setActivePlan(null)} className="rounded-full">{t('cambiarDeporte')}</Button>
             </div>
             <Card className="bg-surface border-l-4 border-secondary p-8 relative overflow-hidden">
               <div className="flex items-center gap-3 mb-4">

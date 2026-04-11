@@ -70,10 +70,10 @@ export default function Tracking({ profile, onUpdateProfile, onBack, language }:
             </Button>
             <div>
               <p className="font-headline text-secondary font-bold uppercase tracking-widest text-sm mb-1">
-                Registro de Rendimiento
+                {t('registroRendimiento')}
               </p>
               <h2 className="font-headline text-5xl md:text-7xl font-extrabold tracking-tighter leading-none">
-                {t('tracking').toUpperCase()} <span className="text-primary italic">DIARIO.</span>
+                {t('tracking').toUpperCase()} <span className="text-primary italic">{t('trackingDiario').split(' ')[1].toUpperCase()}.</span>
               </h2>
             </div>
           </div>
@@ -83,14 +83,14 @@ export default function Tracking({ profile, onUpdateProfile, onBack, language }:
               onClick={() => setView('daily')}
               className="rounded-full px-6 font-bold uppercase text-xs"
             >
-              Hoy
+              {t('hoy')}
             </Button>
             <Button 
               variant={view === 'weekly' ? 'default' : 'ghost'} 
               onClick={() => setView('weekly')}
               className="rounded-full px-6 font-bold uppercase text-xs"
             >
-              Semana
+              {t('semana')}
             </Button>
           </div>
         </div>
@@ -161,8 +161,8 @@ export default function Tracking({ profile, onUpdateProfile, onBack, language }:
                 })
               ) : (
                 <Card className="p-12 text-center bg-surface border-none">
-                  <p className="text-on-surface-variant italic">No hay ejercicios programados para hoy en tus planes activos.</p>
-                  <Button variant="link" className="mt-4 text-primary font-bold uppercase tracking-widest text-xs">Ver todos los planes</Button>
+                  <p className="text-on-surface-variant italic">{t('noEjerciciosHoy')}</p>
+                  <Button variant="link" className="mt-4 text-primary font-bold uppercase tracking-widest text-xs" onClick={() => setView('weekly')}>{t('verTodosPlanes')}</Button>
                 </Card>
               )}
             </div>
@@ -177,7 +177,7 @@ export default function Tracking({ profile, onUpdateProfile, onBack, language }:
           >
             {activePlans.map((plan, pIdx) => (
               <div key={pIdx} className="space-y-6">
-                <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight text-primary">Plan: {profile.selectedSports[pIdx]?.sport}</h3>
+                <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight text-primary">{t('plan')}: {profile.selectedSports[pIdx]?.sport}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {plan.table.map((day, dIdx) => (
                     <Card key={dIdx} className="bg-surface border-none p-6 space-y-4">

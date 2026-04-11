@@ -52,11 +52,11 @@ export default function Dashboard({ profile, onUpdateProfile, onAddSport, onGoTo
             transition={{ delay: 0.5 }}
           >
             <p className="font-headline text-secondary font-bold uppercase tracking-[0.4em] text-xs mb-4">
-              {t('bienvenido').toUpperCase()}, {profile.username.split(' ')[0]}
+              {t('bienvenidoDashboard')}, {profile.username.split(' ')[0]}
             </p>
             <h2 className="font-headline text-6xl md:text-8xl font-black tracking-tighter leading-[0.8] mb-8">
-              FORJA TU <br />
-              <span className="text-primary italic">DESTINO.</span>
+              {t('forjaDestino').split(' ').slice(0, 2).join(' ')} <br />
+              <span className="text-primary italic">{t('forjaDestino').split(' ').slice(2).join(' ')}.</span>
             </h2>
             <div className="flex flex-wrap gap-4">
               <Button 
@@ -84,7 +84,7 @@ export default function Dashboard({ profile, onUpdateProfile, onAddSport, onGoTo
               {t('tuLaboratorio')}
             </p>
             <h2 className="font-headline text-5xl md:text-7xl font-extrabold tracking-tighter leading-none">
-              ACF <span className="text-primary italic">SPORT.</span>
+              ACC <span className="text-primary italic">SPORT.</span>
             </h2>
           </div>
           <div className="flex gap-2">
@@ -106,8 +106,8 @@ export default function Dashboard({ profile, onUpdateProfile, onAddSport, onGoTo
               <Activity className="text-on-primary" size={24} />
             </div>
             <div>
-              <h3 className="font-headline font-bold text-lg uppercase tracking-tight">Registro de Hoy</h3>
-              <p className="text-xs text-on-surface-variant font-medium uppercase tracking-widest">Marca tus ejercicios completados</p>
+              <h3 className="font-headline font-bold text-lg uppercase tracking-tight">{t('registroHoy')}</h3>
+              <p className="text-xs text-on-surface-variant font-medium uppercase tracking-widest">{t('marcaEjercicios')}</p>
             </div>
           </div>
           <ChevronRight className="text-primary group-hover:translate-x-1 transition-transform" />
@@ -157,7 +157,7 @@ export default function Dashboard({ profile, onUpdateProfile, onAddSport, onGoTo
             className="py-20 text-center space-y-4"
           >
             <Dumbbell size={48} className="mx-auto text-outline-variant opacity-20" />
-            <p className="text-on-surface-variant font-medium">No tienes deportes seleccionados.<br/>Añade uno para ver tu plan.</p>
+            <p className="text-on-surface-variant font-medium">{t('noDeportes')}</p>
           </motion.div>
         ) : plan ? (
           <motion.div

@@ -37,7 +37,7 @@ export default function Profile({ profile, onBack, language }: ProfileProps) {
               {t('tuLaboratorio')}
             </p>
             <h2 className="font-headline text-5xl md:text-7xl font-extrabold tracking-tighter leading-none">
-              MI <span className="text-primary italic">PERFIL.</span>
+              MI <span className="text-primary italic">{t('perfil').toUpperCase()}.</span>
             </h2>
           </div>
         </div>
@@ -89,7 +89,7 @@ export default function Profile({ profile, onBack, language }: ProfileProps) {
                 <p className="text-[10px] font-bold uppercase text-on-surface-variant tracking-widest flex items-center gap-1">
                   <Shield size={10} /> {t('lesiones')}
                 </p>
-                <p className="text-sm font-bold truncate">{profile.injuries || 'Ninguna'}</p>
+                <p className="text-sm font-bold truncate">{profile.injuries || (language === 'es' ? 'Ninguna' : 'None')}</p>
               </div>
             </div>
           </Card>
@@ -97,9 +97,9 @@ export default function Profile({ profile, onBack, language }: ProfileProps) {
           {/* Stats/Actions */}
           <div className="space-y-6">
             <Card className="bg-primary p-8 text-on-primary">
-              <h4 className="font-headline font-black text-xl uppercase tracking-tight mb-2">Racha Actual</h4>
+              <h4 className="font-headline font-black text-xl uppercase tracking-tight mb-2">{language === 'es' ? 'Racha Actual' : 'Current Streak'}</h4>
               <p className="text-6xl font-headline font-black italic">{profile.streak || 0}</p>
-              <p className="text-xs font-bold uppercase tracking-widest mt-2 opacity-80">Días consecutivos</p>
+              <p className="text-xs font-bold uppercase tracking-widest mt-2 opacity-80">{language === 'es' ? 'Días consecutivos' : 'Consecutive days'}</p>
             </Card>
 
             <Button 
