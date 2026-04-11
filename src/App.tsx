@@ -11,6 +11,7 @@ import Onboarding from './components/Onboarding';
 import SportsTab from './components/SportsTab';
 import Profile from './components/Profile';
 import UserPanel from './components/UserPanel';
+import Devices from './components/Devices';
 import DynamicBackground from './components/DynamicBackground';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth, onAuthStateChanged } from './lib/firebase';
@@ -132,7 +133,14 @@ export default function App() {
   } = useStore();
 
   useEffect(() => {
-    seedSports(INITIAL_SPORTS);
+    const init = async () => {
+      try {
+        await seedSports(INITIAL_SPORTS);
+      } catch (error) {
+        console.error("Seeding error:", error);
+      }
+    };
+    init();
   }, []);
 
   useEffect(() => {
@@ -156,11 +164,17 @@ export default function App() {
             setActiveScreen('dashboard');
           }
           setLoading(false);
+        }, (error) => {
+          console.error("Profile subscription error:", error);
+          setLoading(false);
         });
+
+        // Fallback to stop loading after 5 seconds if profile sub doesn't fire
+        const timeout = setTimeout(() => setLoading(false), 5000);
+
         return () => {
           unsubProfile();
-          // We don't set offline here because it might overwrite an intentional 'invisible'
-          // Instead, we could have a heartbeat or just rely on 'lastSeen'
+          clearTimeout(timeout);
           chatService.updateUserStatus(currentUser.uid, 'offline');
         };
       } else {
@@ -229,6 +243,7 @@ export default function App() {
       case 'gallery': return <Gallery profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
       case 'tracking': return <Tracking profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
       case 'profile': return <Profile profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
+      case 'devices': return <Devices profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
       case 'community': return <UserPanel language={language} />;
       case 'login': return <Login language={language} />;
       default: return <Dashboard profile={profile!} onUpdateProfile={handleProfileUpdate} onAddSport={() => setActiveScreen('workout')} onGoToTracking={() => setActiveScreen('tracking')} language={language} />;

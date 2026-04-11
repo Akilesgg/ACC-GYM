@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Sport, Language } from '../types';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -52,7 +52,11 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
       else if (lowerCat.includes('cardio') || lowerCat.includes('fuerza') || lowerCat.includes('híbrido')) cat = t('fitness');
       else if (lowerCat.includes('raqueta') || lowerCat.includes('atletismo') || lowerCat.includes('agua') || lowerCat.includes('invierno')) cat = t('deportesIndividuales');
 
-      groups[cat].push(sport);
+      if (groups[cat]) {
+        groups[cat].push(sport);
+      } else {
+        groups[t('otros')].push(sport);
+      }
     });
 
     return Object.entries(groups).map(([name, items]) => ({
@@ -75,6 +79,12 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
     })).filter(cat => cat.items.length > 0);
   }, [categories, search]);
 
+  useEffect(() => {
+    if (!openCategory && filteredCategories.length > 0 && !search) {
+      setOpenCategory(filteredCategories[0].category);
+    }
+  }, [filteredCategories, search, openCategory]);
+
   return (
     <div className="space-y-6">
       <div className="relative">
@@ -88,8 +98,16 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
       </div>
 
       <div className="space-y-3">
-        {filteredCategories.map((group) => (
-          <div key={group.category} className="space-y-2">
+        {filteredCategories.length === 0 ? (
+          <div className="text-center py-20 opacity-40">
+            <Dumbbell size={48} className="mx-auto mb-4" />
+            <p className="font-headline font-bold uppercase tracking-widest">
+              {language === 'es' ? 'No se encontraron disciplinas' : 'No disciplines found'}
+            </p>
+          </div>
+        ) : (
+          filteredCategories.map((group) => (
+            <div key={group.category} className="space-y-2">
             <button
               onClick={() => setOpenCategory(openCategory === group.category ? null : group.category)}
               className="w-full flex items-center justify-between p-5 bg-surface rounded-2xl hover:bg-surface-variant/30 transition-all group"
@@ -142,7 +160,7 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
               )}
             </AnimatePresence>
           </div>
-        ))}
+        )))}
       </div>
 
       {selectedSports.length > 0 && onConfirm && (

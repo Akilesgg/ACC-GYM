@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '../lib/i18n';
-import { getSports } from '../services/sports';
+import { subscribeToSports } from '../services/sports';
 import SportsList from './SportsList';
 import { useStore } from '../store/useStore';
 
@@ -81,11 +81,10 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
   }, [profile?.selectedSports]);
 
   useEffect(() => {
-    const loadSports = async () => {
-      const data = await getSports();
+    const unsubscribe = subscribeToSports((data) => {
       setSports(data);
-    };
-    loadSports();
+    });
+    return () => unsubscribe();
   }, []);
 
   if (!profile) return null;

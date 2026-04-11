@@ -1,4 +1,4 @@
-export type Screen = 'dashboard' | 'nutrition' | 'gallery' | 'workout' | 'login' | 'onboarding' | 'news' | 'tracking' | 'profile' | 'community';
+export type Screen = 'dashboard' | 'nutrition' | 'gallery' | 'workout' | 'login' | 'onboarding' | 'news' | 'tracking' | 'profile' | 'community' | 'devices';
 export type Language = 'es' | 'en';
 export type UserRole = 'user' | 'admin' | 'trainer';
 
@@ -74,6 +74,7 @@ export interface UserProfile {
     calories: number;
     heartRate: number;
     lastSync: string;
+    connectedDevices: string[];
   };
 }
 

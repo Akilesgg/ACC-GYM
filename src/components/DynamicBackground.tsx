@@ -11,28 +11,82 @@ const BACKGROUND_IMAGES = [
 ];
 
 export default function DynamicBackground() {
-  const randomImage = useMemo(() => BACKGROUND_IMAGES[Math.floor(Math.random() * BACKGROUND_IMAGES.length)], []);
+  const images = useMemo(() => {
+    const shuffled = [...BACKGROUND_IMAGES].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, 3);
+  }, []);
 
   return (
-    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-background">
+      {/* Base Image Layers */}
+      {images.map((img, idx) => (
+        <motion.div 
+          key={idx}
+          initial={{ scale: 1.2, opacity: 0 }}
+          animate={{ 
+            scale: [1.2, 1, 1.15],
+            opacity: [0, 0.1, 0.05, 0],
+            filter: ['grayscale(100%) blur(4px)', 'grayscale(100%) blur(0px)', 'grayscale(100%) blur(2px)']
+          }}
+          transition={{ 
+            duration: 20, 
+            delay: idx * 7,
+            repeat: Infinity, 
+            ease: "easeInOut"
+          }}
+          className="absolute inset-0 bg-cover bg-center"
+          style={{ backgroundImage: `url(${img})` }}
+        />
+      ))}
+
+      {/* Tech Grid Overlay */}
+      <div className="absolute inset-0 opacity-[0.03]" 
+        style={{ 
+          backgroundImage: `linear-gradient(to right, #ffffff 1px, transparent 1px), linear-gradient(to bottom, #ffffff 1px, transparent 1px)`,
+          backgroundSize: '40px 40px'
+        }} 
+      />
+
+      {/* Moving Scanning Line */}
       <motion.div 
-        initial={{ scale: 1.2, opacity: 0 }}
         animate={{ 
-          scale: [1.2, 1, 1.1],
-          opacity: 0.15,
-          filter: ['grayscale(100%) blur(4px)', 'grayscale(100%) blur(0px)', 'grayscale(100%) blur(2px)']
+          top: ['-10%', '110%'],
+          opacity: [0, 0.5, 0]
         }}
         transition={{ 
-          duration: 30, 
-          repeat: Infinity, 
-          repeatType: "reverse",
+          duration: 8,
+          repeat: Infinity,
           ease: "linear"
         }}
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: `url(${randomImage})` }}
+        className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/30 to-transparent z-10"
       />
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background opacity-60" />
-      <div className="absolute inset-0 bg-black/20" />
+
+      {/* Floating Particles */}
+      {[...Array(15)].map((_, i) => (
+        <motion.div
+          key={i}
+          initial={{ 
+            x: Math.random() * 100 + '%', 
+            y: Math.random() * 100 + '%',
+            opacity: 0 
+          }}
+          animate={{ 
+            y: [null, '-20%'],
+            opacity: [0, 0.2, 0]
+          }}
+          transition={{ 
+            duration: Math.random() * 10 + 10,
+            repeat: Infinity,
+            delay: Math.random() * 10,
+            ease: "linear"
+          }}
+          className="absolute w-1 h-1 bg-secondary rounded-full"
+        />
+      ))}
+
+      {/* Vignette & Gradients */}
+      <div className="absolute inset-0 bg-gradient-to-b from-background via-transparent to-background opacity-80" />
+      <div className="absolute inset-0 bg-radial-gradient from-transparent to-black/40" />
     </div>
   );
 }

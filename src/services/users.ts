@@ -20,7 +20,7 @@ export const updateUserProfile = async (uid: string, updates: Partial<UserProfil
   await updateDoc(docRef, updates);
 };
 
-export const subscribeToProfile = (uid: string, callback: (profile: UserProfile | null) => void) => {
+export const subscribeToProfile = (uid: string, callback: (profile: UserProfile | null) => void, onError?: (error: any) => void) => {
   const docRef = doc(db, 'users', uid);
   return onSnapshot(docRef, (docSnap) => {
     if (docSnap.exists()) {
@@ -28,5 +28,5 @@ export const subscribeToProfile = (uid: string, callback: (profile: UserProfile 
     } else {
       callback(null);
     }
-  });
+  }, onError);
 };

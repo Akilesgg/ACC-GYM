@@ -2,10 +2,11 @@ import { UserProfile, Language } from '../types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { motion } from 'motion/react';
-import { User, Mail, Shield, Scale, Ruler, Calendar, ArrowLeft, LogOut } from 'lucide-react';
+import { User, Mail, Shield, Scale, Ruler, Calendar, ArrowLeft, LogOut, Watch } from 'lucide-react';
 import { useTranslation } from '../lib/i18n';
 import { logout } from '../services/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useStore } from '../store/useStore';
 
 interface ProfileProps {
   profile: UserProfile;
@@ -16,6 +17,7 @@ interface ProfileProps {
 
 export default function Profile({ profile, onBack, language }: ProfileProps) {
   const t = useTranslation(language);
+  const { setActiveScreen } = useStore();
 
   const handleLogout = async () => {
     try {
@@ -101,6 +103,13 @@ export default function Profile({ profile, onBack, language }: ProfileProps) {
               <p className="text-6xl font-headline font-black italic">{profile.streak || 0}</p>
               <p className="text-xs font-bold uppercase tracking-widest mt-2 opacity-80">{language === 'es' ? 'Días consecutivos' : 'Consecutive days'}</p>
             </Card>
+
+            <Button 
+              className="w-full h-16 rounded-2xl bg-secondary text-background font-bold uppercase tracking-widest shadow-lg shadow-secondary/20 hover:scale-105 transition-transform"
+              onClick={() => setActiveScreen('devices')}
+            >
+              <Watch className="mr-2" size={20} /> {t('dispositivos')}
+            </Button>
 
             <Button 
               variant="outline" 
