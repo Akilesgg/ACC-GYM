@@ -9,6 +9,7 @@ import Tracking from './components/Tracking';
 import Login from './components/Login';
 import Onboarding from './components/Onboarding';
 import SportsTab from './components/SportsTab';
+import Profile from './components/Profile';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth, onAuthStateChanged } from './lib/firebase';
 import { subscribeToProfile, createUserProfile, updateUserProfile } from './services/users';
@@ -111,6 +112,7 @@ export default function App() {
       case 'nutrition': return <Nutrition profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
       case 'gallery': return <Gallery profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
       case 'tracking': return <Tracking profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
+      case 'profile': return <Profile profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
       case 'login': return <Login language={language} />;
       default: return <Dashboard profile={profile!} onUpdateProfile={handleProfileUpdate} onAddSport={() => setActiveScreen('workout')} onGoToTracking={() => setActiveScreen('tracking')} language={language} />;
     }
@@ -137,6 +139,7 @@ export default function App() {
           userPhoto={user?.photoURL || undefined} 
           language={language} 
           onLanguageChange={setLanguage} 
+          onProfileClick={() => setActiveScreen('profile')}
         />
         
         <main className="pt-24 pb-32 px-6 max-w-5xl mx-auto">

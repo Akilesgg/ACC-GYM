@@ -43,6 +43,8 @@ export default function Tracking({ profile, onUpdateProfile, onBack, language }:
     onUpdateProfile({ ...profile, progress: updatedProgress });
   };
 
+  const [view, setView] = useState<'daily' | 'weekly'>('daily');
+
   const activePlans = profile.selectedSports
     .map(s => s.plan)
     .filter((p): p is TrainingPlan => !!p);
@@ -61,17 +63,35 @@ export default function Tracking({ profile, onUpdateProfile, onBack, language }:
   return (
     <div className="space-y-12 pb-32">
       <section>
-        <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" size="icon" onClick={onBack} className="rounded-full bg-surface">
-            <ArrowLeft size={20} />
-          </Button>
-          <div>
-            <p className="font-headline text-secondary font-bold uppercase tracking-widest text-sm mb-1">
-              Registro de Rendimiento
-            </p>
-            <h2 className="font-headline text-5xl md:text-7xl font-extrabold tracking-tighter leading-none">
-              {t('tracking').toUpperCase()} <span className="text-primary italic">DIARIO.</span>
-            </h2>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={onBack} className="rounded-full bg-surface">
+              <ArrowLeft size={20} />
+            </Button>
+            <div>
+              <p className="font-headline text-secondary font-bold uppercase tracking-widest text-sm mb-1">
+                Registro de Rendimiento
+              </p>
+              <h2 className="font-headline text-5xl md:text-7xl font-extrabold tracking-tighter leading-none">
+                {t('tracking').toUpperCase()} <span className="text-primary italic">DIARIO.</span>
+              </h2>
+            </div>
+          </div>
+          <div className="flex gap-2 bg-surface p-1 rounded-full border border-outline-variant/10">
+            <Button 
+              variant={view === 'daily' ? 'default' : 'ghost'} 
+              onClick={() => setView('daily')}
+              className="rounded-full px-6 font-bold uppercase text-xs"
+            >
+              Hoy
+            </Button>
+            <Button 
+              variant={view === 'weekly' ? 'default' : 'ghost'} 
+              onClick={() => setView('weekly')}
+              className="rounded-full px-6 font-bold uppercase text-xs"
+            >
+              Semana
+            </Button>
           </div>
         </div>
 
@@ -100,45 +120,84 @@ export default function Tracking({ profile, onUpdateProfile, onBack, language }:
         </div>
       </section>
 
-      <section className="space-y-6">
-        <div className="flex items-center justify-between">
-          <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">{t('rutinaHoy')}</h3>
-          <p className="text-on-surface-variant font-medium">{format(today, 'PPP', { locale })}</p>
-        </div>
+      <AnimatePresence mode="wait">
+        {view === 'daily' ? (
+          <motion.section 
+            key="daily"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-6"
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">{t('rutinaHoy')}</h3>
+              <p className="text-on-surface-variant font-medium">{format(today, 'PPP', { locale })}</p>
+            </div>
 
-        <div className="space-y-4">
-          {todaysExercises.length > 0 ? (
-            todaysExercises.map((ex, idx) => {
-              const isCompleted = currentProgress.completedExercises.includes(ex.id);
-              return (
-                <Card 
-                  key={idx} 
-                  onClick={() => toggleExercise(ex.id)}
-                  className={`p-6 border-none cursor-pointer transition-all ${isCompleted ? 'bg-primary/10 opacity-60' : 'bg-surface hover:bg-surface-variant/50'}`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isCompleted ? 'bg-primary text-on-primary' : 'bg-background text-outline-variant'}`}>
-                      {isCompleted ? <CheckCircle2 size={20} /> : <Circle size={20} />}
-                    </div>
-                    <div className="flex-1">
-                      <h4 className={`font-bold text-lg ${isCompleted ? 'line-through text-on-surface-variant' : 'text-on-surface'}`}>{ex.name}</h4>
-                      <p className="text-xs text-on-surface-variant font-medium uppercase tracking-wider">{ex.sets} x {ex.reps}</p>
-                    </div>
-                    <div className="text-right hidden md:block">
-                      <p className="text-[10px] text-on-surface-variant italic max-w-[200px]">{ex.notes}</p>
-                    </div>
-                  </div>
+            <div className="space-y-4">
+              {todaysExercises.length > 0 ? (
+                todaysExercises.map((ex, idx) => {
+                  const isCompleted = currentProgress.completedExercises.includes(ex.id);
+                  return (
+                    <Card 
+                      key={idx} 
+                      onClick={() => toggleExercise(ex.id)}
+                      className={`p-6 border-none cursor-pointer transition-all ${isCompleted ? 'bg-primary/10 opacity-60' : 'bg-surface hover:bg-surface-variant/50'}`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isCompleted ? 'bg-primary text-on-primary' : 'bg-background text-outline-variant'}`}>
+                          {isCompleted ? <CheckCircle2 size={20} /> : <Circle size={20} />}
+                        </div>
+                        <div className="flex-1">
+                          <h4 className={`font-bold text-lg ${isCompleted ? 'line-through text-on-surface-variant' : 'text-on-surface'}`}>{ex.name}</h4>
+                          <p className="text-xs text-on-surface-variant font-medium uppercase tracking-wider">{ex.sets} x {ex.reps}</p>
+                        </div>
+                        <div className="text-right hidden md:block">
+                          <p className="text-[10px] text-on-surface-variant italic max-w-[200px]">{ex.notes}</p>
+                        </div>
+                      </div>
+                    </Card>
+                  );
+                })
+              ) : (
+                <Card className="p-12 text-center bg-surface border-none">
+                  <p className="text-on-surface-variant italic">No hay ejercicios programados para hoy en tus planes activos.</p>
+                  <Button variant="link" className="mt-4 text-primary font-bold uppercase tracking-widest text-xs">Ver todos los planes</Button>
                 </Card>
-              );
-            })
-          ) : (
-            <Card className="p-12 text-center bg-surface border-none">
-              <p className="text-on-surface-variant italic">No hay ejercicios programados para hoy en tus planes activos.</p>
-              <Button variant="link" className="mt-4 text-primary font-bold uppercase tracking-widest text-xs">Ver todos los planes</Button>
-            </Card>
-          )}
-        </div>
-      </section>
+              )}
+            </div>
+          </motion.section>
+        ) : (
+          <motion.section 
+            key="weekly"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-8"
+          >
+            {activePlans.map((plan, pIdx) => (
+              <div key={pIdx} className="space-y-6">
+                <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight text-primary">Plan: {profile.selectedSports[pIdx]?.sport}</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {plan.table.map((day, dIdx) => (
+                    <Card key={dIdx} className="bg-surface border-none p-6 space-y-4">
+                      <h4 className="font-bold text-lg border-b border-outline-variant/10 pb-2">{day.day}</h4>
+                      <div className="space-y-2">
+                        {day.exercises.map((ex, eIdx) => (
+                          <div key={eIdx} className="flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 rounded-full bg-secondary" />
+                            <p className="text-xs font-medium truncate">{ex.name}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </motion.section>
+        )}
+      </AnimatePresence>
 
       {/* Progress Calendar Placeholder */}
       <section className="space-y-6">

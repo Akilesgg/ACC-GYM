@@ -33,6 +33,23 @@ const SPORT_ICONS: Record<string, any> = {
   "Palette": Palette
 };
 
+const SportImage = ({ iconName, className }: { iconName: string, className?: string }) => {
+  const Icon = SPORT_ICONS[iconName] || Activity;
+  return (
+    <div className={`relative flex items-center justify-center overflow-hidden rounded-3xl bg-surface-variant/20 group ${className}`}>
+      <motion.div
+        initial={{ scale: 0.8, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        whileHover={{ scale: 1.1 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Icon size={120} className="text-on-surface/10 grayscale" />
+      </motion.div>
+      <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent" />
+    </div>
+  );
+};
+
 const GOALS_BY_SPORT: Record<string, string[]> = {
   "Musculación": ["Ganar Masa Muscular", "Definición", "Fuerza Máxima", "Mantenimiento"],
   "Ciclismo": ["Resistencia", "Velocidad", "Pérdida de Peso", "Preparación Carrera"],
@@ -99,13 +116,10 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
       const plan = await generateTrainingPlan(profile, config);
       setActivePlan(plan);
       
-      const existingIdx = profile.selectedSports.findIndex(s => s.sport === config.sport);
-      const updatedSports = [...profile.selectedSports];
-      if (existingIdx >= 0) {
-        updatedSports[existingIdx] = { ...config, plan };
-      } else {
-        updatedSports.push({ ...config, plan });
-      }
+      // Ensure we don't have duplicates and update correctly
+      const updatedSports = profile.selectedSports.filter(s => s.sport !== config.sport);
+      updatedSports.push({ ...config, plan });
+      
       onUpdateProfile({ ...profile, selectedSports: updatedSports });
     } catch (error) {
       console.error(error);
@@ -202,34 +216,37 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
             <p className="text-on-surface-variant font-medium">La IA está diseñando tu plan de {selectedSport?.name}...</p>
           </motion.div>
         ) : step === 'goal' ? (
-          <motion.div key="goal" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="max-w-2xl mx-auto space-y-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-tertiary/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Target className="text-tertiary" size={32} />
+          <motion.div key="goal" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div className="space-y-6">
+              <SportImage iconName={selectedSport?.icon || 'Activity'} className="aspect-square w-full" />
+              <div className="text-center md:text-left">
+                <h3 className="text-4xl font-headline font-black text-on-surface uppercase tracking-tight">{selectedSport?.name}</h3>
+                <p className="text-on-surface-variant mt-2 text-lg">{t('cualEsObjetivo')}</p>
               </div>
-              <h3 className="text-3xl font-headline font-black text-on-surface">{selectedSport?.name.toUpperCase()}</h3>
-              <p className="text-on-surface-variant mt-2">{t('cualEsObjetivo')}</p>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               {(GOALS_BY_SPORT[selectedSport?.name!] || GOALS_BY_SPORT["default"]).map(goal => (
-                <Button key={goal} variant="outline" onClick={() => handleGoalSelect(goal)} className="h-20 rounded-2xl border-outline-variant/20 hover:border-tertiary/50 hover:bg-tertiary/5 transition-all font-bold text-lg">
+                <Button key={goal} variant="outline" onClick={() => handleGoalSelect(goal)} className="h-20 rounded-2xl border-outline-variant/20 hover:border-tertiary/50 hover:bg-tertiary/5 transition-all font-bold text-lg justify-between px-8 group">
                   {goal}
+                  <ChevronRight size={20} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                 </Button>
               ))}
             </div>
           </motion.div>
         ) : step === 'frequency' ? (
-          <motion.div key="frequency" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="max-w-2xl mx-auto space-y-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-primary/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Calendar className="text-primary" size={32} />
+          <motion.div key="frequency" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+            <div className="space-y-6">
+              <div className="w-20 h-20 bg-primary/20 rounded-3xl flex items-center justify-center mx-auto md:mx-0">
+                <Calendar className="text-primary" size={40} />
               </div>
-              <h3 className="text-3xl font-headline font-black text-on-surface">FRECUENCIA</h3>
-              <p className="text-on-surface-variant mt-2">¿Cuántos días a la semana vas a practicar {selectedSport?.name}?</p>
+              <div className="text-center md:text-left">
+                <h3 className="text-4xl font-headline font-black text-on-surface uppercase tracking-tight">FRECUENCIA</h3>
+                <p className="text-on-surface-variant mt-2 text-lg">¿Cuántos días a la semana vas a practicar {selectedSport?.name}?</p>
+              </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[1, 2, 3, 4, 5, 6, 7].map(days => (
-                <Button key={days} variant="outline" onClick={() => handleFrequencySelect(days)} className="h-20 rounded-2xl border-outline-variant/20 hover:border-primary/50 hover:bg-primary/5 transition-all font-bold text-2xl">
+                <Button key={days} variant="outline" onClick={() => handleFrequencySelect(days)} className="h-24 rounded-2xl border-outline-variant/20 hover:border-primary/50 hover:bg-primary/5 transition-all font-bold text-3xl">
                   {days}
                 </Button>
               ))}

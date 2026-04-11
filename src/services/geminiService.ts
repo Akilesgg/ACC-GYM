@@ -5,9 +5,12 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 export async function generateTrainingPlan(profile: UserProfile, sportConfig: SportConfig): Promise<TrainingPlan> {
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: `Generate a highly structured and professional training plan for ${sportConfig.sport}.
+    const otherSports = profile.selectedSports
+      .filter(s => s.sport !== sportConfig.sport)
+      .map(s => `${s.sport} (${s.daysPerWeek} days/week, goal: ${s.goal})`)
+      .join(", ");
+
+    const prompt = `Generate a highly structured and professional training plan for ${sportConfig.sport}.
       User Profile: 
       - Name: ${profile.username}
       - Weight: ${profile.weight}kg
@@ -16,10 +19,19 @@ export async function generateTrainingPlan(profile: UserProfile, sportConfig: Sp
       - Injuries: ${profile.injuries || 'None'}
       - Days per week for this specific sport: ${sportConfig.daysPerWeek || profile.daysPerWeek}
       - Specific Goal for this sport: ${sportConfig.goal || 'General performance'}
-      ${sportConfig.isCombined ? '- NOTE: This is a COMBINED plan. Integrate this sport intelligently with the user\'s other activities.' : ''}
+      
+      ${sportConfig.isCombined && otherSports ? `
+      - NOTE: This is a COMBINED plan. The user also practices: ${otherSports}. 
+      Integrate all these activities into a single cohesive weekly schedule. 
+      Distribute training days intelligently to avoid overtraining and ensure optimal recovery.
+      Alternate sports correctly throughout the week.` : ''}
       
       Provide a detailed scientific reasoning and a structured weekly table with exercises, sets, reps, and technical notes.
-      IMPORTANT: Each exercise MUST have a unique 'id' (e.g., 'ex_1', 'ex_2').`,
+      IMPORTANT: Each exercise MUST have a unique 'id' (e.g., 'ex_1', 'ex_2').`;
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: prompt,
       config: {
         systemInstruction: "You are an elite sports scientist and personal trainer. Create highly effective, data-driven training plans. Return the response in a structured JSON format matching the TrainingPlan interface.",
         responseMimeType: "application/json",

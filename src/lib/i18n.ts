@@ -62,7 +62,14 @@ const translations = {
     prot: "Prot",
     carb: "Carb",
     grasa: "Grasa",
-    kcal: "Kcal"
+    kcal: "Kcal",
+    peso: "Peso",
+    altura: "Altura",
+    edad: "Edad",
+    lesiones: "Lesiones",
+    cerrarSesion: "Cerrar Sesión",
+    añadirDeporte: "Añadir Deporte",
+    verProgreso: "Ver Progreso"
   },
   en: {
     inicio: "Home",
@@ -125,7 +132,14 @@ const translations = {
     prot: "Prot",
     carb: "Carb",
     grasa: "Fat",
-    kcal: "Kcal"
+    kcal: "Kcal",
+    peso: "Weight",
+    altura: "Height",
+    edad: "Age",
+    lesiones: "Injuries",
+    cerrarSesion: "Logout",
+    añadirDeporte: "Add Sport",
+    verProgreso: "View Progress"
   }
 };
 

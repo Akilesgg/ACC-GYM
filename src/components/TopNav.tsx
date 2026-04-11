@@ -8,9 +8,10 @@ interface TopNavProps {
   userPhoto?: string;
   language: Language;
   onLanguageChange: (lang: Language) => void;
+  onProfileClick: () => void;
 }
 
-export default function TopNav({ userPhoto, language, onLanguageChange }: TopNavProps) {
+export default function TopNav({ userPhoto, language, onLanguageChange, onProfileClick }: TopNavProps) {
   const handleLogout = async () => {
     try {
       await logout();
@@ -22,7 +23,7 @@ export default function TopNav({ userPhoto, language, onLanguageChange }: TopNav
   return (
     <header className="fixed top-0 w-full z-50 bg-background/60 backdrop-blur-xl flex justify-between items-center px-6 py-4 border-b border-outline-variant/10">
       <div className="flex items-center gap-4">
-        <Avatar className="w-10 h-10 border-2 border-primary">
+        <Avatar className="w-10 h-10 border-2 border-primary cursor-pointer hover:scale-105 transition-transform" onClick={onProfileClick}>
           <AvatarImage src={userPhoto || "https://picsum.photos/seed/athlete/200/200"} />
           <AvatarFallback>AS</AvatarFallback>
         </Avatar>

@@ -35,6 +35,48 @@ export default function Dashboard({ profile, onUpdateProfile, onAddSport, onGoTo
 
   return (
     <div className="space-y-12 pb-32">
+      {/* Hero Section with Dynamic Image */}
+      <section className="relative h-[400px] rounded-[40px] overflow-hidden group mb-12">
+        <motion.div 
+          initial={{ scale: 1.1 }}
+          animate={{ scale: 1 }}
+          transition={{ duration: 1.5 }}
+          className="absolute inset-0 grayscale bg-[url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
+        
+        <div className="absolute bottom-12 left-12 right-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+          >
+            <p className="font-headline text-secondary font-bold uppercase tracking-[0.4em] text-xs mb-4">
+              {t('bienvenido').toUpperCase()}, {profile.username.split(' ')[0]}
+            </p>
+            <h2 className="font-headline text-6xl md:text-8xl font-black tracking-tighter leading-[0.8] mb-8">
+              FORJA TU <br />
+              <span className="text-primary italic">DESTINO.</span>
+            </h2>
+            <div className="flex flex-wrap gap-4">
+              <Button 
+                onClick={onAddSport}
+                className="bg-primary text-on-primary hover:bg-primary/90 h-14 px-8 rounded-2xl font-black uppercase tracking-widest text-sm italic"
+              >
+                {t('añadirDeporte')}
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={onGoToTracking}
+                className="bg-surface/20 backdrop-blur-md border-outline-variant/20 hover:bg-surface/40 h-14 px-8 rounded-2xl font-black uppercase tracking-widest text-sm italic"
+              >
+                {t('verProgreso')}
+              </Button>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       <section className="space-y-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
           <div>

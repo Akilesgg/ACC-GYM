@@ -1,4 +1,4 @@
-export type Screen = 'dashboard' | 'nutrition' | 'gallery' | 'workout' | 'login' | 'onboarding' | 'news' | 'tracking';
+export type Screen = 'dashboard' | 'nutrition' | 'gallery' | 'workout' | 'login' | 'onboarding' | 'news' | 'tracking' | 'profile';
 export type Language = 'es' | 'en';
 export type UserRole = 'user' | 'admin' | 'trainer';
 
