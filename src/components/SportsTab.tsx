@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { UserProfile, SportConfig, TrainingPlan, Language, Sport } from '../types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { generateTrainingPlan } from '../services/geminiService';
+import { generateTrainingPlan, generateCombinedTrainingPlan } from '../services/geminiService';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Dumbbell, Target, Loader2, Search, ChevronRight, Info, 
@@ -15,6 +15,7 @@ import { Input } from '@/components/ui/input';
 import { useTranslation } from '../lib/i18n';
 import { getSports } from '../services/sports';
 import SportsList from './SportsList';
+import { useStore } from '../store/useStore';
 
 const SPORT_ICONS: Record<string, any> = {
   "Dumbbell": Dumbbell,
@@ -58,22 +59,26 @@ const GOALS_BY_SPORT: Record<string, string[]> = {
   "default": ["Mejora de Rendimiento", "Salud General", "Pérdida de Peso", "Fuerza y Tonificación"]
 };
 
-interface SportsTabProps {
-  profile: UserProfile;
-  onUpdateProfile: (profile: UserProfile) => void;
-  onBack?: () => void;
-  language: Language;
-}
-
-export default function SportsTab({ profile, onUpdateProfile, onBack, language }: SportsTabProps) {
+export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpdateProfile: (p: UserProfile) => void, onBack?: () => void, language: Language }) {
   const t = useTranslation(language);
+  const { profile } = useStore();
   const [search, setSearch] = useState('');
   const [sports, setSports] = useState<Sport[]>([]);
   const [selectedSport, setSelectedSport] = useState<Sport | null>(null);
   const [step, setStep] = useState<'list' | 'goal' | 'frequency' | 'combined'>('list');
   const [currentConfig, setCurrentConfig] = useState<Partial<SportConfig>>({});
+  const [selectedSportsList, setSelectedSportsList] = useState<string[]>(profile?.selectedSports.map(s => s.sport) || []);
+  const [configQueue, setConfigQueue] = useState<string[]>([]);
+  const [currentConfigIndex, setCurrentConfigIndex] = useState(0);
+  const [allConfigs, setAllConfigs] = useState<SportConfig[]>([]);
   const [loading, setLoading] = useState(false);
   const [activePlan, setActivePlan] = useState<TrainingPlan | null>(null);
+
+  useEffect(() => {
+    if (profile) {
+      setSelectedSportsList(profile.selectedSports.map(s => s.sport));
+    }
+  }, [profile?.selectedSports]);
 
   useEffect(() => {
     const loadSports = async () => {
@@ -83,14 +88,31 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
     loadSports();
   }, []);
 
-  const filteredSports = sports.filter(s => s.name.toLowerCase().includes(search.toLowerCase()));
+  if (!profile) return null;
 
-  const handleSportSelect = (sportName: string) => {
-    const sport = sports.find(s => s.name === sportName);
-    if (!sport) return;
-    setSelectedSport(sport);
-    setCurrentConfig({ sport: sport.name });
-    setStep('goal');
+  const handleSportToggle = (sportName: string) => {
+    setSelectedSportsList(prev => 
+      prev.includes(sportName) 
+        ? prev.filter(s => s !== sportName) 
+        : [...prev, sportName]
+    );
+  };
+
+  const startConfiguration = () => {
+    const newSports = selectedSportsList.filter(s => !profile.selectedSports.some(ps => ps.sport === s));
+    if (newSports.length === 0) {
+      // If no new sports, just go back or show current plans
+      setStep('list');
+      return;
+    }
+    setConfigQueue(newSports);
+    setCurrentConfigIndex(0);
+    const firstSport = sports.find(s => s.name === newSports[0]);
+    if (firstSport) {
+      setSelectedSport(firstSport);
+      setCurrentConfig({ sport: firstSport.name });
+      setStep('goal');
+    }
   };
 
   const handleGoalSelect = (goal: string) => {
@@ -99,29 +121,65 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
   };
 
   const handleFrequencySelect = (days: number) => {
-    setCurrentConfig(prev => ({ ...prev, daysPerWeek: days }));
-    if (profile.selectedSports.length > 0) {
-      setStep('combined');
+    const config = { ...currentConfig, daysPerWeek: days } as SportConfig;
+    const nextIndex = currentConfigIndex + 1;
+    
+    if (nextIndex < configQueue.length) {
+      setAllConfigs(prev => [...prev, config]);
+      setCurrentConfigIndex(nextIndex);
+      const nextSport = sports.find(s => s.name === configQueue[nextIndex]);
+      if (nextSport) {
+        setSelectedSport(nextSport);
+        setCurrentConfig({ sport: nextSport.name });
+        setStep('goal');
+      }
     } else {
-      finalizePlan({ ...currentConfig, daysPerWeek: days } as SportConfig);
+      const finalConfigs = [...allConfigs, config];
+      if (profile.selectedSports.length > 0 || finalConfigs.length > 1) {
+        setAllConfigs(finalConfigs);
+        setStep('combined');
+      } else {
+        finalizePlans(finalConfigs, false);
+      }
     }
   };
 
   const handleCombinedSelect = (isCombined: boolean) => {
-    finalizePlan({ ...currentConfig, isCombined } as SportConfig);
+    finalizePlans(allConfigs, isCombined);
   };
 
-  const finalizePlan = async (config: SportConfig) => {
+  const finalizePlans = async (configs: SportConfig[], isCombined: boolean) => {
     setLoading(true);
     setStep('list');
     
     try {
-      const plan = await generateTrainingPlan(profile, config, language);
-      setActivePlan(plan);
+      let updatedSports = [...profile.selectedSports];
       
-      // Ensure we don't have duplicates and update correctly
-      const updatedSports = [...profile.selectedSports].filter(s => s.sport !== config.sport);
-      updatedSports.push({ ...config, plan });
+      if (isCombined) {
+        // Combine new configs with existing ones
+        const allTargetConfigs = [...updatedSports];
+        configs.forEach(c => {
+          const existingIdx = allTargetConfigs.findIndex(ec => ec.sport === c.sport);
+          if (existingIdx >= 0) {
+            allTargetConfigs[existingIdx] = c;
+          } else {
+            allTargetConfigs.push(c);
+          }
+        });
+
+        const combinedPlan = await generateCombinedTrainingPlan(profile, allTargetConfigs, language);
+        
+        // Update all sports with the same combined plan
+        updatedSports = allTargetConfigs.map(c => ({ ...c, plan: combinedPlan, isCombined: true }));
+        setActivePlan(combinedPlan);
+      } else {
+        for (const config of configs) {
+          const plan = await generateTrainingPlan(profile, config, language);
+          updatedSports = updatedSports.filter(s => s.sport !== config.sport);
+          updatedSports.push({ ...config, plan, isCombined: false });
+        }
+        setActivePlan(updatedSports[updatedSports.length - 1].plan);
+      }
       
       await onUpdateProfile({ ...profile, selectedSports: updatedSports });
     } catch (error) {
@@ -129,6 +187,8 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
     } finally {
       setLoading(false);
       setSelectedSport(null);
+      setAllConfigs([]);
+      setConfigQueue([]);
     }
   };
 
@@ -313,8 +373,9 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
             <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">{t('laboratorioDisciplinas')}</h3>
             <SportsList 
               sports={sports} 
-              selectedSports={profile.selectedSports.map(s => s.sport)}
-              onSelect={handleSportSelect}
+              selectedSports={selectedSportsList}
+              onSelect={handleSportToggle}
+              onConfirm={startConfiguration}
               language={language}
             />
           </div>

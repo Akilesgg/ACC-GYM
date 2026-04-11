@@ -8,21 +8,19 @@ import { Search, MessageSquare, EyeOff, Eye, Users, ChevronRight, X } from 'luci
 import { useTranslation } from '../lib/i18n';
 import { chatService } from '../services/chatService';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useStore } from '../store/useStore';
 import ChatWindow from './ChatWindow';
 
-interface UserPanelProps {
-  currentUser: UserProfile;
-  language: Language;
-}
-
-export default function UserPanel({ currentUser, language }: UserPanelProps) {
+export default function UserPanel({ language }: { language: Language }) {
   const t = useTranslation(language);
+  const { profile: currentUser } = useStore();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [search, setSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
+    if (!currentUser) return;
     const unsubscribe = chatService.subscribeToUsers((allUsers) => {
       // Filter out invisible users unless it's the current user
       const visibleUsers = allUsers.filter(u => 
@@ -31,7 +29,9 @@ export default function UserPanel({ currentUser, language }: UserPanelProps) {
       setUsers(visibleUsers);
     });
     return () => unsubscribe();
-  }, [currentUser.uid]);
+  }, [currentUser?.uid]);
+
+  if (!currentUser) return null;
 
   const toggleInvisible = async () => {
     const newStatus = currentUser.status === 'invisible' ? 'online' : 'invisible';

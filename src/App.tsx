@@ -11,6 +11,7 @@ import Onboarding from './components/Onboarding';
 import SportsTab from './components/SportsTab';
 import Profile from './components/Profile';
 import UserPanel from './components/UserPanel';
+import DynamicBackground from './components/DynamicBackground';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth, onAuthStateChanged } from './lib/firebase';
 import { subscribeToProfile, createUserProfile, updateUserProfile } from './services/users';
@@ -138,11 +139,17 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       if (currentUser) {
-        // Set online status
-        chatService.updateUserStatus(currentUser.uid, 'online');
-
         const unsubProfile = subscribeToProfile(currentUser.uid, (fetchedProfile) => {
           setProfile(fetchedProfile);
+          
+          // Only set online if not already invisible
+          if (fetchedProfile && fetchedProfile.status !== 'invisible') {
+            chatService.updateUserStatus(currentUser.uid, 'online');
+          } else if (!fetchedProfile) {
+            // First time user
+            chatService.updateUserStatus(currentUser.uid, 'online');
+          }
+
           if (!fetchedProfile) {
             setActiveScreen('onboarding');
           } else if (activeScreen === 'login') {
@@ -152,6 +159,8 @@ export default function App() {
         });
         return () => {
           unsubProfile();
+          // We don't set offline here because it might overwrite an intentional 'invisible'
+          // Instead, we could have a heartbeat or just rely on 'lastSeen'
           chatService.updateUserStatus(currentUser.uid, 'offline');
         };
       } else {
@@ -200,12 +209,12 @@ export default function App() {
 
     switch (activeScreen) {
       case 'dashboard': return <Dashboard profile={profile!} onUpdateProfile={handleProfileUpdate} onAddSport={() => setActiveScreen('workout')} onGoToTracking={() => setActiveScreen('tracking')} language={language} />;
-      case 'workout': return <SportsTab profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
+      case 'workout': return <SportsTab onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
       case 'nutrition': return <Nutrition profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
       case 'gallery': return <Gallery profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
       case 'tracking': return <Tracking profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
       case 'profile': return <Profile profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
-      case 'community': return <UserPanel currentUser={profile!} language={language} />;
+      case 'community': return <UserPanel language={language} />;
       case 'login': return <Login language={language} />;
       default: return <Dashboard profile={profile!} onUpdateProfile={handleProfileUpdate} onAddSport={() => setActiveScreen('workout')} onGoToTracking={() => setActiveScreen('tracking')} language={language} />;
     }
@@ -217,15 +226,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-background text-on-surface relative overflow-hidden">
-      {/* Animated B&W Background */}
-      <div className="fixed inset-0 z-0 opacity-10 pointer-events-none">
-        <motion.div 
-          initial={{ scale: 1.1, opacity: 0 }}
-          animate={{ scale: 1, opacity: 0.15 }}
-          transition={{ duration: 20, repeat: Infinity, repeatType: "reverse" }}
-          className="absolute inset-0 grayscale bg-[url('https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center"
-        />
-      </div>
+      <DynamicBackground />
 
       <div className="relative z-10">
         <TopNav 

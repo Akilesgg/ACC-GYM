@@ -4,49 +4,44 @@ import { UserProfile, TrainingPlan, SportConfig, NutritionPlan, Language } from 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 export async function generateTrainingPlan(profile: UserProfile, sportConfig: SportConfig, language: Language): Promise<TrainingPlan> {
+  return generateCombinedTrainingPlan(profile, [sportConfig], language);
+}
+
+export async function generateCombinedTrainingPlan(profile: UserProfile, configs: SportConfig[], language: Language): Promise<TrainingPlan> {
   try {
     const isSpanish = language === 'es';
-    const otherSports = profile.selectedSports
-      .filter(s => s.sport !== sportConfig.sport)
-      .map(s => `${s.sport} (${s.daysPerWeek} ${isSpanish ? 'días/semana' : 'days/week'}, ${isSpanish ? 'objetivo' : 'goal'}: ${s.goal})`)
-      .join(", ");
-
+    const sportsList = configs.map(c => `${c.sport} (${c.daysPerWeek} ${isSpanish ? 'días' : 'days'}, ${c.goal})`).join(", ");
+    
     const prompt = isSpanish 
-      ? `Genera un plan de entrenamiento altamente estructurado y profesional para ${sportConfig.sport}.
+      ? `Genera un plan de entrenamiento COMBINADO y profesional para los siguientes deportes: ${sportsList}.
         Perfil del Usuario: 
         - Nombre: ${profile.username}
         - Peso: ${profile.weight}kg
         - Altura: ${profile.height}cm
         - Nivel de Experiencia: ${profile.experienceLevel}
         - Lesiones: ${profile.injuries || 'Ninguna'}
-        - Días por semana para este deporte específico: ${sportConfig.daysPerWeek || profile.daysPerWeek}
-        - Objetivo Específico para este deporte: ${sportConfig.goal || 'Rendimiento general'}
         
-        ${sportConfig.isCombined && otherSports ? `
-        - NOTA: Este es un plan COMBINADO. El usuario también practica: ${otherSports}. 
-        Integra todas estas actividades en un único horario semanal cohesivo. 
-        Distribuye los días de entrenamiento de forma inteligente para evitar el sobreentrenamiento y asegurar una recuperación óptima.
-        Alterna los deportes correctamente a lo largo de la semana.` : ''}
+        Instrucciones:
+        1. Integra todos estos deportes en un único horario semanal cohesivo de 7 días.
+        2. Distribuye los días de entrenamiento de forma inteligente para evitar el sobreentrenamiento.
+        3. Asegura una recuperación óptima alternando intensidades.
+        4. Proporciona un razonamiento científico detallado para esta combinación.
         
-        Proporciona un razonamiento científico detallado y una tabla semanal estructurada con ejercicios, series, repeticiones y notas técnicas.
         IMPORTANTE: Cada ejercicio DEBE tener un 'id' único (ej. 'ex_1', 'ex_2').`
-      : `Generate a highly structured and professional training plan for ${sportConfig.sport}.
+      : `Generate a COMBINED and professional training plan for the following sports: ${sportsList}.
         User Profile: 
         - Name: ${profile.username}
         - Weight: ${profile.weight}kg
         - Height: ${profile.height}cm
         - Experience Level: ${profile.experienceLevel}
         - Injuries: ${profile.injuries || 'None'}
-        - Days per week for this specific sport: ${sportConfig.daysPerWeek || profile.daysPerWeek}
-        - Specific Goal for this sport: ${sportConfig.goal || 'General performance'}
         
-        ${sportConfig.isCombined && otherSports ? `
-        - NOTE: This is a COMBINED plan. The user also practices: ${otherSports}. 
-        Integrate all these activities into a single cohesive weekly schedule. 
-        Distribute training days intelligently to avoid overtraining and ensure optimal recovery.
-        Alternate sports correctly throughout the week.` : ''}
+        Instructions:
+        1. Integrate all these sports into a single cohesive 7-day weekly schedule.
+        2. Distribute training days intelligently to avoid overtraining.
+        3. Ensure optimal recovery by alternating intensities.
+        4. Provide a detailed scientific reasoning for this combination.
         
-        Provide a detailed scientific reasoning and a structured weekly table with exercises, sets, reps, and technical notes.
         IMPORTANT: Each exercise MUST have a unique 'id' (e.g., 'ex_1', 'ex_2').`;
 
     const response = await ai.models.generateContent({

@@ -11,6 +11,7 @@ interface SportsListProps {
   sports: Sport[];
   selectedSports: string[];
   onSelect: (sportName: string) => void;
+  onConfirm?: () => void;
   language: Language;
 }
 
@@ -20,7 +21,7 @@ interface CategoryGroup {
   items: Sport[];
 }
 
-export default function SportsList({ sports, selectedSports, onSelect, language }: SportsListProps) {
+export default function SportsList({ sports, selectedSports, onSelect, onConfirm, language }: SportsListProps) {
   const t = useTranslation(language);
   const [search, setSearch] = useState('');
   const [openCategory, setOpenCategory] = useState<string | null>(null);
@@ -97,7 +98,7 @@ export default function SportsList({ sports, selectedSports, onSelect, language 
                 <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                   <group.icon size={20} />
                 </div>
-                <span className="font-headline font-bold text-lg uppercase tracking-tight">{group.category}</span>
+                <span className="font-headline font-bold text-lg uppercase tracking-tight group-hover:scale-110 transition-transform origin-left">{group.category}</span>
               </div>
               <motion.div
                 animate={{ rotate: openCategory === group.category ? 180 : 0 }}
@@ -125,13 +126,13 @@ export default function SportsList({ sports, selectedSports, onSelect, language 
                           whileHover={{ scale: 1.02 }}
                           whileTap={{ scale: 0.98 }}
                           onClick={() => onSelect(sport.name)}
-                          className={`flex items-center justify-between p-4 rounded-xl transition-all ${
+                          className={`flex items-center justify-between p-4 rounded-xl transition-all group/item ${
                             isSelected 
                               ? 'bg-primary text-on-primary shadow-lg shadow-primary/20' 
                               : 'bg-surface/50 hover:bg-surface text-on-surface-variant'
                           }`}
                         >
-                          <span className="font-bold">{sport.name}</span>
+                          <span className="font-bold group-hover/item:scale-110 transition-transform origin-left">{sport.name}</span>
                           {isSelected && <Check size={18} />}
                         </motion.button>
                       );
@@ -143,6 +144,21 @@ export default function SportsList({ sports, selectedSports, onSelect, language 
           </div>
         ))}
       </div>
+
+      {selectedSports.length > 0 && onConfirm && (
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-6"
+        >
+          <Button 
+            onClick={onConfirm}
+            className="w-full h-16 rounded-2xl bg-primary text-on-primary font-black text-xl uppercase tracking-tighter shadow-2xl shadow-primary/40 hover:scale-105 transition-transform"
+          >
+            {t('continuar')} ({selectedSports.length})
+          </Button>
+        </motion.div>
+      )}
     </div>
   );
 }
