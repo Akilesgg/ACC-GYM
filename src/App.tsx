@@ -126,6 +126,8 @@ const INITIAL_SPORTS = [
   { name: "Bowling", icon: "Target", category: "Precisión", imageUrl: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=400&auto=format&fit=crop" }
 ];
 
+import { ErrorBoundary } from './components/ErrorBoundary';
+
 export default function App() {
   const { 
     user, setUser, 
@@ -151,17 +153,23 @@ export default function App() {
       setUser(currentUser);
       if (currentUser) {
         const unsubProfile = subscribeToProfile(currentUser.uid, (fetchedProfile) => {
-          setProfile(fetchedProfile);
+          console.log("Profile updated:", fetchedProfile?.username, "Screen:", activeScreen);
+          const sanitizedProfile = fetchedProfile ? {
+            ...fetchedProfile,
+            selectedSports: fetchedProfile.selectedSports || []
+          } : null;
+          
+          setProfile(sanitizedProfile);
           
           // Only set online if not already invisible
-          if (fetchedProfile && fetchedProfile.status !== 'invisible') {
+          if (sanitizedProfile && sanitizedProfile.status !== 'invisible') {
             chatService.updateUserStatus(currentUser.uid, 'online');
-          } else if (!fetchedProfile) {
+          } else if (!sanitizedProfile) {
             // First time user
             chatService.updateUserStatus(currentUser.uid, 'online');
           }
 
-          if (!fetchedProfile) {
+          if (!sanitizedProfile) {
             setActiveScreen('onboarding');
           } else if (activeScreen === 'login') {
             setActiveScreen('dashboard');
@@ -278,7 +286,9 @@ export default function App() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3, ease: "easeOut" }}
             >
-              {renderScreen()}
+              <ErrorBoundary key={activeScreen}>
+                {renderScreen()}
+              </ErrorBoundary>
             </motion.div>
           </AnimatePresence>
         </main>

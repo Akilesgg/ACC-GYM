@@ -7,11 +7,14 @@ export const getSports = async (): Promise<Sport[]> => {
   return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Sport));
 };
 
-export const subscribeToSports = (callback: (sports: Sport[]) => void) => {
+export const subscribeToSports = (callback: (sports: Sport[]) => void, onError?: (error: any) => void) => {
   const sportsRef = collection(db, 'sports');
   return onSnapshot(sportsRef, (snapshot) => {
     const sports = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Sport));
     callback(sports);
+  }, (error) => {
+    console.error("Firestore sports subscription error:", error);
+    if (onError) onError(error);
   });
 };
 

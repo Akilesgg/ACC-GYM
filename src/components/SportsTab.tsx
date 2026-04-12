@@ -83,6 +83,8 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
   useEffect(() => {
     const unsubscribe = subscribeToSports((data) => {
       setSports(data);
+    }, (error) => {
+      console.error("Failed to subscribe to sports:", error);
     });
     return () => unsubscribe();
   }, []);

@@ -28,9 +28,14 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const nextStep = () => setStep(prev => prev + 1);
+  const nextStep = () => {
+    setError(null);
+    setStep(prev => prev + 1);
+  };
   const prevStep = () => {
+    setError(null);
     if (step === 1) {
       signOut(auth);
     } else {
@@ -39,11 +44,14 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
   };
 
   const handleComplete = async () => {
+    if (isSubmitting) return;
     setIsSubmitting(true);
+    setError(null);
     try {
       await onComplete(profile);
-    } catch (error) {
-      console.error(error);
+    } catch (err: any) {
+      console.error("Onboarding error:", err);
+      setError(err.message || "Error al guardar el perfil. Inténtalo de nuevo.");
     } finally {
       setIsSubmitting(false);
     }
@@ -77,6 +85,15 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                   <p className="text-on-surface-variant">Crea tu perfil de atleta de alto nivel.</p>
                 </div>
                 <div className="space-y-6">
+                  {error && (
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="p-4 bg-destructive/10 border border-destructive/20 rounded-xl text-destructive text-xs font-bold text-center animate-bounce mb-4"
+                    >
+                      {error}
+                    </motion.div>
+                  )}
                   <div className="space-y-2">
                     <Label className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Nombre de Usuario</Label>
                     <Input 
