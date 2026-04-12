@@ -1,4 +1,4 @@
-import { Bell, Globe, LogOut } from 'lucide-react';
+import { Bell, Globe, LogOut, RefreshCw } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Language } from '../types';
 import { Button } from '@/components/ui/button';
@@ -21,7 +21,7 @@ export default function TopNav({ userPhoto, language, onLanguageChange, onProfil
   };
 
   return (
-    <header className="fixed top-0 w-full z-50 bg-background/60 backdrop-blur-xl flex justify-between items-center px-6 py-4 border-b border-outline-variant/10">
+    <header className="fixed top-0 w-full z-[100] bg-background/60 backdrop-blur-xl flex justify-between items-center px-6 py-4 border-b border-outline-variant/10">
       <div className="flex items-center gap-4">
         <Avatar className="w-10 h-10 border-2 border-primary cursor-pointer hover:scale-105 transition-transform" onClick={onProfileClick}>
           <AvatarImage src={userPhoto || "https://picsum.photos/seed/athlete/200/200"} />
@@ -36,6 +36,15 @@ export default function TopNav({ userPhoto, language, onLanguageChange, onProfil
       </div>
       
       <div className="flex items-center gap-2">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={() => window.location.reload()}
+          className="text-on-surface-variant hover:text-primary hover:bg-primary/10 rounded-full h-8 w-8"
+          title="Recargar App"
+        >
+          <RefreshCw size={16} />
+        </Button>
         <Button 
           variant="ghost" 
           size="sm" 

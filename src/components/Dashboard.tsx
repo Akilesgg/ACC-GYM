@@ -45,7 +45,7 @@ export default function Dashboard({ profile, onUpdateProfile, onAddSport, onGoTo
         />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
         
-        <div className="absolute bottom-12 left-12 right-12">
+        <div className="absolute bottom-12 left-12 right-12 z-50">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -150,71 +150,61 @@ export default function Dashboard({ profile, onUpdateProfile, onAddSport, onGoTo
         </div>
       </section>
 
-      <AnimatePresence mode="wait">
-        {profile.selectedSports.length === 0 ? (
-          <motion.div 
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-            className="py-20 text-center space-y-4"
-          >
-            <Dumbbell size={48} className="mx-auto text-outline-variant opacity-20" />
-            <p className="text-on-surface-variant font-medium">{t('noDeportes')}</p>
-          </motion.div>
-        ) : plan ? (
-          <motion.div
-            key={currentSportConfig?.sport || 'plan'}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="space-y-8"
-          >
-            {/* Reasoning Card */}
-            <Card className="bg-surface border-l-4 border-secondary p-8 relative overflow-hidden">
-              <div className="flex items-center gap-3 mb-4">
-                <Info className="text-secondary" />
-                <h3 className="font-headline text-xl font-bold text-secondary uppercase tracking-widest">{t('razonamiento')}</h3>
-              </div>
-              <p className="text-on-surface leading-relaxed text-lg italic">
-                "{plan.reasoning}"
-              </p>
-              <div className="absolute -bottom-10 -right-10 opacity-5 pointer-events-none">
-                <Dumbbell size={200} />
-              </div>
-            </Card>
+      {profile.selectedSports.length === 0 ? (
+        <div className="py-20 text-center space-y-4">
+          <Dumbbell size={48} className="mx-auto text-outline-variant opacity-20" />
+          <p className="text-on-surface-variant font-medium">{t('noDeportes')}</p>
+        </div>
+      ) : plan ? (
+        <div className="space-y-8">
+          {/* Reasoning Card */}
+          <Card className="bg-surface border-l-4 border-secondary p-8 relative overflow-hidden">
+            <div className="flex items-center gap-3 mb-4">
+              <Info className="text-secondary" />
+              <h3 className="font-headline text-xl font-bold text-secondary uppercase tracking-widest">{t('razonamiento')}</h3>
+            </div>
+            <p className="text-on-surface leading-relaxed text-lg italic">
+              "{plan.reasoning}"
+            </p>
+            <div className="absolute -bottom-10 -right-10 opacity-5 pointer-events-none">
+              <Dumbbell size={200} />
+            </div>
+          </Card>
 
-            {/* Training Table */}
-            <section className="space-y-6">
-              <h3 className="font-headline text-2xl font-black uppercase italic tracking-tighter">{t('rutinaSemanal')}</h3>
-              <div className="grid grid-cols-1 gap-6">
-                {plan.table.map((day, idx) => (
-                  <Card key={idx} className="bg-surface border-none p-6 overflow-hidden">
-                    <div className="flex items-center justify-between mb-6">
-                      <h4 className="font-headline text-xl font-bold text-primary">{day.day}</h4>
-                      <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">
-                        {day.exercises.length} {t('ejercicios')}
-                      </span>
-                    </div>
-                    <div className="space-y-4">
-                      {day.exercises.map((ex, exIdx) => (
-                        <div key={exIdx} className="flex items-center gap-4 p-4 bg-background rounded-xl group hover:bg-surface-variant transition-all">
-                          <div className="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-secondary font-bold">
-                            {exIdx + 1}
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-bold text-on-surface">{ex.name}</p>
-                            <p className="text-xs text-on-surface-variant">{ex.sets} x {ex.reps}</p>
-                          </div>
-                          <div className="text-right hidden md:block">
-                            <p className="text-[10px] text-on-surface-variant italic">{ex.notes}</p>
-                          </div>
+          {/* Training Table */}
+          <section className="space-y-6">
+            <h3 className="font-headline text-2xl font-black uppercase italic tracking-tighter">{t('rutinaSemanal')}</h3>
+            <div className="grid grid-cols-1 gap-6">
+              {plan.table.map((day, idx) => (
+                <Card key={idx} className="bg-surface border-none p-6 overflow-hidden">
+                  <div className="flex items-center justify-between mb-6">
+                    <h4 className="font-headline text-xl font-bold text-primary">{day.day}</h4>
+                    <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">
+                      {day.exercises.length} {t('ejercicios')}
+                    </span>
+                  </div>
+                  <div className="space-y-4">
+                    {day.exercises.map((ex, exIdx) => (
+                      <div key={exIdx} className="flex items-center gap-4 p-4 bg-background rounded-xl group hover:bg-surface-variant transition-all">
+                        <div className="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-secondary font-bold">
+                          {exIdx + 1}
                         </div>
-                      ))}
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </section>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+                        <div className="flex-1">
+                          <p className="font-bold text-on-surface">{ex.name}</p>
+                          <p className="text-xs text-on-surface-variant">{ex.sets} x {ex.reps}</p>
+                        </div>
+                        <div className="text-right hidden md:block">
+                          <p className="text-[10px] text-on-surface-variant italic">{ex.notes}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </section>
+        </div>
+      ) : null}
     </div>
   );
 }

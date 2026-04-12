@@ -22,7 +22,7 @@ export default function BottomNav({ activeScreen, onScreenChange, language }: Bo
   ] as const;
 
   return (
-    <nav className="fixed bottom-0 left-0 w-full z-50 bg-[#111318]/80 backdrop-blur-2xl flex justify-around items-center px-4 pt-3 pb-8 rounded-t-[1.5rem] shadow-[0_-8px_30px_rgb(0,0,0,0.12)]">
+    <nav className="fixed bottom-0 left-0 w-full z-[100] bg-[#111318]/80 backdrop-blur-2xl flex justify-around items-center px-4 pt-3 pb-8 rounded-t-[1.5rem] shadow-[0_-8px_30px_rgb(0,0,0,0.12)]">
       {navItems.map((item) => {
         const Icon = item.icon;
         const isActive = activeScreen === item.id;

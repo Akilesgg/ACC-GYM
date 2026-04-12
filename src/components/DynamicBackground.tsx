@@ -20,7 +20,7 @@ export default function DynamicBackground() {
   }, []);
 
   return (
-    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none bg-background">
+    <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none bg-background">
       {/* Base Image Layers */}
       {images.map((img, idx) => (
         <motion.div 
@@ -61,7 +61,7 @@ export default function DynamicBackground() {
           repeat: Infinity,
           ease: "linear"
         }}
-        className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/30 to-transparent z-10"
+        className="absolute left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-primary/30 to-transparent"
       />
 
       {/* Floating Particles */}

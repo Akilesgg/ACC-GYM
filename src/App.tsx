@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { UserProfile } from './types';
+import { useEffect, useCallback } from 'react';
+import { UserProfile, Screen } from './types';
 import TopNav from './components/TopNav';
 import BottomNav from './components/BottomNav';
 import Dashboard from './components/Dashboard';
@@ -132,10 +132,24 @@ export default function App() {
   const { 
     user, setUser, 
     profile, setProfile, 
-    activeScreen, setActiveScreen, 
+    activeScreen, setActiveScreen: _setActiveScreen, 
     language, setLanguage,
     loading, setLoading 
   } = useStore();
+
+  const setActiveScreen = useCallback((screen: Screen) => {
+    console.log(`[NAV] Navigating to: ${screen}`);
+    _setActiveScreen(screen);
+  }, [_setActiveScreen]);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      console.log(`[CLICK] Target: ${target.tagName}, ID: ${target.id}, Class: ${target.className}`);
+    };
+    window.addEventListener('click', handleClick);
+    return () => window.removeEventListener('click', handleClick);
+  }, []);
 
   useEffect(() => {
     const init = async () => {
@@ -266,41 +280,31 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-on-surface relative overflow-hidden">
+    <div className="min-h-screen bg-background text-on-surface relative">
       <DynamicBackground />
 
-      <div className="relative z-10">
-        <TopNav 
-          userPhoto={user?.photoURL || undefined} 
-          language={language} 
-          onLanguageChange={setLanguage} 
-          onProfileClick={() => setActiveScreen('profile')}
-        />
-        
-        <main className="pt-24 pb-32 px-6 max-w-5xl mx-auto">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeScreen}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-            >
-              <ErrorBoundary key={activeScreen}>
-                {renderScreen()}
-              </ErrorBoundary>
-            </motion.div>
-          </AnimatePresence>
+      <TopNav 
+        userPhoto={user?.photoURL || undefined} 
+        language={language} 
+        onLanguageChange={setLanguage} 
+        onProfileClick={() => setActiveScreen('profile')}
+      />
+      
+      <div className="relative z-20">
+        <main className="pt-24 pb-32 px-6 max-w-5xl mx-auto relative z-30">
+          <ErrorBoundary key={activeScreen}>
+            {renderScreen()}
+          </ErrorBoundary>
         </main>
-
-        {activeScreen !== 'onboarding' && user && (
-          <BottomNav 
-            activeScreen={activeScreen} 
-            onScreenChange={setActiveScreen} 
-            language={language}
-          />
-        )}
       </div>
+
+      {activeScreen !== 'onboarding' && user && (
+        <BottomNav 
+          activeScreen={activeScreen} 
+          onScreenChange={setActiveScreen} 
+          language={language}
+        />
+      )}
     </div>
   );
 }
