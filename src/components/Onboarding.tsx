@@ -213,7 +213,11 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                     disabled={isSubmitting}
                     className="flex-1 bg-tertiary text-background font-black h-14 rounded-full"
                   >
-                    {isSubmitting ? 'GUARDANDO...' : 'FINALIZAR'}
+                    {isSubmitting ? (
+                      <div className="w-6 h-6 border-2 border-background border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      'FINALIZAR'
+                    )}
                   </Button>
                 </div>
               </div>

@@ -8,12 +8,15 @@ const BACKGROUND_IMAGES = [
   'https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=2070&auto=format&fit=crop', // Football
   'https://images.unsplash.com/photo-1518611012118-2969c6390ec2?q=80&w=2070&auto=format&fit=crop', // Yoga
   'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?q=80&w=2070&auto=format&fit=crop', // Boxing
+  'https://images.unsplash.com/photo-1517649763962-0c623066013b?q=80&w=2070&auto=format&fit=crop', // Cycling
+  'https://images.unsplash.com/photo-1599058917233-358384459a8c?q=80&w=2070&auto=format&fit=crop', // MMA
+  'https://images.unsplash.com/photo-1526506118085-60ce8714f8c5?q=80&w=2070&auto=format&fit=crop', // Weights
 ];
 
 export default function DynamicBackground() {
   const images = useMemo(() => {
     const shuffled = [...BACKGROUND_IMAGES].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, 3);
+    return shuffled.slice(0, 4);
   }, []);
 
   return (
@@ -25,12 +28,12 @@ export default function DynamicBackground() {
           initial={{ scale: 1.2, opacity: 0 }}
           animate={{ 
             scale: [1.2, 1, 1.15],
-            opacity: [0, 0.1, 0.05, 0],
-            filter: ['grayscale(100%) blur(4px)', 'grayscale(100%) blur(0px)', 'grayscale(100%) blur(2px)']
+            opacity: [0, 0.15, 0.08, 0],
+            filter: ['grayscale(100%) contrast(1.2) blur(4px)', 'grayscale(100%) contrast(1.5) blur(0px)', 'grayscale(100%) contrast(1.2) blur(2px)']
           }}
           transition={{ 
-            duration: 20, 
-            delay: idx * 7,
+            duration: 25, 
+            delay: idx * 6,
             repeat: Infinity, 
             ease: "easeInOut"
           }}

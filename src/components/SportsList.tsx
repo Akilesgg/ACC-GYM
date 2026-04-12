@@ -4,8 +4,9 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronDown, Search, Check, Dumbbell, Users, User, Zap, MoreHorizontal } from 'lucide-react';
+import { ChevronDown, Search, Check, Dumbbell, Users, User, Zap, MoreHorizontal, LayoutGrid } from 'lucide-react';
 import { useTranslation } from '../lib/i18n';
+import * as Icons from 'lucide-react';
 
 interface SportsListProps {
   sports: Sport[];
@@ -21,9 +22,12 @@ interface CategoryGroup {
   items: Sport[];
 }
 
+const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+
 export default function SportsList({ sports, selectedSports, onSelect, onConfirm, language }: SportsListProps) {
   const t = useTranslation(language);
   const [search, setSearch] = useState('');
+  const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
   const [openCategory, setOpenCategory] = useState<string | null>(null);
 
   const categories: CategoryGroup[] = useMemo(() => {
@@ -67,34 +71,65 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
   }, [sports, t]);
 
   const filteredCategories = useMemo(() => {
-    if (!search) return categories;
+    let result = categories;
     
-    const term = search.toLowerCase();
-    return categories.map(cat => ({
-      ...cat,
-      items: cat.items.filter(item => 
-        item.name.toLowerCase().includes(term) || 
-        cat.category.toLowerCase().includes(term)
-      )
-    })).filter(cat => cat.items.length > 0);
-  }, [categories, search]);
+    if (selectedLetter) {
+      result = result.map(cat => ({
+        ...cat,
+        items: cat.items.filter(item => item.name.toUpperCase().startsWith(selectedLetter))
+      })).filter(cat => cat.items.length > 0);
+    }
+
+    if (search) {
+      const term = search.toLowerCase();
+      result = result.map(cat => ({
+        ...cat,
+        items: cat.items.filter(item => 
+          item.name.toLowerCase().includes(term) || 
+          cat.category.toLowerCase().includes(term)
+        )
+      })).filter(cat => cat.items.length > 0);
+    }
+
+    return result;
+  }, [categories, search, selectedLetter]);
 
   useEffect(() => {
-    if (!openCategory && filteredCategories.length > 0 && !search) {
+    if (!openCategory && filteredCategories.length > 0 && !search && !selectedLetter) {
       setOpenCategory(filteredCategories[0].category);
     }
-  }, [filteredCategories, search, openCategory]);
+  }, [filteredCategories, search, selectedLetter, openCategory]);
 
   return (
     <div className="space-y-6">
+      {/* Search Bar */}
       <div className="relative">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/40" size={20} />
         <Input 
           placeholder={t('buscarDeporte')} 
-          className="bg-surface border-none pl-12 h-14 rounded-2xl font-medium"
+          className="bg-surface border-none pl-12 h-14 rounded-2xl font-medium text-lg shadow-inner"
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
+      </div>
+
+      {/* Alphabet Filter */}
+      <div className="flex flex-wrap gap-1 justify-center bg-surface/30 p-2 rounded-2xl backdrop-blur-sm">
+        <button
+          onClick={() => setSelectedLetter(null)}
+          className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${!selectedLetter ? 'bg-primary text-on-primary scale-110' : 'text-on-surface-variant hover:bg-surface'}`}
+        >
+          ALL
+        </button>
+        {ALPHABET.map(letter => (
+          <button
+            key={letter}
+            onClick={() => setSelectedLetter(selectedLetter === letter ? null : letter)}
+            className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${selectedLetter === letter ? 'bg-primary text-on-primary scale-110' : 'text-on-surface-variant hover:bg-surface'}`}
+          >
+            {letter}
+          </button>
+        ))}
       </div>
 
       <div className="space-y-3">
@@ -108,59 +143,90 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
         ) : (
           filteredCategories.map((group) => (
             <div key={group.category} className="space-y-2">
-            <button
-              onClick={() => setOpenCategory(openCategory === group.category ? null : group.category)}
-              className="w-full flex items-center justify-between p-5 bg-surface rounded-2xl hover:bg-surface-variant/30 transition-all group"
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                  <group.icon size={20} />
-                </div>
-                <span className="font-headline font-bold text-lg uppercase tracking-tight group-hover:scale-110 transition-transform origin-left">{group.category}</span>
-              </div>
-              <motion.div
-                animate={{ rotate: openCategory === group.category ? 180 : 0 }}
-                transition={{ duration: 0.3 }}
+              <button
+                onClick={() => setOpenCategory(openCategory === group.category ? null : group.category)}
+                className="w-full flex items-center justify-between p-5 bg-surface rounded-2xl hover:bg-surface-variant/30 transition-all group border border-white/5"
               >
-                <ChevronDown className="text-on-surface-variant/40 group-hover:text-primary transition-colors" />
-              </motion.div>
-            </button>
-
-            <AnimatePresence>
-              {(openCategory === group.category || search) && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3, ease: 'easeInOut' }}
-                  className="overflow-hidden"
-                >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 p-2">
-                    {group.items.map((sport) => {
-                      const isSelected = selectedSports.includes(sport.name);
-                      return (
-                        <motion.button
-                          key={sport.name}
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                          onClick={() => onSelect(sport.name)}
-                          className={`flex items-center justify-between p-4 rounded-xl transition-all group/item ${
-                            isSelected 
-                              ? 'bg-primary text-on-primary shadow-lg shadow-primary/20' 
-                              : 'bg-surface/50 hover:bg-surface text-on-surface-variant'
-                          }`}
-                        >
-                          <span className="font-bold group-hover/item:scale-110 transition-transform origin-left">{sport.name}</span>
-                          {isSelected && <Check size={18} />}
-                        </motion.button>
-                      );
-                    })}
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                    <group.icon size={24} />
                   </div>
+                  <span className="font-headline font-bold text-xl uppercase tracking-tight group-hover:scale-110 transition-transform origin-left">{group.category}</span>
+                </div>
+                <motion.div
+                  animate={{ rotate: openCategory === group.category ? 180 : 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <ChevronDown className="text-on-surface-variant/40 group-hover:text-primary transition-colors" />
                 </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        )))}
+              </button>
+
+              <AnimatePresence>
+                {(openCategory === group.category || search || selectedLetter) && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.3, ease: 'easeInOut' }}
+                    className="overflow-hidden"
+                  >
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-2">
+                      {group.items.map((sport) => {
+                        const isSelected = selectedSports.includes(sport.name);
+                        const SportIcon = (Icons as any)[sport.icon] || Dumbbell;
+                        
+                        return (
+                          <motion.button
+                            key={sport.name}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => onSelect(sport.name)}
+                            className={`relative flex items-center gap-4 p-3 rounded-2xl transition-all group/item overflow-hidden border border-white/5 ${
+                              isSelected 
+                                ? 'bg-primary text-on-primary shadow-xl shadow-primary/30' 
+                                : 'bg-surface/50 hover:bg-surface text-on-surface-variant'
+                            }`}
+                          >
+                            {/* Sport Image Background (Subtle) */}
+                            {sport.imageUrl && (
+                              <div className="absolute inset-0 opacity-10 group-hover/item:opacity-20 transition-opacity">
+                                <img 
+                                  src={sport.imageUrl} 
+                                  alt="" 
+                                  className="w-full h-full object-cover"
+                                  referrerPolicy="no-referrer"
+                                />
+                              </div>
+                            )}
+
+                            <div className={`relative w-14 h-14 rounded-xl flex items-center justify-center shrink-0 shadow-lg ${isSelected ? 'bg-white/20' : 'bg-background/50'}`}>
+                              <SportIcon size={28} strokeWidth={2.5} />
+                            </div>
+
+                            <div className="relative flex flex-col items-start text-left">
+                              <span className="font-headline font-bold text-lg uppercase tracking-tight group-hover/item:scale-105 transition-transform origin-left">
+                                {sport.name}
+                              </span>
+                              <span className={`text-[10px] font-bold uppercase tracking-widest opacity-60 ${isSelected ? 'text-white' : 'text-primary'}`}>
+                                {sport.category}
+                              </span>
+                            </div>
+
+                            {isSelected && (
+                              <div className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                                <Check size={20} strokeWidth={3} />
+                              </div>
+                            )}
+                          </motion.button>
+                        );
+                      })}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          ))
+        )}
       </div>
 
       {selectedSports.length > 0 && onConfirm && (

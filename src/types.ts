@@ -7,6 +7,7 @@ export interface Sport {
   name: string;
   icon: string;
   category: string;
+  imageUrl?: string;
 }
 
 export interface SportConfig {

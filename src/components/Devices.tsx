@@ -24,22 +24,26 @@ const DEVICE_BRANDS = [
   { id: 'garmin', name: 'Garmin Connect', icon: 'Zap', color: 'text-blue-500', bg: 'bg-blue-900/20' },
   { id: 'fitbit', name: 'Fitbit', icon: 'Heart', color: 'text-teal-400', bg: 'bg-teal-900/20' },
   { id: 'huawei', name: 'Huawei Health', icon: 'Smartphone', color: 'text-red-500', bg: 'bg-red-900/20' },
+  { id: 'polar', name: 'Polar Flow', icon: 'Activity', color: 'text-red-400', bg: 'bg-red-900/20' },
+  { id: 'suunto', name: 'Suunto', icon: 'Watch', color: 'text-red-600', bg: 'bg-red-900/20' },
 ];
 
 const SCALE_BRANDS = [
   { id: 'withings', name: 'Withings', icon: 'Scale', color: 'text-blue-400', bg: 'bg-blue-900/20' },
   { id: 'tanita', name: 'Tanita', icon: 'Scale', color: 'text-green-400', bg: 'bg-green-900/20' },
   { id: 'xiaomi_scale', name: 'Xiaomi Scale', icon: 'Scale', color: 'text-orange-400', bg: 'bg-orange-900/20' },
+  { id: 'renpho', name: 'Renpho', icon: 'Scale', color: 'text-blue-300', bg: 'bg-blue-900/20' },
+  { id: 'eufy', name: 'Eufy Life', icon: 'Scale', color: 'text-teal-300', bg: 'bg-teal-900/20' },
 ];
 
 export default function Devices({ profile, onUpdateProfile, onBack, language }: DevicesProps) {
   const t = useTranslation(language);
   const [syncing, setSyncing] = useState<string | null>(null);
+  const [isSyncingAll, setIsSyncingAll] = useState(false);
 
   const handleConnect = async (deviceId: string) => {
     setSyncing(deviceId);
-    // Simulate connection delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 1500));
     
     const connectedDevices = profile.deviceData?.connectedDevices || [];
     const newConnected = connectedDevices.includes(deviceId)
@@ -49,7 +53,7 @@ export default function Devices({ profile, onUpdateProfile, onBack, language }: 
     onUpdateProfile({
       ...profile,
       deviceData: {
-        ...(profile.deviceData || { steps: 0, calories: 0, heartRate: 0, lastSync: new Date().toISOString() }),
+        ...(profile.deviceData || { steps: 0, calories: 0, heartRate: 0, lastSync: new Date().toISOString(), connectedDevices: [] }),
         connectedDevices: newConnected,
         lastSync: new Date().toISOString()
       }
@@ -57,22 +61,50 @@ export default function Devices({ profile, onUpdateProfile, onBack, language }: 
     setSyncing(null);
   };
 
+  const handleSyncAll = async () => {
+    if (!profile.deviceData?.connectedDevices?.length) return;
+    setIsSyncingAll(true);
+    await new Promise(resolve => setTimeout(resolve, 3000));
+    
+    onUpdateProfile({
+      ...profile,
+      deviceData: {
+        ...(profile.deviceData || { steps: 0, calories: 0, heartRate: 0, lastSync: new Date().toISOString(), connectedDevices: [] }),
+        steps: Math.floor(Math.random() * 10000) + 5000,
+        calories: Math.floor(Math.random() * 500) + 200,
+        heartRate: Math.floor(Math.random() * 40) + 60,
+        lastSync: new Date().toISOString()
+      }
+    });
+    setIsSyncingAll(false);
+  };
+
   const isConnected = (id: string) => profile.deviceData?.connectedDevices?.includes(id);
 
   return (
     <div className="space-y-12 pb-32">
-      <header className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={onBack} className="rounded-full bg-surface">
-          <ArrowLeft size={20} />
-        </Button>
-        <div>
-          <p className="font-headline text-secondary font-bold uppercase tracking-widest text-sm mb-1">
-            {t('laboratorio')}
-          </p>
-          <h2 className="font-headline text-5xl md:text-7xl font-extrabold tracking-tighter leading-none uppercase">
-            {t('dispositivos')}<span className="text-primary italic">.</span>
-          </h2>
+      <header className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="icon" onClick={onBack} className="rounded-full bg-surface">
+            <ArrowLeft size={20} />
+          </Button>
+          <div>
+            <p className="font-headline text-secondary font-bold uppercase tracking-widest text-sm mb-1">
+              {t('laboratorio')}
+            </p>
+            <h2 className="font-headline text-5xl md:text-7xl font-extrabold tracking-tighter leading-none uppercase">
+              {t('dispositivos')}<span className="text-primary italic">.</span>
+            </h2>
+          </div>
         </div>
+        <Button 
+          onClick={handleSyncAll}
+          disabled={isSyncingAll || !profile.deviceData?.connectedDevices?.length}
+          className="hidden md:flex items-center gap-3 h-16 px-8 rounded-2xl bg-secondary text-background font-black text-lg uppercase tracking-tighter shadow-xl shadow-secondary/20 hover:scale-105 transition-all"
+        >
+          <RefreshCw className={isSyncingAll ? 'animate-spin' : ''} size={24} />
+          {isSyncingAll ? 'Sincronizando...' : 'Sincronizar Todo'}
+        </Button>
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">

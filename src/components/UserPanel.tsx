@@ -29,7 +29,7 @@ export default function UserPanel({ language }: { language: Language }) {
       setUsers(visibleUsers);
     });
     return () => unsubscribe();
-  }, [currentUser?.uid]);
+  }, [currentUser?.uid, currentUser?.status]);
 
   if (!currentUser) return null;
 

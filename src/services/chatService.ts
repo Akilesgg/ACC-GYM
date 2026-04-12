@@ -20,10 +20,14 @@ export const chatService = {
   // Update user status
   updateUserStatus: async (uid: string, status: 'online' | 'offline' | 'invisible') => {
     const userRef = doc(db, 'users', uid);
-    await updateDoc(userRef, {
-      status,
-      lastSeen: new Date().toISOString()
-    });
+    try {
+      await setDoc(userRef, {
+        status,
+        lastSeen: new Date().toISOString()
+      }, { merge: true });
+    } catch (error) {
+      console.error("Error updating status:", error);
+    }
   },
 
   // Get all users (excluding current user if needed, but here we show all)
