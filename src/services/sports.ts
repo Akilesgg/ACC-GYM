@@ -19,17 +19,29 @@ export const subscribeToSports = (callback: (sports: Sport[]) => void, onError?:
 };
 
 export const seedSports = async (sports: Omit<Sport, 'id'>[]) => {
-  const sportsRef = collection(db, 'sports');
-  const existing = await getSports();
-  const existingMap = new Map(existing.map(s => [s.name, s]));
+  try {
+    const sportsRef = collection(db, 'sports');
+    const existing = await getSports();
+    console.log(`[SEED] Found ${existing.length} existing sports in DB.`);
+    const existingMap = new Map(existing.map(s => [s.name, s]));
 
-  for (const sport of sports) {
-    const existingSport = existingMap.get(sport.name);
-    if (!existingSport) {
-      await addDoc(sportsRef, sport);
-    } else if (!existingSport.imageUrl && sport.imageUrl) {
-      const sportDoc = doc(db, 'sports', existingSport.id);
-      await updateDoc(sportDoc, { imageUrl: sport.imageUrl });
+    let addedCount = 0;
+    let updatedCount = 0;
+
+    for (const sport of sports) {
+      const existingSport = existingMap.get(sport.name);
+      if (!existingSport) {
+        await addDoc(sportsRef, sport);
+        addedCount++;
+      } else if (!existingSport.imageUrl && sport.imageUrl) {
+        const sportDoc = doc(db, 'sports', existingSport.id);
+        await updateDoc(sportDoc, { imageUrl: sport.imageUrl });
+        updatedCount++;
+      }
     }
+    console.log(`[SEED] Seeding finished. Added: ${addedCount}, Updated: ${updatedCount}`);
+  } catch (error) {
+    console.error("[SEED] Error during seeding:", error);
+    throw error;
   }
 };

@@ -30,6 +30,10 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
   const [openCategory, setOpenCategory] = useState<string | null>(null);
 
+  useEffect(() => {
+    console.log(`[SportsList] Received ${sports.length} sports.`);
+  }, [sports]);
+
   const categories: CategoryGroup[] = useMemo(() => {
     const groups: Record<string, Sport[]> = {
       [t('artesMarciales')]: [],
@@ -82,6 +86,8 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
 
     if (search) {
       const term = search.toLowerCase();
+      // If search is active, we might want to ignore the letter filter or combine them
+      // Let's combine them: search within the already filtered by letter result if letter is selected
       result = result.map(cat => ({
         ...cat,
         items: cat.items.filter(item => 
@@ -91,6 +97,7 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
       })).filter(cat => cat.items.length > 0);
     }
 
+    console.log(`[SPORTS] Filtered categories: ${result.length}, Total sports: ${result.reduce((acc, cat) => acc + cat.items.length, 0)}`);
     return result;
   }, [categories, search, selectedLetter]);
 
@@ -103,7 +110,7 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
   return (
     <div className="space-y-6">
       {/* Search Bar */}
-      <div className="relative">
+      <div className="relative z-10">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/40" size={20} />
         <Input 
           placeholder={t('buscarDeporte')} 
@@ -189,7 +196,7 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
                           >
                             {/* Sport Image Background (Subtle) */}
                             {sport.imageUrl && (
-                              <div className="absolute inset-0 opacity-10 group-hover/item:opacity-20 transition-opacity">
+                              <div className="absolute inset-0 opacity-20 group-hover/item:opacity-40 transition-opacity">
                                 <img 
                                   src={sport.imageUrl} 
                                   alt="" 

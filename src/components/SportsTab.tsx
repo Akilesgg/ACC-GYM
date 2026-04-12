@@ -81,10 +81,12 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
   }, [profile?.selectedSports]);
 
   useEffect(() => {
+    console.log("[SPORTS] Subscribing to sports...");
     const unsubscribe = subscribeToSports((data) => {
+      console.log(`[SPORTS] Received ${data.length} sports from Firestore.`);
       setSports(data);
     }, (error) => {
-      console.error("Failed to subscribe to sports:", error);
+      console.error("[SPORTS] Failed to subscribe to sports:", error);
     });
     return () => unsubscribe();
   }, []);
@@ -225,17 +227,6 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
               </h2>
             </div>
           </div>
-          {step === 'list' && !activePlan && !loading && (
-            <div className="relative w-full md:w-72">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-outline-variant" size={20} />
-              <Input 
-                placeholder={t('buscarDeporte')} 
-                className="bg-surface border-none pl-12 h-12 rounded-full"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
-            </div>
-          )}
         </div>
       </section>
 
@@ -277,7 +268,11 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
             className="flex flex-col items-center justify-center py-20 gap-4"
           >
             <Loader2 className="w-12 h-12 text-primary animate-spin" />
-            <p className="text-on-surface-variant font-medium">La IA está diseñando tu plan de {selectedSport?.name}...</p>
+            <p className="text-on-surface-variant font-medium">
+              {language === 'es' 
+                ? `La IA está diseñando tu plan de ${selectedSport?.name}...` 
+                : `AI is designing your ${selectedSport?.name} plan...`}
+            </p>
           </motion.div>
         ) : step === 'goal' ? (
           <motion.div key="goal" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
