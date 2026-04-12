@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Sport, Language } from '../types';
+import { Sport, Language, SportConfig } from '../types';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,7 @@ interface SportsListProps {
   sports: Sport[];
   selectedSports: string[];
   onSelect: (sportName: string) => void;
-  onConfirm?: () => void;
+  onConfirm?: (configs: SportConfig[]) => void;
   language: Language;
 }
 
@@ -27,9 +27,38 @@ const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 export default function SportsList({ sports, selectedSports, onSelect, onConfirm, language }: SportsListProps) {
   const t = useTranslation(language);
   const [search, setSearch] = useState('');
-  const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
-  const [showAll, setShowAll] = useState(true);
   const [openCategory, setOpenCategory] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(true);
+  const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
+  const [sportConfigs, setSportConfigs] = useState<Record<string, { goal: string, frequency: number }>>({});
+
+  const toggleSport = (sportName: string) => {
+    onSelect(sportName);
+    if (!selectedSports.includes(sportName)) {
+      setSportConfigs(prev => ({
+        ...prev,
+        [sportName]: { goal: 'Fuerza y Tonificación', frequency: 3 }
+      }));
+    }
+  };
+
+  const updateSportConfig = (sportName: string, updates: Partial<{ goal: string, frequency: number }>) => {
+    setSportConfigs(prev => ({
+      ...prev,
+      [sportName]: { ...prev[sportName], ...updates }
+    }));
+  };
+
+  const handleConfirm = () => {
+    if (onConfirm) {
+      const configs: SportConfig[] = selectedSports.map(name => ({
+        sport: name,
+        goal: sportConfigs[name]?.goal || 'Fuerza y Tonificación',
+        daysPerWeek: sportConfigs[name]?.frequency || 3
+      }));
+      onConfirm(configs);
+    }
+  };
 
   useEffect(() => {
     console.log(`[SportsList] Received ${sports.length} sports.`);
@@ -79,16 +108,15 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
     let result = categories;
     
     if (selectedLetter) {
+      const letter = selectedLetter.toUpperCase();
       result = result.map(cat => ({
         ...cat,
-        items: cat.items.filter(item => item.name.toUpperCase().startsWith(selectedLetter))
+        items: cat.items.filter(item => item.name.toUpperCase().startsWith(letter))
       })).filter(cat => cat.items.length > 0);
     }
 
     if (search) {
       const term = search.toLowerCase();
-      // If search is active, we might want to ignore the letter filter or combine them
-      // Let's combine them: search within the already filtered by letter result if letter is selected
       result = result.map(cat => ({
         ...cat,
         items: cat.items.filter(item => 
@@ -98,18 +126,43 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
       })).filter(cat => cat.items.length > 0);
     }
 
-    console.log(`[SPORTS] Filtered categories: ${result.length}, Total sports: ${result.reduce((acc, cat) => acc + cat.items.length, 0)}`);
     return result;
   }, [categories, search, selectedLetter]);
 
   useEffect(() => {
-    if (!openCategory && filteredCategories.length > 0 && !search && !selectedLetter) {
-      setOpenCategory(filteredCategories[0].category);
+    if (search || selectedLetter) {
+      setShowAll(true);
+      setOpenCategory(null); // Reset open category to let showAll handle it
     }
-  }, [filteredCategories, search, selectedLetter, openCategory]);
+  }, [search, selectedLetter]);
 
   return (
     <div className="space-y-6">
+      {/* Selected Sports Summary */}
+      <AnimatePresence>
+        {selectedSports.length > 0 && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="bg-primary/10 border border-primary/20 rounded-2xl p-4 space-y-3"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Deportes Cargados ({selectedSports.length})</span>
+              <Button variant="ghost" size="sm" onClick={() => selectedSports.forEach(s => onSelect(s))} className="h-6 text-[10px] font-bold uppercase text-tertiary hover:text-tertiary/80">Limpiar Todo</Button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {selectedSports.map(sportName => (
+                <span key={sportName} className="bg-primary text-on-primary text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-2">
+                  {sportName}
+                  <button onClick={() => onSelect(sportName)} className="hover:scale-125 transition-transform">×</button>
+                </span>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Search Bar */}
       <div className="relative z-10">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/40" size={20} />
@@ -148,8 +201,9 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
             <button
               key={letter}
               onClick={() => {
-                setSelectedLetter(selectedLetter === letter ? null : letter);
-                if (selectedLetter !== letter) setShowAll(true);
+                const newLetter = selectedLetter === letter ? null : letter;
+                setSelectedLetter(newLetter);
+                if (newLetter) setShowAll(true);
               }}
               className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${selectedLetter === letter ? 'bg-primary text-on-primary scale-110' : 'text-on-surface-variant hover:bg-surface'}`}
             >
@@ -203,12 +257,13 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
                         const SportIcon = (Icons as any)[sport.icon] || Dumbbell;
                         
                         return (
+                        <div className="space-y-3">
                           <motion.button
                             key={sport.name}
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
-                            onClick={() => onSelect(sport.name)}
-                            className={`relative flex items-center gap-4 p-3 rounded-2xl transition-all group/item overflow-hidden border border-white/5 h-24 ${
+                            onClick={() => toggleSport(sport.name)}
+                            className={`relative w-full flex items-center gap-4 p-3 rounded-2xl transition-all group/item overflow-hidden border border-white/5 h-24 ${
                               isSelected 
                                 ? 'bg-primary text-on-primary shadow-xl shadow-primary/30' 
                                 : 'bg-surface/50 hover:bg-surface text-on-surface-variant'
@@ -245,6 +300,58 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
                               </div>
                             )}
                           </motion.button>
+
+                          {/* Inline Config "Subcategories" */}
+                          <AnimatePresence>
+                            {isSelected && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="overflow-hidden"
+                              >
+                                <div className="bg-surface-variant/10 rounded-2xl p-4 space-y-4 border border-outline-variant/10 backdrop-blur-md">
+                                  <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Objetivo para {sport.name}</label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                      {['Fuerza', 'Hipertrofia', 'Resistencia', 'Pérdida de Peso'].map(goal => (
+                                        <button
+                                          key={goal}
+                                          onClick={() => updateSportConfig(sport.name, { goal })}
+                                          className={`h-10 rounded-xl text-[10px] font-bold uppercase transition-all ${
+                                            (sportConfigs[sport.name]?.goal || 'Fuerza') === goal 
+                                              ? 'bg-primary text-background' 
+                                              : 'bg-background/30 text-on-surface-variant hover:bg-background/50'
+                                          }`}
+                                        >
+                                          {goal}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Días por Semana</label>
+                                    <div className="flex gap-2">
+                                      {[1, 2, 3, 4, 5, 6, 7].map(d => (
+                                        <button
+                                          key={d}
+                                          onClick={() => updateSportConfig(sport.name, { frequency: d })}
+                                          className={`flex-1 h-10 rounded-xl text-xs font-bold transition-all ${
+                                            (sportConfigs[sport.name]?.frequency || 3) === d 
+                                              ? 'bg-primary text-background' 
+                                              : 'bg-background/30 text-on-surface-variant hover:bg-background/50'
+                                          }`}
+                                        >
+                                          {d}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
                         );
                       })}
                     </div>
@@ -263,10 +370,10 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
           className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-6"
         >
           <Button 
-            onClick={onConfirm}
+            onClick={handleConfirm}
             className="w-full h-16 rounded-2xl bg-primary text-on-primary font-black text-xl uppercase tracking-tighter shadow-2xl shadow-primary/40 hover:scale-105 transition-transform"
           >
-            {t('continuar')} ({selectedSports.length})
+            {t('generarPlan')} ({selectedSports.length})
           </Button>
         </motion.div>
       )}

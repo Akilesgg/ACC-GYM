@@ -72,18 +72,22 @@ export default function App() {
           
           setProfile(sanitizedProfile);
           
-          // Only set online if not already invisible
-          if (sanitizedProfile && sanitizedProfile.status !== 'invisible') {
+          if (sanitizedProfile) {
+            // If we have a profile, always go to dashboard if we are on login or onboarding
+            if (activeScreen === 'login' || activeScreen === 'onboarding') {
+              setActiveScreen('dashboard');
+            }
+            // Only set online if not already invisible
+            if (sanitizedProfile.status !== 'invisible') {
+              chatService.updateUserStatus(currentUser.uid, 'online');
+            }
+          } else {
+            // No profile found in DB
+            // If we are NOT already in onboarding, go there
+            if (activeScreen !== 'onboarding') {
+              setActiveScreen('onboarding');
+            }
             chatService.updateUserStatus(currentUser.uid, 'online');
-          } else if (!sanitizedProfile) {
-            // First time user
-            chatService.updateUserStatus(currentUser.uid, 'online');
-          }
-
-          if (!sanitizedProfile) {
-            setActiveScreen('onboarding');
-          } else if (activeScreen === 'login') {
-            setActiveScreen('dashboard');
           }
           setLoading(false);
         }, (error) => {

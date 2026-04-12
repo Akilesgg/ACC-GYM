@@ -101,20 +101,14 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
     );
   };
 
-  const startConfiguration = () => {
-    const newSports = selectedSportsList.filter(s => !profile.selectedSports.some(ps => ps.sport === s));
-    if (newSports.length === 0) {
-      // If no new sports, just go back or show current plans
-      setStep('list');
-      return;
-    }
-    setConfigQueue(newSports);
-    setCurrentConfigIndex(0);
-    const firstSport = sports.find(s => s.name === newSports[0]);
-    if (firstSport) {
-      setSelectedSport(firstSport);
-      setCurrentConfig({ sport: firstSport.name });
-      setStep('goal');
+  const startConfiguration = (configs: SportConfig[]) => {
+    if (configs.length === 0) return;
+    
+    if (configs.length > 1) {
+      setAllConfigs(configs);
+      setStep('combined');
+    } else {
+      finalizePlans(configs, false);
     }
   };
 
@@ -209,6 +203,17 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
   };
 
   const getIcon = (iconName: string) => SPORT_ICONS[iconName] || SPORT_ICONS.Activity;
+
+  if (sports.length === 0 && !loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-40 gap-4">
+        <Loader2 className="w-12 h-12 text-primary animate-spin" />
+        <p className="text-on-surface-variant font-black uppercase tracking-widest text-sm">
+          {language === 'es' ? 'Cargando disciplinas...' : 'Loading disciplines...'}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-12 pb-32">
