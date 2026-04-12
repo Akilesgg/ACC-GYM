@@ -28,6 +28,7 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
   const t = useTranslation(language);
   const [search, setSearch] = useState('');
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(true);
   const [openCategory, setOpenCategory] = useState<string | null>(null);
 
   useEffect(() => {
@@ -121,22 +122,41 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
       </div>
 
       {/* Alphabet Filter */}
-      <div className="flex flex-wrap gap-1 justify-center bg-surface/30 p-2 rounded-2xl backdrop-blur-sm">
-        <button
-          onClick={() => setSelectedLetter(null)}
-          className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${!selectedLetter ? 'bg-primary text-on-primary scale-110' : 'text-on-surface-variant hover:bg-surface'}`}
-        >
-          ALL
-        </button>
-        {ALPHABET.map(letter => (
-          <button
-            key={letter}
-            onClick={() => setSelectedLetter(selectedLetter === letter ? null : letter)}
-            className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${selectedLetter === letter ? 'bg-primary text-on-primary scale-110' : 'text-on-surface-variant hover:bg-surface'}`}
+      <div className="flex flex-col gap-4">
+        <div className="flex items-center justify-between px-2">
+          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-on-surface-variant/60">Filtrar por letra</span>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setShowAll(!showAll)}
+            className={`text-[10px] font-black uppercase tracking-widest ${showAll ? 'text-primary' : 'text-on-surface-variant/40'}`}
           >
-            {letter}
+            {showAll ? 'Contraer Todo' : 'Expandir Todo'}
+          </Button>
+        </div>
+        <div className="flex flex-wrap gap-1 justify-center bg-surface/30 p-2 rounded-2xl backdrop-blur-sm">
+          <button
+            onClick={() => {
+              setSelectedLetter(null);
+              setShowAll(true);
+            }}
+            className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${!selectedLetter ? 'bg-primary text-on-primary scale-110' : 'text-on-surface-variant hover:bg-surface'}`}
+          >
+            ALL
           </button>
-        ))}
+          {ALPHABET.map(letter => (
+            <button
+              key={letter}
+              onClick={() => {
+                setSelectedLetter(selectedLetter === letter ? null : letter);
+                if (selectedLetter !== letter) setShowAll(true);
+              }}
+              className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${selectedLetter === letter ? 'bg-primary text-on-primary scale-110' : 'text-on-surface-variant hover:bg-surface'}`}
+            >
+              {letter}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="space-y-3">
@@ -169,7 +189,7 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
               </button>
 
               <AnimatePresence>
-                {(openCategory === group.category || search || selectedLetter) && (
+                {(showAll || openCategory === group.category || search || selectedLetter) && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
@@ -177,7 +197,7 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
                     transition={{ duration: 0.3, ease: 'easeInOut' }}
                     className="overflow-hidden"
                   >
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-2">
                       {group.items.map((sport) => {
                         const isSelected = selectedSports.includes(sport.name);
                         const SportIcon = (Icons as any)[sport.icon] || Dumbbell;
@@ -188,7 +208,7 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
                             onClick={() => onSelect(sport.name)}
-                            className={`relative flex items-center gap-4 p-3 rounded-2xl transition-all group/item overflow-hidden border border-white/5 ${
+                            className={`relative flex items-center gap-4 p-3 rounded-2xl transition-all group/item overflow-hidden border border-white/5 h-24 ${
                               isSelected 
                                 ? 'bg-primary text-on-primary shadow-xl shadow-primary/30' 
                                 : 'bg-surface/50 hover:bg-surface text-on-surface-variant'
@@ -196,11 +216,11 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
                           >
                             {/* Sport Image Background (Subtle) */}
                             {sport.imageUrl && (
-                              <div className="absolute inset-0 opacity-20 group-hover/item:opacity-40 transition-opacity">
+                              <div className="absolute inset-0 opacity-30 group-hover/item:opacity-50 transition-opacity">
                                 <img 
                                   src={sport.imageUrl} 
                                   alt="" 
-                                  className="w-full h-full object-cover"
+                                  className="w-full h-full object-cover grayscale"
                                   referrerPolicy="no-referrer"
                                 />
                               </div>

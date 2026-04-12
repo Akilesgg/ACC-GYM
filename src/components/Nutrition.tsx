@@ -37,7 +37,10 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
   const [tempData, setTempData] = useState({
     goal: profile.nutritionGoal || '',
     timeframe: profile.nutritionTimeframe || '',
-    allergies: profile.allergies || ''
+    allergies: profile.allergies || '',
+    isCeliac: false,
+    hasIntolerance: false,
+    hasAllergy: false
   });
 
   useEffect(() => {
@@ -60,11 +63,18 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
 
   const generatePlan = async () => {
     setLoading(true);
+    const allergyDetails = [
+      tempData.isCeliac ? "Celíaco" : "",
+      tempData.hasIntolerance ? "Intolerancia" : "",
+      tempData.hasAllergy ? "Alergia" : "",
+      tempData.allergies
+    ].filter(Boolean).join(", ");
+
     const updatedProfile = {
       ...profile,
       nutritionGoal: tempData.goal,
       nutritionTimeframe: tempData.timeframe,
-      allergies: tempData.allergies
+      allergies: allergyDetails
     };
     
     try {
@@ -164,14 +174,58 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
               <h3 className="text-2xl font-headline font-black uppercase">{t('alergiasRestricciones')}</h3>
               <p className="text-on-surface-variant">{t('queNoPuedesComer')}</p>
             </div>
-            <div className="space-y-6">
-              <textarea 
-                placeholder="Ej: Celíaco, intolerante a la lactosa, no me gusta el brócoli..."
-                value={tempData.allergies}
-                onChange={e => setTempData(prev => ({ ...prev, allergies: e.target.value }))}
-                className="w-full bg-surface border-none rounded-2xl p-6 h-32 font-medium resize-none focus:ring-2 focus:ring-primary"
-              />
-              <Button onClick={generatePlan} className="w-full h-14 rounded-full bg-primary text-background font-black text-lg">
+            <div className="space-y-8">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <button 
+                  onClick={() => setTempData(prev => ({ ...prev, isCeliac: !prev.isCeliac }))}
+                  className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${tempData.isCeliac ? 'border-primary bg-primary/10' : 'border-outline-variant/20 bg-surface'}`}
+                >
+                  <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center ${tempData.isCeliac ? 'bg-primary border-primary' : 'border-on-surface-variant/30'}`}>
+                    {tempData.isCeliac && <div className="w-2 h-2 bg-background rounded-sm" />}
+                  </div>
+                  <span className="font-bold uppercase text-xs tracking-widest">Celíaco</span>
+                </button>
+
+                <button 
+                  onClick={() => setTempData(prev => ({ ...prev, hasIntolerance: !prev.hasIntolerance }))}
+                  className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${tempData.hasIntolerance ? 'border-primary bg-primary/10' : 'border-outline-variant/20 bg-surface'}`}
+                >
+                  <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center ${tempData.hasIntolerance ? 'bg-primary border-primary' : 'border-on-surface-variant/30'}`}>
+                    {tempData.hasIntolerance && <div className="w-2 h-2 bg-background rounded-sm" />}
+                  </div>
+                  <span className="font-bold uppercase text-xs tracking-widest">Intolerancia</span>
+                </button>
+
+                <button 
+                  onClick={() => setTempData(prev => ({ ...prev, hasAllergy: !prev.hasAllergy }))}
+                  className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${tempData.hasAllergy ? 'border-primary bg-primary/10' : 'border-outline-variant/20 bg-surface'}`}
+                >
+                  <div className={`w-6 h-6 rounded-md border-2 flex items-center justify-center ${tempData.hasAllergy ? 'bg-primary border-primary' : 'border-on-surface-variant/30'}`}>
+                    {tempData.hasAllergy && <div className="w-2 h-2 bg-background rounded-sm" />}
+                  </div>
+                  <span className="font-bold uppercase text-xs tracking-widest">Alergia</span>
+                </button>
+              </div>
+
+              <AnimatePresence>
+                {(tempData.isCeliac || tempData.hasIntolerance || tempData.hasAllergy) && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    className="overflow-hidden"
+                  >
+                    <textarea 
+                      placeholder="Especifica aquí tus alergias o intolerancias..."
+                      value={tempData.allergies}
+                      onChange={e => setTempData(prev => ({ ...prev, allergies: e.target.value }))}
+                      className="w-full bg-surface border-none rounded-2xl p-6 h-32 font-medium resize-none focus:ring-2 focus:ring-primary shadow-inner"
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <Button onClick={generatePlan} className="w-full h-14 rounded-full bg-primary text-background font-black text-lg shadow-xl shadow-primary/20">
                 {t('generarDieta')}
               </Button>
             </div>
@@ -205,7 +259,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
                     <img 
                       src={`https://picsum.photos/seed/${meal.name.replace(/\s/g, '')}/800/600?blur=1`} 
                       alt={meal.name} 
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale"
                       referrerPolicy="no-referrer"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent" />
