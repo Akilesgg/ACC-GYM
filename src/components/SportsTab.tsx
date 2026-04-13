@@ -104,8 +104,9 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
   const startConfiguration = (configs: SportConfig[]) => {
     if (configs.length === 0) return;
     
-    if (configs.length > 1) {
-      setAllConfigs(configs);
+    setAllConfigs(configs);
+    // Show combined step if we have multiple new sports OR if we already have sports in profile
+    if (configs.length > 1 || profile.selectedSports.length > 0) {
       setStep('combined');
     } else {
       finalizePlans(configs, false);

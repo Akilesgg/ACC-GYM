@@ -30,14 +30,22 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
   const [openCategories, setOpenCategories] = useState<string[]>([]);
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
   const [sportConfigs, setSportConfigs] = useState<Record<string, { goal: string, frequency: number, duration: number, isCombined: boolean }>>({});
+  const [configuringSport, setConfiguringSport] = useState<string | null>(null);
 
   const toggleSport = (sportName: string) => {
+    const isCurrentlySelected = selectedSports.includes(sportName);
     onSelect(sportName);
-    if (!selectedSports.includes(sportName)) {
+    
+    if (!isCurrentlySelected) {
       setSportConfigs(prev => ({
         ...prev,
         [sportName]: { goal: 'Fuerza y Tonificación', frequency: 3, duration: 60, isCombined: true }
       }));
+      setConfiguringSport(sportName);
+    } else {
+      if (configuringSport === sportName) {
+        setConfiguringSport(null);
+      }
     }
   };
 
@@ -308,7 +316,7 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
 
                           {/* Inline Config "Subcategories" */}
                           <AnimatePresence>
-                            {isSelected && (
+                            {(isSelected || configuringSport === sport.name) && (
                               <motion.div
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: 'auto' }}
@@ -390,7 +398,7 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
                                     </div>
                                     <Button 
                                       size="sm" 
-                                      onClick={() => toggleSport(sport.name)}
+                                      onClick={() => setConfiguringSport(null)}
                                       className="bg-primary text-background text-[10px] font-black uppercase tracking-widest px-6 rounded-xl h-10"
                                     >
                                       {t('aceptar')}
