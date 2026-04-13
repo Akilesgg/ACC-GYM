@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import { UserProfile, Screen, Language } from '../types';
 import { User } from '../lib/firebase';
 
@@ -16,16 +17,27 @@ interface AppState {
   setLoading: (loading: boolean) => void;
 }
 
-export const useStore = create<AppState>((set) => ({
-  user: null,
-  profile: null,
-  activeScreen: 'login',
-  language: 'es',
-  loading: true,
+export const useStore = create<AppState>()(
+  persist(
+    (set) => ({
+      user: null,
+      profile: null,
+      activeScreen: 'login',
+      language: 'es',
+      loading: true,
 
-  setUser: (user) => set({ user }),
-  setProfile: (profile) => set({ profile }),
-  setActiveScreen: (activeScreen) => set({ activeScreen }),
-  setLanguage: (language) => set({ language }),
-  setLoading: (loading) => set({ loading }),
-}));
+      setUser: (user) => set({ user }),
+      setProfile: (profile) => set({ profile }),
+      setActiveScreen: (activeScreen) => set({ activeScreen }),
+      setLanguage: (language) => set({ language }),
+      setLoading: (loading) => set({ loading }),
+    }),
+    {
+      name: 'acc-sport-storage',
+      partialize: (state) => ({ 
+        activeScreen: state.activeScreen, 
+        language: state.language 
+      }),
+    }
+  )
+);

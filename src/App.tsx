@@ -61,10 +61,14 @@ export default function App() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      console.log("[AUTH] State changed:", currentUser?.uid ? "User Logged In" : "No User");
       setUser(currentUser);
+      
       if (currentUser) {
+        // We found a user, now we MUST wait for the profile
+        setLoading(true);
         const unsubProfile = subscribeToProfile(currentUser.uid, (fetchedProfile) => {
-          console.log("Profile updated:", fetchedProfile?.username, "Screen:", activeScreen);
+          console.log("[PROFILE] Fetched:", fetchedProfile?.username);
           const sanitizedProfile = fetchedProfile ? {
             ...fetchedProfile,
             selectedSports: fetchedProfile.selectedSports || []
@@ -73,30 +77,28 @@ export default function App() {
           setProfile(sanitizedProfile);
           
           if (sanitizedProfile) {
-            // If we have a profile, always go to dashboard if we are on login or onboarding
+            // If we have a profile and we are on a "guest" screen, go to dashboard
             if (activeScreen === 'login' || activeScreen === 'onboarding') {
               setActiveScreen('dashboard');
             }
-            // Only set online if not already invisible
             if (sanitizedProfile.status !== 'invisible') {
               chatService.updateUserStatus(currentUser.uid, 'online');
             }
           } else {
-            // No profile found in DB
-            // If we are NOT already in onboarding, go there
-            if (activeScreen !== 'onboarding') {
-              setActiveScreen('onboarding');
-            }
+            // User is logged in but has no profile document -> Onboarding
+            setActiveScreen('onboarding');
             chatService.updateUserStatus(currentUser.uid, 'online');
           }
           setLoading(false);
         }, (error) => {
-          console.error("Profile subscription error:", error);
+          console.error("[PROFILE] Subscription error:", error);
           setLoading(false);
         });
 
-        // Fallback to stop loading after 5 seconds if profile sub doesn't fire
-        const timeout = setTimeout(() => setLoading(false), 5000);
+        // Safety timeout
+        const timeout = setTimeout(() => {
+          setLoading(false);
+        }, 8000);
 
         return () => {
           unsubProfile();
@@ -104,6 +106,7 @@ export default function App() {
           chatService.updateUserStatus(currentUser.uid, 'offline');
         };
       } else {
+        // No user logged in
         setProfile(null);
         setActiveScreen('login');
         setLoading(false);
@@ -160,7 +163,18 @@ export default function App() {
       return <Onboarding onComplete={handleOnboardingComplete} />;
     }
 
-    if (!profile && user) return <Onboarding onComplete={handleOnboardingComplete} />;
+    if (activeScreen === 'login') {
+      return <Login language={language} />;
+    }
+
+    if (!profile && user) {
+      return (
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-on-surface-variant font-bold animate-pulse">Cargando perfil...</p>
+        </div>
+      );
+    }
 
     switch (activeScreen) {
       case 'dashboard': return <Dashboard profile={profile!} onUpdateProfile={handleProfileUpdate} onAddSport={() => setActiveScreen('workout')} onGoToTracking={() => setActiveScreen('tracking')} language={language} />;
@@ -171,14 +185,9 @@ export default function App() {
       case 'profile': return <Profile profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
       case 'devices': return <Devices profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
       case 'community': return <UserPanel language={language} />;
-      case 'login': return <Login language={language} />;
       default: return <Dashboard profile={profile!} onUpdateProfile={handleProfileUpdate} onAddSport={() => setActiveScreen('workout')} onGoToTracking={() => setActiveScreen('tracking')} language={language} />;
     }
   };
-
-  if (!user && activeScreen === 'login') {
-    return <Login language={language} />;
-  }
 
   return (
     <div className="min-h-screen bg-background text-on-surface relative">
