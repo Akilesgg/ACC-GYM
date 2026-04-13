@@ -79,7 +79,8 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
     
     try {
       const plan = await generateNutritionPlan(updatedProfile);
-      onUpdateProfile({ ...updatedProfile, nutritionPlan: plan });
+      const profileWithPlan = { ...updatedProfile, nutritionPlan: plan };
+      onUpdateProfile(profileWithPlan);
       setStep('plan');
     } catch (error) {
       console.error(error);

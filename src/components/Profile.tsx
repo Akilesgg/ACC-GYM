@@ -2,11 +2,12 @@ import { UserProfile, Language } from '../types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { motion } from 'motion/react';
-import { User, Mail, Shield, Scale, Ruler, Calendar, ArrowLeft, LogOut, Watch, Dumbbell } from 'lucide-react';
+import { User, Mail, Shield, Scale, Ruler, Calendar, ArrowLeft, LogOut, Watch, Dumbbell, TrendingUp, ChevronRight, Brain } from 'lucide-react';
 import { useTranslation } from '../lib/i18n';
 import { logout } from '../services/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useStore } from '../store/useStore';
+import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 
 interface ProfileProps {
   profile: UserProfile;
@@ -174,6 +175,46 @@ export default function Profile({ profile, onBack, language }: ProfileProps) {
                 </Button>
               </Card>
             )}
+          </div>
+        </section>
+
+        {/* Evolution Section Merged */}
+        <section className="mt-12 space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-secondary/20 rounded-2xl flex items-center justify-center text-secondary">
+                <TrendingUp size={24} />
+              </div>
+              <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">{t('evolucion')}</h3>
+            </div>
+            <Button variant="ghost" onClick={() => setActiveScreen('gallery')} className="text-primary font-bold uppercase tracking-widest text-xs">
+              {t('verTodo')} <ChevronRight size={16} />
+            </Button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="bg-surface border-none p-6">
+              <h4 className="font-headline font-bold uppercase text-sm mb-4">{t('evolucionPeso')}</h4>
+              <div className="h-[200px]">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={profile.weightHistory || []}>
+                    <defs>
+                      <linearGradient id="colorWeight" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#ff3b3b" stopOpacity={0.3}/>
+                        <stop offset="95%" stopColor="#ff3b3b" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <Area type="monotone" dataKey="weight" stroke="#ff3b3b" fillOpacity={1} fill="url(#colorWeight)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            </Card>
+            <Card className="bg-surface border-none p-6 flex flex-col justify-center items-center text-center space-y-4">
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+                <Brain size={32} />
+              </div>
+              <p className="text-sm italic text-on-surface-variant">"{t('analisis')}: Basado en tus fotos y peso actual, se observa una mejora en la composición corporal."</p>
+            </Card>
           </div>
         </section>
       </section>

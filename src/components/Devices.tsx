@@ -122,6 +122,9 @@ export default function Devices({ profile, onUpdateProfile, onBack, language }: 
               <p className="text-on-surface-variant leading-relaxed max-w-2xl">
                 {t('explicacionSincronizacion')}
               </p>
+              <p className="text-primary font-bold text-sm mt-2">
+                {t('sincronizacionExplicacion')}
+              </p>
             </div>
           </div>
         </Card>
