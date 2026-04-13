@@ -187,7 +187,7 @@ export default function Profile({ profile, onBack, language }: ProfileProps) {
               </div>
               <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">{t('evolucion')}</h3>
             </div>
-            <Button variant="ghost" onClick={() => setActiveScreen('gallery')} className="text-primary font-bold uppercase tracking-widest text-xs">
+            <Button variant="ghost" onClick={() => setActiveScreen('evolution')} className="text-primary font-bold uppercase tracking-widest text-xs">
               {t('verTodo')} <ChevronRight size={16} />
             </Button>
           </div>

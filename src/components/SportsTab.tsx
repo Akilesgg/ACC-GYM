@@ -152,6 +152,7 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
     
     try {
       let updatedSports = [...profile.selectedSports];
+      let globalPlan: TrainingPlan | undefined;
       
       if (isCombined) {
         // Combine new configs with existing ones
@@ -169,6 +170,7 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
         
         // Update all sports with the same combined plan
         updatedSports = allTargetConfigs.map(c => ({ ...c, plan: combinedPlan, isCombined: true }));
+        globalPlan = combinedPlan;
         setActivePlan(combinedPlan);
       } else {
         for (const config of configs) {
@@ -179,7 +181,7 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
         setActivePlan(updatedSports[updatedSports.length - 1].plan);
       }
       
-      await onUpdateProfile({ ...profile, selectedSports: updatedSports });
+      await onUpdateProfile({ ...profile, selectedSports: updatedSports, plan: globalPlan });
     } catch (error) {
       console.error(error);
     } finally {

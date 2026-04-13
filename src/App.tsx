@@ -4,14 +4,16 @@ import TopNav from './components/TopNav';
 import BottomNav from './components/BottomNav';
 import Dashboard from './components/Dashboard';
 import Nutrition from './components/Nutrition';
-import Gallery from './components/Gallery';
-import Tracking from './components/Tracking';
+import Evolution from './components/Evolution';
 import Login from './components/Login';
 import Onboarding from './components/Onboarding';
 import SportsTab from './components/SportsTab';
 import Profile from './components/Profile';
 import UserPanel from './components/UserPanel';
 import Devices from './components/Devices';
+import News from './components/News';
+import ExternalIntel from './components/ExternalIntel';
+import Movies from './components/Movies';
 import DynamicBackground from './components/DynamicBackground';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth, onAuthStateChanged } from './lib/firebase';
@@ -219,15 +221,17 @@ export default function App() {
     }
 
     switch (activeScreen) {
-      case 'dashboard': return <Dashboard profile={profile!} onUpdateProfile={handleProfileUpdate} onAddSport={() => setActiveScreen('workout')} onGoToTracking={() => setActiveScreen('tracking')} onGoToProfile={() => setActiveScreen('profile')} language={language} />;
+      case 'dashboard': return <Dashboard profile={profile!} onUpdateProfile={handleProfileUpdate} onAddSport={() => setActiveScreen('workout')} onGoToTracking={() => setActiveScreen('evolution')} onGoToProfile={() => setActiveScreen('profile')} onGoToNews={() => setActiveScreen('news')} onGoToIntel={() => setActiveScreen('externalIntel')} onGoToMovies={() => setActiveScreen('movies')} language={language} />;
       case 'workout': return <SportsTab onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
       case 'nutrition': return <Nutrition profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
-      case 'gallery': return <Gallery profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
-      case 'tracking': return <Tracking profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
+      case 'evolution': return <Evolution profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
       case 'profile': return <Profile profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
       case 'devices': return <Devices profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
       case 'community': return <UserPanel language={language} />;
-      default: return <Dashboard profile={profile!} onUpdateProfile={handleProfileUpdate} onAddSport={() => setActiveScreen('workout')} onGoToTracking={() => setActiveScreen('tracking')} onGoToProfile={() => setActiveScreen('profile')} language={language} />;
+      case 'news': return <News language={language} />;
+      case 'externalIntel': return <ExternalIntel language={language} />;
+      case 'movies': return <Movies language={language} />;
+      default: return <Dashboard profile={profile!} onUpdateProfile={handleProfileUpdate} onAddSport={() => setActiveScreen('workout')} onGoToTracking={() => setActiveScreen('evolution')} onGoToProfile={() => setActiveScreen('profile')} onGoToNews={() => setActiveScreen('news')} onGoToIntel={() => setActiveScreen('externalIntel')} onGoToMovies={() => setActiveScreen('movies')} language={language} />;
     }
   };
 

@@ -167,7 +167,7 @@ const translations = {
     noticias: "Noticias",
     sentimiento: "Sentimiento",
     señales: "Señales",
-    activos: "Activos",
+    activosMercado: "Activos",
     fuente: "Fuente",
     leerMas: "Leer más",
     pasos: "Pasos",

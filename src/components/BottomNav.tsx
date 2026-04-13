@@ -16,9 +16,8 @@ export default function BottomNav({ activeScreen, onScreenChange, language }: Bo
     { id: 'workout', label: t('deportes'), icon: Dumbbell },
     { id: 'community', label: t('comunidad'), icon: Users },
     { id: 'devices', label: t('dispositivos'), icon: Watch },
-    { id: 'tracking', label: 'Tracking', icon: Activity },
+    { id: 'evolution', label: t('evolucion'), icon: Activity },
     { id: 'nutrition', label: t('nutricion'), icon: Utensils },
-    { id: 'gallery', label: t('evolucion'), icon: Image },
     { id: 'profile', label: t('perfil'), icon: User },
   ] as const;
 
