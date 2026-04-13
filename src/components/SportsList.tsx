@@ -29,19 +29,19 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
   const [search, setSearch] = useState('');
   const [openCategories, setOpenCategories] = useState<string[]>([]);
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
-  const [sportConfigs, setSportConfigs] = useState<Record<string, { goal: string, frequency: number, isCombined: boolean }>>({});
+  const [sportConfigs, setSportConfigs] = useState<Record<string, { goal: string, frequency: number, duration: number, isCombined: boolean }>>({});
 
   const toggleSport = (sportName: string) => {
     onSelect(sportName);
     if (!selectedSports.includes(sportName)) {
       setSportConfigs(prev => ({
         ...prev,
-        [sportName]: { goal: 'Fuerza y Tonificación', frequency: 3, isCombined: true }
+        [sportName]: { goal: 'Fuerza y Tonificación', frequency: 3, duration: 60, isCombined: true }
       }));
     }
   };
 
-  const updateSportConfig = (sportName: string, updates: Partial<{ goal: string, frequency: number, isCombined: boolean }>) => {
+  const updateSportConfig = (sportName: string, updates: Partial<{ goal: string, frequency: number, duration: number, isCombined: boolean }>) => {
     setSportConfigs(prev => ({
       ...prev,
       [sportName]: { ...prev[sportName], ...updates }
@@ -54,6 +54,7 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
         sport: name,
         goal: sportConfigs[name]?.goal || 'Fuerza y Tonificación',
         daysPerWeek: sportConfigs[name]?.frequency || 3,
+        durationPerSession: sportConfigs[name]?.duration || 60,
         isCombined: sportConfigs[name]?.isCombined ?? true
       }));
       onConfirm(configs);
@@ -347,6 +348,31 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
                                           }`}
                                         >
                                           {d}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+
+                                  <div className="space-y-2">
+                                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">{t('duracionSesion')}</label>
+                                    <div className="grid grid-cols-3 gap-2">
+                                      {[
+                                        { label: '30 min', value: 30 },
+                                        { label: '1 h', value: 60 },
+                                        { label: '1.5 h', value: 90 },
+                                        { label: '2 h', value: 120 },
+                                        { label: '3 h', value: 180 }
+                                      ].map(dur => (
+                                        <button
+                                          key={dur.value}
+                                          onClick={() => updateSportConfig(sport.name, { duration: dur.value })}
+                                          className={`h-10 rounded-xl text-[10px] font-bold uppercase transition-all ${
+                                            (sportConfigs[sport.name]?.duration || 60) === dur.value 
+                                              ? 'bg-primary text-background' 
+                                              : 'bg-background/30 text-on-surface-variant hover:bg-background/50'
+                                          }`}
+                                        >
+                                          {dur.label}
                                         </button>
                                       ))}
                                     </div>

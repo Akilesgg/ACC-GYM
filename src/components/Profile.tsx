@@ -136,9 +136,18 @@ export default function Profile({ profile, onBack, language }: ProfileProps) {
                 <Card key={index} className="bg-surface border-none p-6 space-y-4 group hover:bg-surface-variant/30 transition-all">
                   <div className="flex items-center justify-between">
                     <h4 className="font-headline font-bold text-xl uppercase text-primary">{sport.sport}</h4>
-                    <span className="bg-secondary/10 text-secondary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
-                      {sport.daysPerWeek} {language === 'es' ? 'DÍAS' : 'DAYS'}
-                    </span>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className="bg-secondary/10 text-secondary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
+                        {sport.daysPerWeek} {language === 'es' ? 'DÍAS' : 'DAYS'}
+                      </span>
+                      {sport.durationPerSession && (
+                        <span className="bg-primary/10 text-primary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
+                          {sport.durationPerSession >= 60 
+                            ? `${sport.durationPerSession / 60} H` 
+                            : `${sport.durationPerSession} MIN`}
+                        </span>
+                      )}
+                    </div>
                   </div>
                   <div className="space-y-1">
                     <p className="text-[10px] font-bold uppercase text-on-surface-variant tracking-widest">{t('objetivo')}</p>

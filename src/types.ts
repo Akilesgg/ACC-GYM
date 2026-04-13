@@ -14,6 +14,7 @@ export interface SportConfig {
   sport: string;
   goal?: string;
   daysPerWeek?: number;
+  durationPerSession?: number;
   experienceLevel?: 'principiante' | 'intermedio' | 'avanzado' | 'elite';
   plan?: TrainingPlan;
   isCombined?: boolean;

@@ -10,7 +10,7 @@ export async function generateTrainingPlan(profile: UserProfile, sportConfig: Sp
 export async function generateCombinedTrainingPlan(profile: UserProfile, configs: SportConfig[], language: Language): Promise<TrainingPlan> {
   try {
     const isSpanish = language === 'es';
-    const sportsList = configs.map(c => `${c.sport} (${c.daysPerWeek} ${isSpanish ? 'días' : 'days'}, ${c.goal})`).join(", ");
+    const sportsList = configs.map(c => `${c.sport} (${c.daysPerWeek} ${isSpanish ? 'días' : 'days'}, ${c.durationPerSession || 60} min/sesión, ${c.goal})`).join(", ");
     
     const prompt = isSpanish 
       ? `Genera un plan de entrenamiento COMBINADO y profesional para los siguientes deportes: ${sportsList}.

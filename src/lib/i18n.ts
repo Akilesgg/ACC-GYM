@@ -160,6 +160,7 @@ const translations = {
     aceptar: "Aceptar",
     combinarConOtros: "¿Combinar con otros deportes?",
     explicacionSincronizacion: "Tus dispositivos se sincronizan automáticamente a través de la aplicación móvil de ACC SPORT. Asegúrate de tener Bluetooth activado en tu teléfono para una conexión estable.",
+    duracionSesion: "Duración por Sesión",
     misDeportesSeleccionados: "Mis Deportes Seleccionados"
   },
   en: {
@@ -320,6 +321,7 @@ const translations = {
     aceptar: "Accept",
     combinarConOtros: "Combine with other sports?",
     explicacionSincronizacion: "Your devices sync automatically via the ACC SPORT mobile app. Make sure Bluetooth is enabled on your phone for a stable connection.",
+    duracionSesion: "Duration per Session",
     misDeportesSeleccionados: "My Selected Sports"
   }
 };
