@@ -108,6 +108,24 @@ export default function Devices({ profile, onUpdateProfile, onBack, language }: 
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+        {/* Sync Info Section */}
+        <Card className="lg:col-span-2 bg-surface-variant/5 border border-primary/10 p-8 rounded-[32px] relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-8 opacity-5">
+            <Smartphone size={160} />
+          </div>
+          <div className="relative z-10 flex flex-col md:flex-row items-center gap-8">
+            <div className="w-20 h-20 rounded-3xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+              <Smartphone size={40} />
+            </div>
+            <div className="space-y-2 text-center md:text-left">
+              <h3 className="font-headline text-2xl font-black uppercase tracking-tight">Sincronización Móvil</h3>
+              <p className="text-on-surface-variant leading-relaxed max-w-2xl">
+                {t('explicacionSincronizacion')}
+              </p>
+            </div>
+          </div>
+        </Card>
+
         {/* Gadgets Section */}
         <section className="space-y-8">
           <div className="flex items-center gap-3">

@@ -11,10 +11,11 @@ interface DashboardProps {
   onUpdateProfile: (profile: UserProfile) => void;
   onAddSport: () => void;
   onGoToTracking: () => void;
+  onGoToProfile: () => void;
   language: Language;
 }
 
-export default function Dashboard({ profile, onUpdateProfile, onAddSport, onGoToTracking, language }: DashboardProps) {
+export default function Dashboard({ profile, onUpdateProfile, onAddSport, onGoToTracking, onGoToProfile, language }: DashboardProps) {
   const t = useTranslation(language);
   const [selectedSportIndex, setSelectedSportIndex] = useState(0);
 
@@ -113,41 +114,33 @@ export default function Dashboard({ profile, onUpdateProfile, onAddSport, onGoTo
           <ChevronRight className="text-primary group-hover:translate-x-1 transition-transform" />
         </Card>
 
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-headline text-xl font-black uppercase tracking-tight">{t('tusDeportes')}</h3>
-            <p className="text-xs text-on-surface-variant font-bold uppercase tracking-widest">
-              {profile.selectedSports.length} {t('activos')}
-            </p>
+        {/* Plan Display */}
+        {plan ? (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h3 className="font-headline text-2xl font-black uppercase tracking-tight">
+                {language === 'es' ? 'Tu Plan de' : 'Your Plan for'} <span className="text-primary">{currentSportConfig.sport}</span>
+              </h3>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={onGoToProfile}
+                className="text-[10px] font-black uppercase tracking-widest text-secondary"
+              >
+                {language === 'es' ? 'Cambiar Deporte' : 'Change Sport'}
+              </Button>
+            </div>
+            {/* ... existing plan rendering ... */}
           </div>
-          
-          <div className="flex flex-wrap gap-3">
-            {profile.selectedSports.map((config, idx) => (
-              <div key={config.sport} className="group relative">
-                <Button
-                  variant="ghost"
-                  onClick={() => setSelectedSportIndex(idx)}
-                  className={`rounded-full px-6 h-12 transition-all whitespace-nowrap pr-12 ${selectedSportIndex === idx ? 'bg-primary text-background' : 'bg-surface text-on-surface-variant'}`}
-                >
-                  {config.sport}
-                </Button>
-                <button 
-                  onClick={(e) => { e.stopPropagation(); removeSport(idx); }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-on-surface-variant/40 hover:text-tertiary transition-colors"
-                >
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            ))}
-            <Button 
-              variant="outline" 
-              className="rounded-full w-12 h-12 p-0 border-dashed border-primary/30 text-primary hover:bg-primary/10 shrink-0"
-              onClick={onAddSport}
-            >
-              <Plus size={20} />
+        ) : (
+          <div className="text-center py-12 bg-surface/30 rounded-[32px] border border-dashed border-outline-variant/20">
+            <Dumbbell size={48} className="mx-auto mb-4 opacity-20" />
+            <p className="font-headline font-bold uppercase tracking-widest opacity-40">{t('noDeportes')}</p>
+            <Button onClick={onAddSport} className="mt-4 bg-primary text-background font-black uppercase tracking-widest px-8 rounded-xl">
+              {t('añadirDeporte')}
             </Button>
           </div>
-        </div>
+        )}
       </section>
 
       {profile.selectedSports.length === 0 ? (

@@ -2,7 +2,7 @@ import { UserProfile, Language } from '../types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { motion } from 'motion/react';
-import { User, Mail, Shield, Scale, Ruler, Calendar, ArrowLeft, LogOut, Watch } from 'lucide-react';
+import { User, Mail, Shield, Scale, Ruler, Calendar, ArrowLeft, LogOut, Watch, Dumbbell } from 'lucide-react';
 import { useTranslation } from '../lib/i18n';
 import { logout } from '../services/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -120,6 +120,53 @@ export default function Profile({ profile, onBack, language }: ProfileProps) {
             </Button>
           </div>
         </div>
+
+        {/* Selected Sports Section */}
+        <section className="mt-12 space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 bg-primary/20 rounded-2xl flex items-center justify-center text-primary">
+              <Dumbbell size={24} />
+            </div>
+            <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">{t('misDeportesSeleccionados')}</h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {profile.selectedSports.length > 0 ? (
+              profile.selectedSports.map((sport, index) => (
+                <Card key={index} className="bg-surface border-none p-6 space-y-4 group hover:bg-surface-variant/30 transition-all">
+                  <div className="flex items-center justify-between">
+                    <h4 className="font-headline font-bold text-xl uppercase text-primary">{sport.sport}</h4>
+                    <span className="bg-secondary/10 text-secondary text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">
+                      {sport.daysPerWeek} {language === 'es' ? 'DÍAS' : 'DAYS'}
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold uppercase text-on-surface-variant tracking-widest">{t('objetivo')}</p>
+                    <p className="font-bold text-lg">{sport.goal}</p>
+                  </div>
+                  {sport.isCombined && (
+                    <div className="pt-3 border-t border-outline-variant/10">
+                      <span className="text-[10px] font-black text-secondary uppercase tracking-widest">Plan Combinado Activo</span>
+                    </div>
+                  )}
+                </Card>
+              ))
+            ) : (
+              <Card className="col-span-full bg-surface/50 border-dashed border-2 border-outline-variant/20 p-12 text-center">
+                <p className="text-on-surface-variant font-bold uppercase tracking-widest opacity-40">
+                  {language === 'es' ? 'No tienes deportes seleccionados' : 'No sports selected'}
+                </p>
+                <Button 
+                  variant="link" 
+                  onClick={() => setActiveScreen('workout')}
+                  className="mt-2 text-primary font-black uppercase tracking-widest"
+                >
+                  {t('añadirDeporte')}
+                </Button>
+              </Card>
+            )}
+          </div>
+        </section>
       </section>
     </div>
   );

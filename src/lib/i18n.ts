@@ -1,4 +1,5 @@
 import { Language } from '../types';
+import { useCallback } from 'react';
 
 const translations = {
   es: {
@@ -154,7 +155,11 @@ const translations = {
     hapkido: "Hapkido",
     wingChun: "Wing Chun",
     savate: "Savate",
-    taiChi: "Tai Chi"
+    taiChi: "Tai Chi",
+    aceptar: "Aceptar",
+    combinarConOtros: "¿Combinar con otros deportes?",
+    explicacionSincronizacion: "Tus dispositivos se sincronizan automáticamente a través de la aplicación móvil de ACC SPORT. Asegúrate de tener Bluetooth activado en tu teléfono para una conexión estable.",
+    misDeportesSeleccionados: "Mis Deportes Seleccionados"
   },
   en: {
     inicio: "Home",
@@ -309,12 +314,16 @@ const translations = {
     hapkido: "Hapkido",
     wingChun: "Wing Chun",
     savate: "Savate",
-    taiChi: "Tai Chi"
+    taiChi: "Tai Chi",
+    aceptar: "Accept",
+    combinarConOtros: "Combine with other sports?",
+    explicacionSincronizacion: "Your devices sync automatically via the ACC SPORT mobile app. Make sure Bluetooth is enabled on your phone for a stable connection.",
+    misDeportesSeleccionados: "My Selected Sports"
   }
 };
 
 export const useTranslation = (lang: Language) => {
-  return (key: keyof typeof translations['es']) => {
-    return translations[lang][key] || translations['es'][key];
-  };
+  return useCallback((key: keyof typeof translations['es']) => {
+    return (translations[lang] as any)[key] || (translations['es'] as any)[key];
+  }, [lang]);
 };

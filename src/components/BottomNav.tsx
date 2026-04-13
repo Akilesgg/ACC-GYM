@@ -1,4 +1,4 @@
-import { Home, Dumbbell, Utensils, Image, Activity, Users, Watch } from 'lucide-react';
+import { Home, Dumbbell, Utensils, Image, Activity, Users, Watch, User } from 'lucide-react';
 import { Screen, Language } from '../types';
 import { cn } from '@/lib/utils';
 import { useTranslation } from '../lib/i18n';
@@ -19,6 +19,7 @@ export default function BottomNav({ activeScreen, onScreenChange, language }: Bo
     { id: 'tracking', label: 'Tracking', icon: Activity },
     { id: 'nutrition', label: t('nutricion'), icon: Utensils },
     { id: 'gallery', label: t('evolucion'), icon: Image },
+    { id: 'profile', label: t('perfil'), icon: User },
   ] as const;
 
   return (

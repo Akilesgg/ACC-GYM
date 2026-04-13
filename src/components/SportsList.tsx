@@ -27,22 +27,21 @@ const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 export default function SportsList({ sports, selectedSports, onSelect, onConfirm, language }: SportsListProps) {
   const t = useTranslation(language);
   const [search, setSearch] = useState('');
-  const [openCategory, setOpenCategory] = useState<string | null>(null);
-  const [showAll, setShowAll] = useState(true);
+  const [openCategories, setOpenCategories] = useState<string[]>([]);
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
-  const [sportConfigs, setSportConfigs] = useState<Record<string, { goal: string, frequency: number }>>({});
+  const [sportConfigs, setSportConfigs] = useState<Record<string, { goal: string, frequency: number, isCombined: boolean }>>({});
 
   const toggleSport = (sportName: string) => {
     onSelect(sportName);
     if (!selectedSports.includes(sportName)) {
       setSportConfigs(prev => ({
         ...prev,
-        [sportName]: { goal: 'Fuerza y Tonificación', frequency: 3 }
+        [sportName]: { goal: 'Fuerza y Tonificación', frequency: 3, isCombined: true }
       }));
     }
   };
 
-  const updateSportConfig = (sportName: string, updates: Partial<{ goal: string, frequency: number }>) => {
+  const updateSportConfig = (sportName: string, updates: Partial<{ goal: string, frequency: number, isCombined: boolean }>) => {
     setSportConfigs(prev => ({
       ...prev,
       [sportName]: { ...prev[sportName], ...updates }
@@ -54,9 +53,26 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
       const configs: SportConfig[] = selectedSports.map(name => ({
         sport: name,
         goal: sportConfigs[name]?.goal || 'Fuerza y Tonificación',
-        daysPerWeek: sportConfigs[name]?.frequency || 3
+        daysPerWeek: sportConfigs[name]?.frequency || 3,
+        isCombined: sportConfigs[name]?.isCombined ?? true
       }));
       onConfirm(configs);
+    }
+  };
+
+  const toggleCategory = (category: string) => {
+    setOpenCategories(prev => 
+      prev.includes(category) 
+        ? prev.filter(c => c !== category) 
+        : [...prev, category]
+    );
+  };
+
+  const toggleAllCategories = (expand: boolean) => {
+    if (expand) {
+      setOpenCategories(categories.map(c => c.category));
+    } else {
+      setOpenCategories([]);
     }
   };
 
@@ -131,38 +147,17 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
 
   useEffect(() => {
     if (search || selectedLetter) {
-      setShowAll(true);
-      setOpenCategory(null); // Reset open category to let showAll handle it
+      setOpenCategories(categories.map(c => c.category));
     }
-  }, [search, selectedLetter]);
+  }, [search, selectedLetter, categories]);
+
+  useEffect(() => {
+    // Initially open all
+    setOpenCategories(categories.map(c => c.category));
+  }, [categories]);
 
   return (
     <div className="space-y-6">
-      {/* Selected Sports Summary */}
-      <AnimatePresence>
-        {selectedSports.length > 0 && (
-          <motion.div 
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            className="bg-primary/10 border border-primary/20 rounded-2xl p-4 space-y-3"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Deportes Cargados ({selectedSports.length})</span>
-              <Button variant="ghost" size="sm" onClick={() => selectedSports.forEach(s => onSelect(s))} className="h-6 text-[10px] font-bold uppercase text-tertiary hover:text-tertiary/80">Limpiar Todo</Button>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {selectedSports.map(sportName => (
-                <span key={sportName} className="bg-primary text-on-primary text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-2">
-                  {sportName}
-                  <button onClick={() => onSelect(sportName)} className="hover:scale-125 transition-transform">×</button>
-                </span>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Search Bar */}
       <div className="relative z-10">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/40" size={20} />
@@ -178,20 +173,30 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between px-2">
           <span className="text-[10px] font-black uppercase tracking-[0.3em] text-on-surface-variant/60">Filtrar por letra</span>
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={() => setShowAll(!showAll)}
-            className={`text-[10px] font-black uppercase tracking-widest ${showAll ? 'text-primary' : 'text-on-surface-variant/40'}`}
-          >
-            {showAll ? 'Contraer Todo' : 'Expandir Todo'}
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => toggleAllCategories(true)}
+              className="text-[10px] font-black uppercase tracking-widest text-primary"
+            >
+              Expandir Todo
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => toggleAllCategories(false)}
+              className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40"
+            >
+              Contraer Todo
+            </Button>
+          </div>
         </div>
         <div className="flex flex-wrap gap-1 justify-center bg-surface/30 p-2 rounded-2xl backdrop-blur-sm">
           <button
             onClick={() => {
               setSelectedLetter(null);
-              setShowAll(true);
+              toggleAllCategories(true);
             }}
             className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${!selectedLetter ? 'bg-primary text-on-primary scale-110' : 'text-on-surface-variant hover:bg-surface'}`}
           >
@@ -203,7 +208,7 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
               onClick={() => {
                 const newLetter = selectedLetter === letter ? null : letter;
                 setSelectedLetter(newLetter);
-                if (newLetter) setShowAll(true);
+                if (newLetter) toggleAllCategories(true);
               }}
               className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${selectedLetter === letter ? 'bg-primary text-on-primary scale-110' : 'text-on-surface-variant hover:bg-surface'}`}
             >
@@ -225,7 +230,7 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
           filteredCategories.map((group) => (
             <div key={group.category} className="space-y-2">
               <button
-                onClick={() => setOpenCategory(openCategory === group.category ? null : group.category)}
+                onClick={() => toggleCategory(group.category)}
                 className="w-full flex items-center justify-between p-5 bg-surface rounded-2xl hover:bg-surface-variant/30 transition-all group border border-white/5"
               >
                 <div className="flex items-center gap-4">
@@ -235,7 +240,7 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
                   <span className="font-headline font-bold text-xl uppercase tracking-tight group-hover:scale-110 transition-transform origin-left">{group.category}</span>
                 </div>
                 <motion.div
-                  animate={{ rotate: openCategory === group.category ? 180 : 0 }}
+                  animate={{ rotate: openCategories.includes(group.category) ? 180 : 0 }}
                   transition={{ duration: 0.3 }}
                 >
                   <ChevronDown className="text-on-surface-variant/40 group-hover:text-primary transition-colors" />
@@ -243,7 +248,7 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
               </button>
 
               <AnimatePresence>
-                {(showAll || openCategory === group.category || search || selectedLetter) && (
+                {openCategories.includes(group.category) && (
                   <motion.div
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
@@ -346,6 +351,25 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
                                         </button>
                                       ))}
                                     </div>
+                                  </div>
+
+                                  <div className="flex items-center justify-between pt-2 border-t border-outline-variant/10">
+                                    <div className="flex items-center gap-2">
+                                      <button
+                                        onClick={() => updateSportConfig(sport.name, { isCombined: !sportConfigs[sport.name]?.isCombined })}
+                                        className={`w-10 h-6 rounded-full transition-all relative ${sportConfigs[sport.name]?.isCombined !== false ? 'bg-secondary' : 'bg-surface-variant'}`}
+                                      >
+                                        <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${sportConfigs[sport.name]?.isCombined !== false ? 'right-1' : 'left-1'}`} />
+                                      </button>
+                                      <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">{t('combinarConOtros')}</span>
+                                    </div>
+                                    <Button 
+                                      size="sm" 
+                                      onClick={() => toggleSport(sport.name)}
+                                      className="bg-primary text-background text-[10px] font-black uppercase tracking-widest px-6 rounded-xl h-10"
+                                    >
+                                      {t('aceptar')}
+                                    </Button>
                                   </div>
                                 </div>
                               </motion.div>
