@@ -1,4 +1,4 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { UserProfile, Screen } from './types';
 import TopNav from './components/TopNav';
 import BottomNav from './components/BottomNav';
@@ -20,6 +20,7 @@ import { useStore } from './store/useStore';
 import { seedSports } from './services/sports';
 import { INITIAL_SPORTS } from './constants';
 import { chatService } from './services/chatService';
+import { Button } from '@/components/ui/button';
 
 import { ErrorBoundary } from './components/ErrorBoundary';
 
@@ -59,54 +60,17 @@ export default function App() {
     init();
   }, []);
 
+  const activeScreenRef = useRef(activeScreen);
+  useEffect(() => {
+    activeScreenRef.current = activeScreen;
+  }, [activeScreen]);
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       console.log("[AUTH] State changed:", currentUser?.uid ? "User Logged In" : "No User");
       setUser(currentUser);
       
-      if (currentUser) {
-        // We found a user, now we MUST wait for the profile
-        setLoading(true);
-        const unsubProfile = subscribeToProfile(currentUser.uid, (fetchedProfile) => {
-          console.log("[PROFILE] Fetched:", fetchedProfile?.username);
-          const sanitizedProfile = fetchedProfile ? {
-            ...fetchedProfile,
-            selectedSports: fetchedProfile.selectedSports || []
-          } : null;
-          
-          setProfile(sanitizedProfile);
-          
-          if (sanitizedProfile) {
-            // If we have a profile and we are on a "guest" screen, go to dashboard
-            if (activeScreen === 'login' || activeScreen === 'onboarding') {
-              setActiveScreen('dashboard');
-            }
-            if (sanitizedProfile.status !== 'invisible') {
-              chatService.updateUserStatus(currentUser.uid, 'online');
-            }
-          } else {
-            // User is logged in but has no profile document -> Onboarding
-            setActiveScreen('onboarding');
-            chatService.updateUserStatus(currentUser.uid, 'online');
-          }
-          setLoading(false);
-        }, (error) => {
-          console.error("[PROFILE] Subscription error:", error);
-          setLoading(false);
-        });
-
-        // Safety timeout
-        const timeout = setTimeout(() => {
-          setLoading(false);
-        }, 8000);
-
-        return () => {
-          unsubProfile();
-          clearTimeout(timeout);
-          chatService.updateUserStatus(currentUser.uid, 'offline');
-        };
-      } else {
-        // No user logged in
+      if (!currentUser) {
         setProfile(null);
         setActiveScreen('login');
         setLoading(false);
@@ -115,6 +79,63 @@ export default function App() {
 
     return () => unsubscribe();
   }, [setUser, setProfile, setActiveScreen, setLoading]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    console.log("[PROFILE] Starting subscription for:", user.uid);
+    setLoading(true);
+
+    const unsubProfile = subscribeToProfile(user.uid, (fetchedProfile) => {
+      console.log("[PROFILE] Snapshot received:", fetchedProfile?.username || "No Profile");
+      
+      const sanitizedProfile = fetchedProfile ? {
+        ...fetchedProfile,
+        selectedSports: fetchedProfile.selectedSports || []
+      } : null;
+      
+      setProfile(sanitizedProfile);
+      
+      if (sanitizedProfile) {
+        // If we have a profile and we are on a "guest" screen, go to dashboard
+        if (activeScreenRef.current === 'login' || activeScreenRef.current === 'onboarding') {
+          setActiveScreen('dashboard');
+        }
+        if (sanitizedProfile.status !== 'invisible') {
+          chatService.updateUserStatus(user.uid, 'online');
+        }
+      } else {
+        // User is logged in but has no profile document -> Onboarding
+        console.log("[PROFILE] No profile document found, redirecting to onboarding");
+        setActiveScreen('onboarding');
+        chatService.updateUserStatus(user.uid, 'online');
+      }
+      setLoading(false);
+    }, (error) => {
+      console.error("[PROFILE] Subscription error:", error);
+      setLoading(false);
+    });
+
+    // Safety timeout to prevent infinite loading
+    const timeout = setTimeout(() => {
+      console.warn("[PROFILE] Loading timeout reached");
+      setLoading(false);
+    }, 10000);
+
+    return () => {
+      unsubProfile();
+      clearTimeout(timeout);
+      chatService.updateUserStatus(user.uid, 'offline');
+    };
+  }, [user, setProfile, setActiveScreen, setLoading]);
+
+  // Recovery effect: if stuck in "Cargando perfil..." state after loading finished
+  useEffect(() => {
+    if (user && !profile && !loading && activeScreen !== 'onboarding' && activeScreen !== 'login') {
+      console.log("[RECOVERY] Stuck in loading profile state, forcing onboarding");
+      setActiveScreen('onboarding');
+    }
+  }, [user, profile, loading, activeScreen, setActiveScreen]);
 
   const handleOnboardingComplete = async (newProfile: UserProfile) => {
     if (!user) return;
@@ -169,9 +190,20 @@ export default function App() {
 
     if (!profile && user) {
       return (
-        <div className="flex flex-col items-center justify-center py-20 gap-4">
+        <div className="flex flex-col items-center justify-center py-20 gap-6">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-on-surface-variant font-bold animate-pulse">Cargando perfil...</p>
+          <div className="text-center space-y-2">
+            <p className="text-on-surface-variant font-bold animate-pulse">Cargando perfil...</p>
+            <p className="text-xs text-on-surface-variant/60 px-6">Si esto tarda demasiado, es posible que necesites completar tu registro o reintentar la conexión.</p>
+          </div>
+          <div className="flex flex-col gap-3 w-full max-w-xs px-6">
+            <Button onClick={() => window.location.reload()} variant="outline" className="rounded-xl font-black uppercase tracking-widest h-12">
+              Reintentar Carga
+            </Button>
+            <Button onClick={() => setActiveScreen('onboarding')} variant="ghost" className="text-primary font-black uppercase tracking-widest h-12">
+              Ir a Registro
+            </Button>
+          </div>
         </div>
       );
     }
