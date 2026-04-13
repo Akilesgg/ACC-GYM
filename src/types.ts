@@ -1,4 +1,4 @@
-export type Screen = 'dashboard' | 'nutrition' | 'gallery' | 'workout' | 'login' | 'onboarding' | 'news' | 'tracking' | 'profile' | 'community' | 'devices';
+export type Screen = 'dashboard' | 'nutrition' | 'evolution' | 'workout' | 'login' | 'onboarding' | 'news' | 'tracking' | 'profile' | 'community' | 'devices' | 'externalIntel';
 export type Language = 'es' | 'en';
 export type UserRole = 'user' | 'admin' | 'trainer';
 
@@ -21,6 +21,7 @@ export interface SportConfig {
 }
 
 export interface NutritionPlan {
+  id: string;
   reasoning: string;
   meals: {
     type: string;
@@ -41,6 +42,7 @@ export interface DailyProgress {
   caloriesBurned?: number;
   steps?: number;
   heartRate?: number;
+  completed?: boolean;
 }
 
 export interface UserProfile {
@@ -61,7 +63,8 @@ export interface UserProfile {
   nutritionGoal?: string;
   nutritionTimeframe?: string;
   allergies?: string;
-  nutritionPlan?: NutritionPlan;
+  nutritionPlan?: NutritionPlan; // Legacy
+  nutritionPlans?: NutritionPlan[];
   // Evolution
   weightHistory?: WeightEntry[];
   photos?: GalleryItem[];
@@ -70,6 +73,8 @@ export interface UserProfile {
   streak?: number;
   status?: 'online' | 'offline' | 'invisible';
   lastSeen?: string;
+  // Plan
+  plan?: TrainingPlan;
   // Device Sync
   deviceData?: {
     steps: number;
