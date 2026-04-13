@@ -257,9 +257,9 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
                 <Card key={idx} className="bg-surface border-none overflow-hidden flex flex-col group hover:bg-surface-variant/30 transition-all duration-500">
                   <div className="h-48 overflow-hidden relative">
                     <img 
-                      src={`https://picsum.photos/seed/${meal.name.replace(/\s/g, '')}/800/600?blur=1`} 
+                      src={`https://picsum.photos/seed/${meal.name.replace(/\s/g, '')}/800/600`} 
                       alt={meal.name} 
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 grayscale"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                       referrerPolicy="no-referrer"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent" />

@@ -203,6 +203,15 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                   <p className="text-on-surface-variant">Seguridad y frecuencia de entrenamiento.</p>
                 </div>
                 <div className="space-y-6">
+                  {error && (
+                    <motion.div 
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="p-4 bg-destructive/10 border border-destructive/20 rounded-xl text-destructive text-xs font-bold text-center mb-4"
+                    >
+                      {error}
+                    </motion.div>
+                  )}
                   <div className="space-y-2">
                     <Label className="text-xs font-bold uppercase tracking-widest text-on-surface-variant">Lesiones o Limitaciones</Label>
                     <textarea 

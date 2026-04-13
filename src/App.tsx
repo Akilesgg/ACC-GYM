@@ -139,6 +139,12 @@ export default function App() {
 
   const handleOnboardingComplete = async (newProfile: UserProfile) => {
     if (!user) return;
+    console.log("[App] Starting onboarding completion for user:", user.uid);
+    
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error("Timeout al guardar el perfil. Verifica tu conexión.")), 15000)
+    );
+
     try {
       const fullProfile: UserProfile = { 
         ...newProfile, 
@@ -153,11 +159,15 @@ export default function App() {
         weightHistory: [{ date: new Date().toISOString().split('T')[0], weight: newProfile.weight }],
         photos: []
       };
-      await createUserProfile(fullProfile);
+      
+      console.log("[App] Creating user profile in Firestore...");
+      await Promise.race([createUserProfile(fullProfile), timeoutPromise]);
+      
+      console.log("[App] Profile created successfully. Updating local state...");
       setProfile(fullProfile);
       setActiveScreen('dashboard');
-    } catch (error) {
-      console.error("Error saving profile:", error);
+    } catch (error: any) {
+      console.error("[App] Error saving profile:", error);
       throw error;
     }
   };

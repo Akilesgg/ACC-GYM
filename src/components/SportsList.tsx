@@ -83,6 +83,7 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
   const categories: CategoryGroup[] = useMemo(() => {
     const groups: Record<string, Sport[]> = {
       [t('artesMarciales')]: [],
+      [t('deportesContacto')]: [],
       [t('deportesEquipo')]: [],
       [t('deportesIndividuales')]: [],
       [t('fitness')]: [],
@@ -91,6 +92,7 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
 
     const icons: Record<string, any> = {
       [t('artesMarciales')]: Zap,
+      [t('deportesContacto')]: Zap,
       [t('deportesEquipo')]: Users,
       [t('deportesIndividuales')]: User,
       [t('fitness')]: Dumbbell,
@@ -100,8 +102,10 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
     sports.forEach(sport => {
       let cat = t('otros');
       const lowerCat = sport.category.toLowerCase();
+      const lowerName = sport.name.toLowerCase();
       
-      if (lowerCat.includes('combate')) cat = t('artesMarciales');
+      if (lowerCat.includes('contacto') || lowerName.includes('boxeo') || lowerName.includes('boxing') || lowerName.includes('kickboxing') || lowerName.includes('muay thai') || lowerName.includes('savate')) cat = t('deportesContacto');
+      else if (lowerCat.includes('combate')) cat = t('artesMarciales');
       else if (lowerCat.includes('equipo')) cat = t('deportesEquipo');
       else if (lowerCat.includes('cardio') || lowerCat.includes('fuerza') || lowerCat.includes('híbrido')) cat = t('fitness');
       else if (lowerCat.includes('raqueta') || lowerCat.includes('atletismo') || lowerCat.includes('agua') || lowerCat.includes('invierno')) cat = t('deportesIndividuales');
@@ -150,11 +154,6 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
       setOpenCategories(categories.map(c => c.category));
     }
   }, [search, selectedLetter, categories]);
-
-  useEffect(() => {
-    // Initially open all
-    setOpenCategories(categories.map(c => c.category));
-  }, [categories]);
 
   return (
     <div className="space-y-6">
