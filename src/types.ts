@@ -8,6 +8,7 @@ export interface Sport {
   icon: string;
   category: string;
   imageUrl?: string;
+  subtypes?: string[];
 }
 
 export interface SportConfig {
@@ -18,6 +19,7 @@ export interface SportConfig {
   experienceLevel?: 'principiante' | 'intermedio' | 'avanzado' | 'elite';
   plan?: TrainingPlan;
   isCombined?: boolean;
+  subtype?: string;
 }
 
 export interface NutritionPlan {

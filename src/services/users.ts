@@ -17,7 +17,15 @@ export const createUserProfile = async (profile: UserProfile) => {
 
 export const updateUserProfile = async (uid: string, updates: Partial<UserProfile>) => {
   const docRef = doc(db, 'users', uid);
-  await updateDoc(docRef, updates);
+  try {
+    await updateDoc(docRef, updates);
+  } catch (error: any) {
+    if (error.code === 'resource-exhausted') {
+      console.error("[FIRESTORE] Cuota excedida. Los cambios no se guardarán hasta que se reinicie la cuota diaria.");
+      throw new Error("QUOTA_EXCEEDED");
+    }
+    throw error;
+  }
 };
 
 export const subscribeToProfile = (uid: string, callback: (profile: UserProfile | null) => void, onError?: (error: any) => void) => {

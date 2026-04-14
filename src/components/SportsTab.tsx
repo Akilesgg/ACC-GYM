@@ -101,16 +101,9 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
     });
   };
 
-  const startConfiguration = (configs: SportConfig[]) => {
+  const startConfiguration = (configs: SportConfig[], isCombined: boolean) => {
     if (configs.length === 0) return;
-    
-    setAllConfigs(configs);
-    // Show combined step if we have multiple new sports OR if we already have sports in profile
-    if (configs.length > 1 || profile.selectedSports.length > 0) {
-      setStep('combined');
-    } else {
-      finalizePlans(configs, false);
-    }
+    finalizePlans(configs, isCombined);
   };
 
   const handleGoalSelect = (goal: string) => {
@@ -148,19 +141,18 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
 
   const finalizePlans = async (configs: SportConfig[], isCombined: boolean) => {
     setLoading(true);
-    setStep('list');
     
     try {
       let updatedSports = [...profile.selectedSports];
       let globalPlan: TrainingPlan | undefined;
       
       if (isCombined) {
-        // Combine new configs with existing ones
+        // Combine new configs with existing ones, avoiding duplicates
         const allTargetConfigs = [...updatedSports];
         configs.forEach(c => {
           const existingIdx = allTargetConfigs.findIndex(ec => ec.sport === c.sport);
           if (existingIdx >= 0) {
-            allTargetConfigs[existingIdx] = c;
+            allTargetConfigs[existingIdx] = { ...allTargetConfigs[existingIdx], ...c };
           } else {
             allTargetConfigs.push(c);
           }
@@ -173,17 +165,29 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
         globalPlan = combinedPlan;
         setActivePlan(combinedPlan);
       } else {
+        // Individual plans for each new config
         for (const config of configs) {
           const plan = await generateTrainingPlan(profile, config, language);
-          updatedSports = updatedSports.filter(s => s.sport !== config.sport);
-          updatedSports.push({ ...config, plan, isCombined: false });
+          const existingIdx = updatedSports.findIndex(s => s.sport === config.sport);
+          if (existingIdx >= 0) {
+            updatedSports[existingIdx] = { ...config, plan, isCombined: false };
+          } else {
+            updatedSports.push({ ...config, plan, isCombined: false });
+          }
+          setActivePlan(plan);
         }
-        setActivePlan(updatedSports[updatedSports.length - 1].plan);
       }
       
-      await onUpdateProfile({ ...profile, selectedSports: updatedSports, plan: globalPlan });
+      // PERSISTENCIA REAL: Actualizar perfil con nuevos deportes y plan
+      const newProfile = { 
+        ...profile, 
+        selectedSports: updatedSports, 
+        plan: globalPlan || updatedSports[updatedSports.length - 1]?.plan 
+      };
+      
+      await onUpdateProfile(newProfile);
     } catch (error) {
-      console.error(error);
+      console.error("[SPORTS] Error finalizing plans:", error);
     } finally {
       setLoading(false);
       setSelectedSport(null);
@@ -198,10 +202,7 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
   };
 
   const goBack = () => {
-    if (step === 'goal') setStep('list');
-    else if (step === 'frequency') setStep('goal');
-    else if (step === 'combined') setStep('frequency');
-    else if (activePlan) setActivePlan(null);
+    if (activePlan) setActivePlan(null);
     else if (onBack) onBack();
   };
 
@@ -239,7 +240,7 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
       </section>
 
       {/* Active Sports Section */}
-      {step === 'list' && !activePlan && !loading && profile.selectedSports.length > 0 && (
+      {!activePlan && !loading && profile.selectedSports.length > 0 && (
         <section className="space-y-6">
           <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">{t('tusDeportesActivos')}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -251,7 +252,7 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
                   </div>
                   <div>
                     <h4 className="font-headline font-bold text-lg uppercase">{s.sport}</h4>
-                    <p className="text-xs text-on-surface-variant">{s.daysPerWeek} {t('activos').toLowerCase()} • {s.goal}</p>
+                    <p className="text-xs text-on-surface-variant">{s.daysPerWeek} {t('activos').toLowerCase()} • {s.goal} {s.subtype ? `(${s.subtype})` : ''}</p>
                   </div>
                 </div>
                 <Button 
@@ -278,71 +279,14 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
             <Loader2 className="w-12 h-12 text-primary animate-spin" />
             <p className="text-on-surface-variant font-medium">
               {language === 'es' 
-                ? `La IA está diseñando tu plan de ${selectedSport?.name}...` 
-                : `AI is designing your ${selectedSport?.name} plan...`}
+                ? `La IA está diseñando tu plan de entrenamiento...` 
+                : `AI is designing your training plan...`}
             </p>
-          </motion.div>
-        ) : step === 'goal' ? (
-          <motion.div key="goal" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
-              <SportImage iconName={selectedSport?.icon || 'Activity'} className="aspect-square w-full" />
-              <div className="text-center md:text-left">
-                <h3 className="text-4xl font-headline font-black text-on-surface uppercase tracking-tight">{selectedSport?.name}</h3>
-                <p className="text-on-surface-variant mt-2 text-lg">{t('cualEsObjetivo')}</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 gap-4">
-              {(GOALS_BY_SPORT[selectedSport?.name!] || GOALS_BY_SPORT["default"]).map(goal => (
-                <Button key={goal} variant="outline" onClick={() => handleGoalSelect(goal)} className="h-20 rounded-2xl border-outline-variant/20 hover:border-tertiary/50 hover:bg-tertiary/5 transition-all font-bold text-lg justify-between px-8 group text-on-surface">
-                  {goal}
-                  <ChevronRight size={20} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                </Button>
-              ))}
-            </div>
-          </motion.div>
-        ) : step === 'frequency' ? (
-          <motion.div key="frequency" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
-              <div className="w-20 h-20 bg-primary/20 rounded-3xl flex items-center justify-center mx-auto md:mx-0">
-                <Calendar className="text-primary" size={40} />
-              </div>
-              <div className="text-center md:text-left">
-                <h3 className="text-4xl font-headline font-black text-on-surface uppercase tracking-tight">{t('frecuencia')}</h3>
-                <p className="text-on-surface-variant mt-2 text-lg">{t('cuantosDias')} {selectedSport?.name}?</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[1, 2, 3, 4, 5, 6, 7].map(days => (
-                <Button key={days} variant="outline" onClick={() => handleFrequencySelect(days)} className="h-24 rounded-2xl border-outline-variant/20 hover:border-primary/50 hover:bg-primary/5 transition-all font-bold text-3xl text-on-surface">
-                  {days}
-                </Button>
-              ))}
-            </div>
-          </motion.div>
-        ) : step === 'combined' ? (
-          <motion.div key="combined" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="max-w-2xl mx-auto space-y-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-secondary/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Zap className="text-secondary" size={32} />
-              </div>
-              <h3 className="text-3xl font-headline font-black text-on-surface">{t('planCombinado').toUpperCase()}</h3>
-              <p className="text-on-surface-variant mt-2">{t('yaTienesOtros')}</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Button variant="outline" onClick={() => handleCombinedSelect(true)} className="h-24 rounded-2xl border-secondary/30 hover:bg-secondary/10 font-bold text-lg flex flex-col text-on-surface">
-                <span>{t('siCombinar')}</span>
-                <span className="text-xs font-normal opacity-60">{t('optimizaSemana')}</span>
-              </Button>
-              <Button variant="outline" onClick={() => handleCombinedSelect(false)} className="h-24 rounded-2xl border-outline-variant/20 hover:bg-surface font-bold text-lg flex flex-col text-on-surface">
-                <span>{t('noIndependiente')}</span>
-                <span className="text-xs font-normal opacity-60">{t('soloPara')} {selectedSport?.name}</span>
-              </Button>
-            </div>
           </motion.div>
         ) : activePlan ? (
           <motion.div key="plan" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-8">
             <div className="flex items-center justify-between">
-              <h3 className="font-headline text-2xl font-black text-primary uppercase italic">{selectedSport?.name} - {t('planGenerado')}</h3>
+              <h3 className="font-headline text-2xl font-black text-primary uppercase italic">{t('planGenerado')}</h3>
               <Button variant="outline" onClick={() => setActivePlan(null)} className="rounded-full">{t('cambiarDeporte')}</Button>
             </div>
             <Card className="bg-surface border-l-4 border-secondary p-8 relative overflow-hidden">

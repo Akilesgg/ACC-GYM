@@ -1,4 +1,4 @@
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import { UserProfile, Screen } from './types';
 import TopNav from './components/TopNav';
 import BottomNav from './components/BottomNav';
@@ -22,6 +22,8 @@ import { useStore } from './store/useStore';
 import { seedSports } from './services/sports';
 import { INITIAL_SPORTS } from './constants';
 import { chatService } from './services/chatService';
+import { Card } from '@/components/ui/card';
+import { RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -34,6 +36,8 @@ export default function App() {
     language, setLanguage,
     loading, setLoading 
   } = useStore();
+
+  const [error, setError] = useState<string | null>(null);
 
   const setActiveScreen = useCallback((screen: Screen) => {
     console.log(`[NAV] Navigating to: ${screen}`);
@@ -177,9 +181,13 @@ export default function App() {
   const handleProfileUpdate = async (updatedProfile: UserProfile) => {
     if (!user) return;
     try {
+      setError(null);
       await updateUserProfile(user.uid, updatedProfile);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating profile:", error);
+      if (error.message === 'QUOTA_EXCEEDED') {
+        setError("Límite de datos alcanzado para hoy. Tu progreso se guardará localmente pero no en la nube hasta mañana.");
+      }
     }
   };
 
@@ -255,6 +263,23 @@ export default function App() {
       />
       
       <div className="relative z-20">
+        <AnimatePresence>
+          {error && (
+            <motion.div 
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] w-full max-w-md px-6"
+            >
+              <Card className="bg-destructive text-destructive-foreground p-4 rounded-2xl shadow-2xl flex items-center justify-between gap-4">
+                <p className="text-xs font-bold uppercase tracking-widest">{error}</p>
+                <Button variant="ghost" size="icon" onClick={() => setError(null)} className="rounded-full hover:bg-white/20">
+                  <RotateCcw size={16} />
+                </Button>
+              </Card>
+            </motion.div>
+          )}
+        </AnimatePresence>
         <main className="pt-24 pb-32 px-6 max-w-5xl mx-auto relative z-30">
           <ErrorBoundary key={activeScreen}>
             {renderScreen()}

@@ -12,7 +12,7 @@ interface SportsListProps {
   sports: Sport[];
   selectedSports: string[];
   onSelect: (sportName: string) => void;
-  onConfirm?: (configs: SportConfig[]) => void;
+  onConfirm?: (configs: SportConfig[], isCombined: boolean) => void;
   language: Language;
 }
 
@@ -49,23 +49,24 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
     }
   };
 
-  const updateSportConfig = (sportName: string, updates: Partial<{ goal: string, frequency: number, duration: number, isCombined: boolean }>) => {
+  const updateSportConfig = (sportName: string, updates: Partial<{ goal: string, frequency: number, duration: number, isCombined: boolean, subtype: string }>) => {
     setSportConfigs(prev => ({
       ...prev,
       [sportName]: { ...prev[sportName], ...updates }
     }));
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = (isCombined: boolean) => {
     if (onConfirm) {
       const configs: SportConfig[] = selectedSports.map(name => ({
         sport: name,
         goal: sportConfigs[name]?.goal || 'Fuerza y Tonificación',
         daysPerWeek: sportConfigs[name]?.frequency || 3,
         durationPerSession: sportConfigs[name]?.duration || 60,
-        isCombined: sportConfigs[name]?.isCombined ?? true
+        isCombined: isCombined,
+        subtype: sportConfigs[name]?.subtype
       }));
-      onConfirm(configs);
+      onConfirm(configs, isCombined);
     }
   };
 
@@ -324,6 +325,27 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
                                 className="overflow-hidden"
                               >
                                 <div className="bg-surface-variant/10 rounded-2xl p-4 space-y-4 border border-outline-variant/10 backdrop-blur-md">
+                                  {sport.subtypes && (
+                                    <div className="space-y-2">
+                                      <label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Subtipo de {sport.name}</label>
+                                      <div className="grid grid-cols-2 gap-2">
+                                        {sport.subtypes.map(st => (
+                                          <button
+                                            key={st}
+                                            onClick={() => updateSportConfig(sport.name, { subtype: st })}
+                                            className={`h-10 rounded-xl text-[10px] font-bold uppercase transition-all ${
+                                              (sportConfigs[sport.name]?.subtype) === st 
+                                                ? 'bg-primary text-on-primary shadow-lg shadow-primary/20' 
+                                                : 'bg-background/30 text-on-surface-variant hover:bg-background/50'
+                                            }`}
+                                          >
+                                            {st}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  )}
+
                                   <div className="space-y-2">
                                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Objetivo para {sport.name}</label>
                                     <div className="grid grid-cols-2 gap-2">
@@ -424,14 +446,34 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-6"
+          className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 w-full max-w-lg px-6 flex gap-3"
         >
-          <Button 
-            onClick={handleConfirm}
-            className="w-full h-16 rounded-2xl bg-primary text-on-primary font-black text-xl uppercase tracking-tighter shadow-2xl shadow-primary/40 hover:scale-105 transition-transform"
-          >
-            {t('generarPlan')} ({selectedSports.length})
-          </Button>
+          {selectedSports.length === 1 && (
+            <Button 
+              onClick={() => handleConfirm(false)}
+              className="flex-1 h-16 rounded-2xl bg-surface border-2 border-primary text-primary font-black text-lg uppercase tracking-tighter shadow-2xl hover:bg-primary/5 transition-all"
+            >
+              Guardar Individual
+            </Button>
+          )}
+          {selectedSports.length > 1 && (
+            <Button 
+              onClick={() => handleConfirm(true)}
+              className="flex-1 h-16 rounded-2xl bg-primary text-on-primary font-black text-xl uppercase tracking-tighter shadow-2xl shadow-primary/40 hover:scale-105 transition-transform flex items-center justify-center gap-3"
+            >
+              <Zap size={24} fill="currentColor" />
+              Combinar Deportes ({selectedSports.length})
+            </Button>
+          )}
+          {selectedSports.length > 1 && (
+            <Button 
+              onClick={() => handleConfirm(false)}
+              variant="outline"
+              className="flex-1 h-16 rounded-2xl bg-surface border-2 border-outline text-on-surface font-black text-sm uppercase tracking-tighter shadow-xl hover:bg-surface-variant/20 transition-all"
+            >
+              Guardar por separado
+            </Button>
+          )}
         </motion.div>
       )}
     </div>
