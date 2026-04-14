@@ -12,7 +12,6 @@ import Profile from './components/Profile';
 import UserPanel from './components/UserPanel';
 import Devices from './components/Devices';
 import News from './components/News';
-import ExternalIntel from './components/ExternalIntel';
 import Movies from './components/Movies';
 import DynamicBackground from './components/DynamicBackground';
 import { motion, AnimatePresence } from 'motion/react';
@@ -105,8 +104,10 @@ export default function App() {
       setProfile(sanitizedProfile);
       
       if (sanitizedProfile) {
+        console.log("[PROFILE] Valid profile found, current screen:", activeScreenRef.current);
         // If we have a profile and we are on a "guest" screen, go to dashboard
         if (activeScreenRef.current === 'login' || activeScreenRef.current === 'onboarding') {
+          console.log("[PROFILE] Redirecting from guest screen to dashboard");
           setActiveScreen('dashboard');
         }
         if (sanitizedProfile.status !== 'invisible') {
@@ -114,21 +115,29 @@ export default function App() {
         }
       } else {
         // User is logged in but has no profile document -> Onboarding
-        console.log("[PROFILE] No profile document found, redirecting to onboarding");
-        setActiveScreen('onboarding');
+        // ONLY redirect if we are NOT already on onboarding or login
+        if (activeScreenRef.current !== 'onboarding' && activeScreenRef.current !== 'login') {
+          console.log("[PROFILE] No profile document found, redirecting to onboarding");
+          setActiveScreen('onboarding');
+        }
         chatService.updateUserStatus(user.uid, 'online');
       }
       setLoading(false);
     }, (error) => {
       console.error("[PROFILE] Subscription error:", error);
-      setLoading(false);
+      // Don't set loading to false immediately on error, maybe retry or wait for timeout
+      // But if it's a permission error, we should probably stop
+      if (error.message?.includes('permission-denied')) {
+        setError("Error de permisos al acceder al perfil. Contacta con soporte.");
+        setLoading(false);
+      }
     });
 
     // Safety timeout to prevent infinite loading
     const timeout = setTimeout(() => {
       console.warn("[PROFILE] Loading timeout reached");
       setLoading(false);
-    }, 10000);
+    }, 5000);
 
     return () => {
       unsubProfile();
@@ -184,6 +193,8 @@ export default function App() {
     if (!user) return;
     try {
       setError(null);
+      // Optimistic update
+      setProfile(updatedProfile);
       await updateUserProfile(user.uid, updatedProfile);
     } catch (error: any) {
       console.error("Error updating profile:", error);
@@ -213,18 +224,24 @@ export default function App() {
 
     if (!profile && user) {
       return (
-        <div className="flex flex-col items-center justify-center py-20 gap-6">
-          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <div className="text-center space-y-2">
-            <p className="text-on-surface-variant font-bold animate-pulse">Cargando perfil...</p>
-            <p className="text-xs text-on-surface-variant/60 px-6">Si esto tarda demasiado, es posible que necesites completar tu registro o reintentar la conexión.</p>
+        <div className="flex flex-col items-center justify-center min-h-[60vh] gap-8 px-6">
+          <div className="relative">
+            <div className="w-20 h-20 border-4 border-primary/20 rounded-full" />
+            <div className="absolute inset-0 w-20 h-20 border-4 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
-          <div className="flex flex-col gap-3 w-full max-w-xs px-6">
-            <Button onClick={() => window.location.reload()} variant="outline" className="rounded-xl font-black uppercase tracking-widest h-12">
-              Reintentar Carga
+          <div className="text-center space-y-4 max-w-sm">
+            <h2 className="font-headline text-2xl font-black uppercase italic tracking-tight text-primary">Sincronizando Perfil</h2>
+            <p className="text-on-surface-variant text-sm font-medium leading-relaxed">
+              Estamos recuperando tus datos de atleta de la nube. Si esto tarda demasiado, es posible que haya un problema de conexión.
+            </p>
+          </div>
+          <div className="flex flex-col gap-3 w-full max-w-xs">
+            <Button onClick={() => window.location.reload()} variant="outline" className="rounded-2xl font-black uppercase tracking-widest h-14 border-primary/20 hover:bg-primary/5">
+              <RotateCcw className="mr-2" size={18} />
+              Reintentar Conexión
             </Button>
-            <Button onClick={() => setActiveScreen('onboarding')} variant="ghost" className="text-primary font-black uppercase tracking-widest h-12">
-              Ir a Registro
+            <Button onClick={() => setActiveScreen('onboarding')} variant="ghost" className="text-on-surface-variant/60 font-bold uppercase tracking-widest text-[10px] h-10">
+              ¿No tienes perfil? Ir a Registro
             </Button>
           </div>
         </div>
@@ -232,7 +249,7 @@ export default function App() {
     }
 
     switch (activeScreen) {
-      case 'dashboard': return <Dashboard profile={profile!} onUpdateProfile={handleProfileUpdate} onAddSport={() => setActiveScreen('workout')} onGoToTracking={() => setActiveScreen('evolution')} onGoToProfile={() => setActiveScreen('profile')} onGoToNews={() => setActiveScreen('news')} onGoToIntel={() => setActiveScreen('externalIntel')} onGoToMovies={() => setActiveScreen('movies')} language={language} />;
+      case 'dashboard': return <Dashboard profile={profile!} onUpdateProfile={handleProfileUpdate} onAddSport={() => setActiveScreen('workout')} onGoToTracking={() => setActiveScreen('evolution')} onGoToProfile={() => setActiveScreen('profile')} onGoToNews={() => setActiveScreen('news')} onGoToMovies={() => setActiveScreen('movies')} language={language} />;
       case 'workout': return <SportsTab onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
       case 'nutrition': return <Nutrition profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
       case 'evolution': return <Evolution profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
@@ -240,9 +257,8 @@ export default function App() {
       case 'devices': return <Devices profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
       case 'community': return <UserPanel language={language} />;
       case 'news': return <News language={language} />;
-      case 'externalIntel': return <ExternalIntel language={language} />;
       case 'movies': return <Movies language={language} />;
-      default: return <Dashboard profile={profile!} onUpdateProfile={handleProfileUpdate} onAddSport={() => setActiveScreen('workout')} onGoToTracking={() => setActiveScreen('evolution')} onGoToProfile={() => setActiveScreen('profile')} onGoToNews={() => setActiveScreen('news')} onGoToIntel={() => setActiveScreen('externalIntel')} onGoToMovies={() => setActiveScreen('movies')} language={language} />;
+      default: return <Dashboard profile={profile!} onUpdateProfile={handleProfileUpdate} onAddSport={() => setActiveScreen('workout')} onGoToTracking={() => setActiveScreen('evolution')} onGoToProfile={() => setActiveScreen('profile')} onGoToNews={() => setActiveScreen('news')} onGoToMovies={() => setActiveScreen('movies')} language={language} />;
     }
   };
 

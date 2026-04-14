@@ -122,7 +122,7 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
                 {t('evolucionPesoAnalisis')}
               </p>
               <h2 className="font-headline text-5xl md:text-7xl font-extrabold tracking-tighter leading-none">
-                EVOLUCIÓN <span className="text-primary italic">FUSIONADA.</span>
+                EVOLUCIÓN <span className="text-primary italic">INTEGRADA.</span>
               </h2>
             </div>
           </div>

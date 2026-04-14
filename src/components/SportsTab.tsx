@@ -9,7 +9,7 @@ import {
   ArrowLeft, Bike, Waves, Zap, Heart, Activity, 
   Flame, Timer, Trophy, Calendar, Footprints, Sword, 
   Mountain, Wind, Anchor, MountainSnow, Palette,
-  Plus, Trash2
+  Plus, Trash2, RotateCcw
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '../lib/i18n';
@@ -73,6 +73,7 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
   const [allConfigs, setAllConfigs] = useState<SportConfig[]>([]);
   const [loading, setLoading] = useState(false);
   const [activePlan, setActivePlan] = useState<TrainingPlan | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (profile) {
@@ -141,6 +142,7 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
 
   const finalizePlans = async (configs: SportConfig[], isCombined: boolean) => {
     setLoading(true);
+    setError(null);
     
     try {
       let updatedSports = [...profile.selectedSports];
@@ -188,8 +190,9 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
       console.log("[SPORTS] Saving updated profile to Firestore...");
       await onUpdateProfile(newProfile);
       console.log("[SPORTS] Profile saved successfully.");
-    } catch (error) {
-      console.error("[SPORTS] Error finalizing plans:", error);
+    } catch (err: any) {
+      console.error("[SPORTS] Error finalizing plans:", err);
+      setError(err.message || "Error al generar el plan. Inténtalo de nuevo.");
     } finally {
       setLoading(false);
       setSelectedSport(null);
@@ -215,7 +218,7 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
       <div className="flex flex-col items-center justify-center py-40 gap-4">
         <Loader2 className="w-12 h-12 text-primary animate-spin" />
         <p className="text-on-surface-variant font-black uppercase tracking-widest text-sm">
-          {language === 'es' ? 'Cargando disciplinas...' : 'Loading disciplines...'}
+          {language === 'es' ? 'Cargando disciplinas...' : 'Cargando disciplinas...'}
         </p>
       </div>
     );
@@ -240,6 +243,15 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
           </div>
         </div>
       </section>
+
+      {error && (
+        <Card className="bg-destructive/10 border-destructive/20 p-4 rounded-2xl flex items-center justify-between gap-4">
+          <p className="text-destructive text-sm font-bold uppercase tracking-widest">{error}</p>
+          <Button variant="ghost" size="icon" onClick={() => setError(null)} className="rounded-full hover:bg-destructive/20">
+            <RotateCcw size={16} className="text-destructive" />
+          </Button>
+        </Card>
+      )}
 
       {/* Active Sports Section */}
       {!activePlan && !loading && profile.selectedSports.length > 0 && (
@@ -282,7 +294,7 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
             <p className="text-on-surface-variant font-medium">
               {language === 'es' 
                 ? `La IA está diseñando tu plan de entrenamiento...` 
-                : `AI is designing your training plan...`}
+                : `La IA está diseñando tu plan de entrenamiento...`}
             </p>
           </motion.div>
         ) : activePlan ? (

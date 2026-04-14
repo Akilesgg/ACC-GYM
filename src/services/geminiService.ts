@@ -8,6 +8,10 @@ export async function generateTrainingPlan(profile: UserProfile, sportConfig: Sp
 }
 
 export async function generateCombinedTrainingPlan(profile: UserProfile, configs: SportConfig[], language: Language): Promise<TrainingPlan> {
+  const timeoutPromise = new Promise<never>((_, reject) => 
+    setTimeout(() => reject(new Error("Timeout en la generación del plan. Inténtalo de nuevo.")), 25000)
+  );
+
   try {
     const isSpanish = language === 'es';
     const sportsList = configs.map(c => `${c.sport} (${c.daysPerWeek} ${isSpanish ? 'días' : 'days'}, ${c.durationPerSession || 60} min/sesión, ${c.goal})`).join(", ");
@@ -44,53 +48,57 @@ export async function generateCombinedTrainingPlan(profile: UserProfile, configs
         
         IMPORTANT: Each exercise MUST have a unique 'id' (e.g., 'ex_1', 'ex_2').`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: prompt,
-      config: {
-        systemInstruction: isSpanish 
-          ? "Eres un científico deportivo y entrenador personal de élite. Crea planes de entrenamiento altamente efectivos basados en datos. Devuelve la respuesta en un formato JSON estructurado que coincida con la interfaz TrainingPlan."
-          : "You are an elite sports scientist and personal trainer. Create highly effective, data-driven training plans. Return the response in a structured JSON format matching the TrainingPlan interface.",
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            reasoning: { type: Type.STRING },
-            table: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  day: { type: Type.STRING },
-                  exercises: {
-                    type: Type.ARRAY,
-                    items: {
-                      type: Type.OBJECT,
-                      properties: {
-                        id: { type: Type.STRING },
-                        name: { type: Type.STRING },
-                        sets: { type: Type.STRING },
-                        reps: { type: Type.STRING },
-                        notes: { type: Type.STRING }
-                      },
-                      required: ["id", "name", "sets", "reps", "notes"]
+    const generatePromise = async () => {
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: prompt,
+        config: {
+          systemInstruction: isSpanish 
+            ? "Eres un científico deportivo y entrenador personal de élite. Crea planes de entrenamiento altamente efectivos basados en datos. Devuelve la respuesta en un formato JSON estructurado que coincida con la interfaz TrainingPlan."
+            : "You are an elite sports scientist and personal trainer. Create highly effective, data-driven training plans. Return the response in a structured JSON format matching the TrainingPlan interface.",
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              reasoning: { type: Type.STRING },
+              table: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    day: { type: Type.STRING },
+                    exercises: {
+                      type: Type.ARRAY,
+                      items: {
+                        type: Type.OBJECT,
+                        properties: {
+                          id: { type: Type.STRING },
+                          name: { type: Type.STRING },
+                          sets: { type: Type.STRING },
+                          reps: { type: Type.STRING },
+                          notes: { type: Type.STRING }
+                        },
+                        required: ["id", "name", "sets", "reps", "notes"]
+                      }
                     }
-                  }
-                },
-                required: ["day", "exercises"]
+                  },
+                  required: ["day", "exercises"]
+                }
               }
-            }
-          },
-          required: ["reasoning", "table"]
+            },
+            required: ["reasoning", "table"]
+          }
         }
-      }
-    });
-    const plan = JSON.parse(response.text);
-    return {
-      ...plan,
-      id: Math.random().toString(36).substr(2, 9),
-      createdAt: new Date().toISOString()
+      });
+      const plan = JSON.parse(response.text);
+      return {
+        ...plan,
+        id: Math.random().toString(36).substr(2, 9),
+        createdAt: new Date().toISOString()
+      };
     };
+
+    return await Promise.race([generatePromise(), timeoutPromise]);
   } catch (error) {
     console.error("Gemini Error:", error);
     throw error;
@@ -98,59 +106,67 @@ export async function generateCombinedTrainingPlan(profile: UserProfile, configs
 }
 
 export async function generateNutritionPlan(profile: UserProfile): Promise<NutritionPlan[]> {
+  const timeoutPromise = new Promise<never>((_, reject) => 
+    setTimeout(() => reject(new Error("Timeout en la generación de nutrición.")), 25000)
+  );
+
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: `Genera 3 variantes de planes de nutrición profesionales y equilibrados (ej. Opción A: Alta Proteína, Opción B: Equilibrada, Opción C: Baja en Carbohidratos).
-      Perfil del Usuario:
-      - Nombre: ${profile.username}
-      - Peso: ${profile.weight}kg, Altura: ${profile.height}cm, Edad: ${profile.age}
-      - Objetivo Nutricional: ${profile.nutritionGoal}
-      - Plazo deseado: ${profile.nutritionTimeframe}
-      - Alergias/Restricciones: ${profile.allergies || 'Ninguna'}
-      - Nivel de Actividad: ${profile.experienceLevel}
-      
-      Cada plan debe incluir razonamiento científico y 4 comidas diarias (Desayuno, Almuerzo, Merienda, Cena).
-      Cada comida debe tener nombre, ingredientes y macros (proteínas, carbohidratos, grasas, kcal).`,
-      config: {
-        systemInstruction: "Eres un nutricionista deportivo de élite. Diseñas planes de alimentación precisos, saludables y efectivos. Responde en formato JSON estructurado como un ARRAY de objetos NutritionPlan.",
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.ARRAY,
-          items: {
-            type: Type.OBJECT,
-            properties: {
-              id: { type: Type.STRING },
-              reasoning: { type: Type.STRING },
-              meals: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    type: { type: Type.STRING },
-                    name: { type: Type.STRING },
-                    ingredients: { type: Type.ARRAY, items: { type: Type.STRING } },
-                    macros: {
-                      type: Type.OBJECT,
-                      properties: {
-                        p: { type: Type.NUMBER },
-                        c: { type: Type.NUMBER },
-                        f: { type: Type.NUMBER },
-                        kcal: { type: Type.NUMBER }
-                      },
-                      required: ["p", "c", "f", "kcal"]
-                    }
-                  },
-                  required: ["type", "name", "ingredients", "macros"]
+    const generatePromise = async () => {
+      const response = await ai.models.generateContent({
+        model: "gemini-3-flash-preview",
+        contents: `Genera 3 variantes de planes de nutrición profesionales y equilibrados (ej. Opción A: Alta Proteína, Opción B: Equilibrada, Opción C: Baja en Carbohidratos).
+        Perfil del Usuario:
+        - Nombre: ${profile.username}
+        - Peso: ${profile.weight}kg, Altura: ${profile.height}cm, Edad: ${profile.age}
+        - Objetivo Nutricional: ${profile.nutritionGoal}
+        - Plazo deseado: ${profile.nutritionTimeframe}
+        - Alergias/Restricciones: ${profile.allergies || 'Ninguna'}
+        - Nivel de Actividad: ${profile.experienceLevel}
+        
+        Cada plan debe incluir razonamiento científico y 4 comidas diarias (Desayuno, Almuerzo, Merienda, Cena).
+        Cada comida debe tener nombre, ingredientes y macros (proteínas, carbohidratos, grasas, kcal).`,
+        config: {
+          systemInstruction: "Eres un nutricionista deportivo de élite. Diseñas planes de alimentación precisos, saludables y efectivos. Responde en formato JSON estructurado como un ARRAY de objetos NutritionPlan.",
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.ARRAY,
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                id: { type: Type.STRING },
+                reasoning: { type: Type.STRING },
+                meals: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      type: { type: Type.STRING },
+                      name: { type: Type.STRING },
+                      ingredients: { type: Type.ARRAY, items: { type: Type.STRING } },
+                      macros: {
+                        type: Type.OBJECT,
+                        properties: {
+                          p: { type: Type.NUMBER },
+                          c: { type: Type.NUMBER },
+                          f: { type: Type.NUMBER },
+                          kcal: { type: Type.NUMBER }
+                        },
+                        required: ["p", "c", "f", "kcal"]
+                      }
+                    },
+                    required: ["type", "name", "ingredients", "macros"]
+                  }
                 }
-              }
-            },
-            required: ["id", "reasoning", "meals"]
+              },
+              required: ["id", "reasoning", "meals"]
+            }
           }
         }
-      }
-    });
-    return JSON.parse(response.text);
+      });
+      return JSON.parse(response.text);
+    };
+
+    return await Promise.race([generatePromise(), timeoutPromise]);
   } catch (error) {
     console.error("Gemini Nutrition Error:", error);
     // Fallback plans if AI fails

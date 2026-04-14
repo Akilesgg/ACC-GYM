@@ -13,12 +13,11 @@ interface DashboardProps {
   onGoToTracking: () => void;
   onGoToProfile: () => void;
   onGoToNews: () => void;
-  onGoToIntel: () => void;
   onGoToMovies: () => void;
   language: Language;
 }
 
-export default function Dashboard({ profile, onUpdateProfile, onAddSport, onGoToTracking, onGoToProfile, onGoToNews, onGoToIntel, onGoToMovies, language }: DashboardProps) {
+export default function Dashboard({ profile, onUpdateProfile, onAddSport, onGoToTracking, onGoToProfile, onGoToNews, onGoToMovies, language }: DashboardProps) {
   const t = useTranslation(language);
   const [selectedSportIndex, setSelectedSportIndex] = useState(0);
 
@@ -187,40 +186,8 @@ export default function Dashboard({ profile, onUpdateProfile, onAddSport, onGoTo
           </section>
         </div>
 
-        {/* Right Column: Intel and News Previews */}
+        {/* Right Column: News Previews */}
         <div className="space-y-8">
-          {/* External Intel Preview */}
-          <Card className="bg-surface border-none p-8 space-y-6 group cursor-pointer hover:ring-2 ring-primary transition-all" onClick={onGoToIntel}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
-                  <Share2 size={20} />
-                </div>
-                <h3 className="font-headline font-bold uppercase tracking-widest text-sm">{t('inteligenciaExterna')}</h3>
-              </div>
-              <ChevronRight size={16} className="text-on-surface-variant group-hover:translate-x-1 transition-transform" />
-            </div>
-            
-            <div className="space-y-4">
-              <div className="p-4 bg-background rounded-xl space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black text-primary uppercase">BTC / LONG</span>
-                  <TrendingUp size={14} className="text-primary" />
-                </div>
-                <p className="text-xs text-on-surface-variant italic">"Fuerte acumulación detectada en X..."</p>
-              </div>
-              <div className="p-4 bg-background rounded-xl space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-black text-secondary uppercase">SENTIMIENTO</span>
-                  <Zap size={14} className="text-secondary" />
-                </div>
-                <div className="h-1.5 w-full bg-surface-variant rounded-full overflow-hidden">
-                  <div className="h-full bg-secondary w-[78%]" />
-                </div>
-              </div>
-            </div>
-          </Card>
-
           {/* News Preview */}
           <Card className="bg-surface border-none p-8 space-y-6 group cursor-pointer hover:ring-2 ring-secondary transition-all" onClick={onGoToNews}>
             <div className="flex items-center justify-between">
@@ -253,7 +220,7 @@ export default function Dashboard({ profile, onUpdateProfile, onAddSport, onGoTo
                 <div className="w-10 h-10 bg-tertiary/10 rounded-xl flex items-center justify-center text-tertiary">
                   <PlayCircle size={20} />
                 </div>
-                <h3 className="font-headline font-bold uppercase tracking-widest text-sm">ACC MOVIES</h3>
+                <h3 className="font-headline font-bold uppercase tracking-widest text-sm">ACC PELÍCULAS</h3>
               </div>
               <ChevronRight size={16} className="text-on-surface-variant group-hover:translate-x-1 transition-transform" />
             </div>

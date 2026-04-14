@@ -51,7 +51,7 @@ export default function Movies({ language }: MoviesProps) {
               CONTENIDO EXCLUSIVO
             </p>
             <h2 className="font-headline text-5xl md:text-7xl font-extrabold tracking-tighter leading-none">
-              ACC <span className="text-primary italic">MOVIES.</span>
+              ACC <span className="text-primary italic">PELÍCULAS.</span>
             </h2>
           </div>
           <div className="flex gap-4 w-full md:w-auto">

@@ -83,7 +83,7 @@ export default function News({ language }: NewsProps) {
               {t('noticiasDeportivas')}
             </p>
             <h2 className="font-headline text-5xl md:text-7xl font-extrabold tracking-tighter leading-none">
-              NEWS <span className="text-primary italic">FEED.</span>
+              NOTICIAS <span className="text-primary italic">DEPORTIVAS.</span>
             </h2>
           </div>
           <div className="flex items-center gap-2 bg-surface p-3 rounded-2xl border border-outline-variant/10">

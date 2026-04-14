@@ -108,7 +108,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
         </div>
         <div className="flex items-end gap-2 mt-2">
           <span className="font-headline text-5xl font-black italic text-primary leading-none">ACF</span>
-          <span className="font-headline text-lg font-bold uppercase text-primary mb-1">Fuel System</span>
+          <span className="font-headline text-lg font-bold uppercase text-primary mb-1">SISTEMA DE COMBUSTIBLE</span>
         </div>
       </section>
 
@@ -231,9 +231,11 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
               </Button>
             </div>
           </motion.div>
-        ) : step === 'plan' && profile.nutritionPlan ? (
+        ) : step === 'plan' ? (
           <motion.div key="plan" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-8">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+            {profile.nutritionPlan ? (
+              <>
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
               <div>
                 <h3 className="text-3xl font-headline font-black uppercase italic tracking-tighter text-primary">{t('tuDieta')}</h3>
                 <p className="text-on-surface-variant font-bold uppercase text-xs tracking-widest mt-1">
@@ -313,8 +315,15 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
                 </Card>
               ))}
             </div>
-          </motion.div>
-        ) : null}
+          </>
+        ) : (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <Loader2 className="w-12 h-12 text-primary animate-spin" />
+            <p className="text-on-surface-variant font-black uppercase tracking-widest text-sm">Sincronizando plan...</p>
+          </div>
+        )}
+      </motion.div>
+    ) : null}
       </AnimatePresence>
     </div>
   );
