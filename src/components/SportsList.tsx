@@ -109,7 +109,10 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
       [t('otros')]: MoreHorizontal
     };
 
-    sports.forEach(sport => {
+    // ENSURE UNIQUE SPORTS BY NAME
+    const uniqueSports = Array.from(new Map(sports.map(s => [s.name, s])).values());
+
+    uniqueSports.forEach(sport => {
       let cat = t('otros');
       const lowerCat = sport.category.toLowerCase();
       const lowerName = sport.name.toLowerCase();
@@ -446,34 +449,49 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 w-full max-w-lg px-6 flex gap-3"
+          className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 w-full max-w-lg px-6 flex flex-col gap-3"
         >
-          {selectedSports.length === 1 && (
-            <Button 
-              onClick={() => handleConfirm(false)}
-              className="flex-1 h-16 rounded-2xl bg-surface border-2 border-primary text-primary font-black text-lg uppercase tracking-tighter shadow-2xl hover:bg-primary/5 transition-all"
-            >
-              Guardar Individual
-            </Button>
-          )}
-          {selectedSports.length > 1 && (
-            <Button 
-              onClick={() => handleConfirm(true)}
-              className="flex-1 h-16 rounded-2xl bg-primary text-on-primary font-black text-xl uppercase tracking-tighter shadow-2xl shadow-primary/40 hover:scale-105 transition-transform flex items-center justify-center gap-3"
-            >
-              <Zap size={24} fill="currentColor" />
-              Combinar Deportes ({selectedSports.length})
-            </Button>
-          )}
-          {selectedSports.length > 1 && (
-            <Button 
-              onClick={() => handleConfirm(false)}
-              variant="outline"
-              className="flex-1 h-16 rounded-2xl bg-surface border-2 border-outline text-on-surface font-black text-sm uppercase tracking-tighter shadow-xl hover:bg-surface-variant/20 transition-all"
-            >
-              Guardar por separado
-            </Button>
-          )}
+          <div className="bg-background/80 backdrop-blur-xl p-4 rounded-3xl border border-white/10 shadow-2xl space-y-3">
+            <div className="flex items-center justify-between px-2">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+                {selectedSports.length} {selectedSports.length === 1 ? 'Deporte Seleccionado' : 'Deportes Seleccionados'}
+              </span>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => {
+                  setSearch('');
+                  setSelectedLetter(null);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="text-[10px] font-bold uppercase tracking-widest text-secondary h-6"
+              >
+                + Buscar otro deporte
+              </Button>
+            </div>
+
+            <div className="flex gap-3">
+              <Button 
+                onClick={() => handleConfirm(false)}
+                className="flex-1 h-14 rounded-2xl bg-surface border-2 border-primary text-primary font-black text-sm uppercase tracking-tighter hover:bg-primary/5 transition-all"
+              >
+                Guardar Individual
+              </Button>
+              
+              <Button 
+                onClick={() => handleConfirm(true)}
+                disabled={selectedSports.length < 2}
+                className={`flex-1 h-14 rounded-2xl font-black text-sm uppercase tracking-tighter transition-all flex items-center justify-center gap-2 ${
+                  selectedSports.length >= 2 
+                    ? 'bg-primary text-on-primary shadow-lg shadow-primary/40 hover:scale-105' 
+                    : 'bg-surface-variant/20 text-on-surface-variant/40 cursor-not-allowed'
+                }`}
+              >
+                <Zap size={18} fill="currentColor" />
+                Combinar Deportes
+              </Button>
+            </div>
+          </div>
         </motion.div>
       )}
     </div>

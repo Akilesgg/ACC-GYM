@@ -123,8 +123,13 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
         - Alergias/Restricciones: ${profile.allergies || 'Ninguna'}
         - Nivel de Actividad: ${profile.experienceLevel}
         
-        Cada plan debe incluir razonamiento científico y 4 comidas diarias (Desayuno, Almuerzo, Merienda, Cena).
-        Cada comida debe tener nombre, ingredientes y macros (proteínas, carbohidratos, grasas, kcal).`,
+        Cada plan debe incluir:
+        1. Razonamiento científico detallado.
+        2. Un catálogo de comidas (entre 4 y 6 comidas diferentes por plan).
+        3. Para cada comida: nombre, ingredientes, FÓRMULA DE PREPARACIÓN DETALLADA, y macros (p, c, f, kcal).
+        4. Un CALENDARIO SEMANAL (Lunes a Domingo) indicando qué comidas del catálogo tomar cada día (3 a 5 comidas diarias según el plan).
+        
+        IMPORTANTE: Devuelve un array de objetos NutritionPlan.`,
         config: {
           systemInstruction: "Eres un nutricionista deportivo de élite. Diseñas planes de alimentación precisos, saludables y efectivos. Responde en formato JSON estructurado como un ARRAY de objetos NutritionPlan.",
           responseMimeType: "application/json",
@@ -134,15 +139,18 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
               type: Type.OBJECT,
               properties: {
                 id: { type: Type.STRING },
+                name: { type: Type.STRING },
                 reasoning: { type: Type.STRING },
                 meals: {
                   type: Type.ARRAY,
                   items: {
                     type: Type.OBJECT,
                     properties: {
+                      id: { type: Type.STRING },
                       type: { type: Type.STRING },
                       name: { type: Type.STRING },
                       ingredients: { type: Type.ARRAY, items: { type: Type.STRING } },
+                      preparation: { type: Type.STRING },
                       macros: {
                         type: Type.OBJECT,
                         properties: {
@@ -154,11 +162,22 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
                         required: ["p", "c", "f", "kcal"]
                       }
                     },
-                    required: ["type", "name", "ingredients", "macros"]
+                    required: ["id", "type", "name", "ingredients", "preparation", "macros"]
+                  }
+                },
+                weeklySchedule: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      day: { type: Type.STRING },
+                      meals: { type: Type.ARRAY, items: { type: Type.STRING } }
+                    },
+                    required: ["day", "meals"]
                   }
                 }
               },
-              required: ["id", "reasoning", "meals"]
+              required: ["id", "name", "reasoning", "meals", "weeklySchedule"]
             }
           }
         }
@@ -173,22 +192,22 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
     return [
       {
         id: 'fallback_a',
+        name: "Plan Equilibrado Vital",
         reasoning: "Plan equilibrado estándar basado en tus objetivos de salud.",
         meals: [
-          { type: "Desayuno", name: "Avena con Frutas", ingredients: ["Avena", "Leche desnatada", "Plátano", "Nueces"], macros: { p: 15, c: 45, f: 10, kcal: 350 } },
-          { type: "Almuerzo", name: "Pollo con Arroz y Brócoli", ingredients: ["Pechuga de pollo", "Arroz integral", "Brócoli", "Aceite de oliva"], macros: { p: 35, c: 40, f: 12, kcal: 450 } },
-          { type: "Merienda", name: "Yogur Griego con Almendras", ingredients: ["Yogur griego natural", "Almendras", "Miel"], macros: { p: 20, c: 15, f: 15, kcal: 280 } },
-          { type: "Cena", name: "Salmón a la Plancha con Espárragos", ingredients: ["Salmón", "Espárragos", "Ensalada verde"], macros: { p: 30, c: 10, f: 20, kcal: 400 } }
-        ]
-      },
-      {
-        id: 'fallback_b',
-        reasoning: "Plan alto en proteínas para recuperación muscular.",
-        meals: [
-          { type: "Desayuno", name: "Tortilla de Claras con Espinacas", ingredients: ["Claras de huevo", "Espinacas", "Queso bajo en grasa"], macros: { p: 25, c: 5, f: 8, kcal: 220 } },
-          { type: "Almuerzo", name: "Ternera con Quinoa", ingredients: ["Filete de ternera magra", "Quinoa", "Pimientos asados"], macros: { p: 40, c: 35, f: 15, kcal: 500 } },
-          { type: "Merienda", name: "Batido de Proteína y Manzana", ingredients: ["Proteína de suero", "Manzana", "Agua"], macros: { p: 25, c: 20, f: 2, kcal: 200 } },
-          { type: "Cena", name: "Pavo al Horno con Calabacín", ingredients: ["Pechuga de pavo", "Calabacín", "Tomates cherry"], macros: { p: 35, c: 12, f: 10, kcal: 320 } }
+          { id: 'm1', type: "Desayuno", name: "Avena con Frutas", ingredients: ["Avena", "Leche desnatada", "Plátano", "Nueces"], preparation: "Mezclar la avena con la leche caliente, añadir rodajas de plátano y nueces picadas.", macros: { p: 15, c: 45, f: 10, kcal: 350 } },
+          { id: 'm2', type: "Almuerzo", name: "Pollo con Arroz y Brócoli", ingredients: ["Pechuga de pollo", "Arroz integral", "Brócoli", "Aceite de oliva"], preparation: "Cocinar el arroz integral. Saltear el pollo con brócoli al vapor y un chorrito de aceite de oliva.", macros: { p: 35, c: 40, f: 12, kcal: 450 } },
+          { id: 'm3', type: "Merienda", name: "Yogur Griego con Almendras", ingredients: ["Yogur griego natural", "Almendras", "Miel"], preparation: "Servir el yogur en un bol, añadir las almendras y una cucharadita de miel.", macros: { p: 20, c: 15, f: 15, kcal: 280 } },
+          { id: 'm4', type: "Cena", name: "Salmón a la Plancha con Espárragos", ingredients: ["Salmón", "Espárragos", "Ensalada verde"], preparation: "Hacer el salmón a la plancha 4 min por lado. Acompañar con espárragos trigueros y ensalada.", macros: { p: 30, c: 10, f: 20, kcal: 400 } }
+        ],
+        weeklySchedule: [
+          { day: "Lunes", meals: ["Avena con Frutas", "Pollo con Arroz y Brócoli", "Yogur Griego con Almendras", "Salmón a la Plancha con Espárragos"] },
+          { day: "Martes", meals: ["Avena con Frutas", "Pollo con Arroz y Brócoli", "Yogur Griego con Almendras", "Salmón a la Plancha con Espárragos"] },
+          { day: "Miércoles", meals: ["Avena con Frutas", "Pollo con Arroz y Brócoli", "Yogur Griego con Almendras", "Salmón a la Plancha con Espárragos"] },
+          { day: "Jueves", meals: ["Avena con Frutas", "Pollo con Arroz y Brócoli", "Yogur Griego con Almendras", "Salmón a la Plancha con Espárragos"] },
+          { day: "Viernes", meals: ["Avena con Frutas", "Pollo con Arroz y Brócoli", "Yogur Griego con Almendras", "Salmón a la Plancha con Espárragos"] },
+          { day: "Sábado", meals: ["Avena con Frutas", "Pollo con Arroz y Brócoli", "Yogur Griego con Almendras", "Salmón a la Plancha con Espárragos"] },
+          { day: "Domingo", meals: ["Avena con Frutas", "Pollo con Arroz y Brócoli", "Yogur Griego con Almendras", "Salmón a la Plancha con Espárragos"] }
         ]
       }
     ];

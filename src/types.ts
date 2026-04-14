@@ -24,12 +24,20 @@ export interface SportConfig {
 
 export interface NutritionPlan {
   id: string;
+  name?: string;
   reasoning: string;
   meals: {
+    id: string;
     type: string;
     name: string;
     ingredients: string[];
+    preparation: string;
     macros: { p: number, c: number, f: number, kcal: number };
+    imageUrl?: string;
+  }[];
+  weeklySchedule?: {
+    day: string;
+    meals: string[]; // Names or IDs of meals for that day
   }[];
 }
 

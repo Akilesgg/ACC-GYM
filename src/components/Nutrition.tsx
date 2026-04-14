@@ -1,4 +1,4 @@
-import { Sparkles, PlusCircle, ArrowLeft, Target, Clock, ShieldAlert, Loader2, Utensils, Info } from 'lucide-react';
+import { Sparkles, PlusCircle, ArrowLeft, Target, Clock, ShieldAlert, Loader2, Utensils, Info, Calendar } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -272,7 +272,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
                 <Card key={idx} className="bg-surface border-none overflow-hidden flex flex-col group hover:bg-surface-variant/30 transition-all duration-500">
                   <div className="h-48 overflow-hidden relative">
                     <img 
-                      src={`https://picsum.photos/seed/${meal.name.replace(/\s/g, '')}/800/600`} 
+                      src={meal.imageUrl || `https://picsum.photos/seed/${meal.name.replace(/\s/g, '')}/800/600`} 
                       alt={meal.name} 
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                       referrerPolicy="no-referrer"
@@ -286,13 +286,24 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
                     </div>
                   </div>
                   <div className="p-6 space-y-4">
-                    <div className="flex flex-wrap gap-2">
-                      {meal.ingredients.map((ing, i) => (
-                        <span key={i} className="text-xs bg-background px-3 py-1 rounded-full text-on-surface-variant font-medium">
-                          {ing}
-                        </span>
-                      ))}
+                    <div className="space-y-2">
+                      <h5 className="text-[10px] font-black uppercase tracking-widest text-primary">Ingredientes</h5>
+                      <div className="flex flex-wrap gap-2">
+                        {meal.ingredients.map((ing, i) => (
+                          <span key={i} className="text-xs bg-background px-3 py-1 rounded-full text-on-surface-variant font-medium">
+                            {ing}
+                          </span>
+                        ))}
+                      </div>
                     </div>
+
+                    <div className="space-y-2">
+                      <h5 className="text-[10px] font-black uppercase tracking-widest text-secondary">Preparación</h5>
+                      <p className="text-xs text-on-surface-variant leading-relaxed italic">
+                        {meal.preparation}
+                      </p>
+                    </div>
+
                     <div className="grid grid-cols-4 gap-2 pt-4 border-t border-outline-variant/10">
                       <div className="text-center">
                         <p className="text-[10px] font-bold text-on-surface-variant uppercase">{t('prot')}</p>
@@ -315,6 +326,29 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
                 </Card>
               ))}
             </div>
+
+            {profile.nutritionPlan.weeklySchedule && (
+              <section className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <Calendar className="text-primary" />
+                  <h3 className="text-2xl font-headline font-black uppercase italic tracking-tighter">Calendario Semanal</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-7 gap-3">
+                  {profile.nutritionPlan.weeklySchedule.map((day, dIdx) => (
+                    <Card key={dIdx} className="bg-surface/50 border-none p-4 space-y-3">
+                      <h4 className="text-xs font-black uppercase tracking-widest text-primary border-b border-primary/20 pb-2">{day.day}</h4>
+                      <div className="space-y-2">
+                        {day.meals.map((mName, mIdx) => (
+                          <div key={mIdx} className="text-[10px] font-bold text-on-surface-variant bg-background/50 p-2 rounded-lg leading-tight">
+                            {mName}
+                          </div>
+                        ))}
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </section>
+            )}
           </>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 gap-4">
