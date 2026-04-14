@@ -303,7 +303,7 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
                               <span className="font-headline font-bold text-lg uppercase tracking-tight group-hover/item:scale-105 transition-transform origin-left">
                                 {sport.name}
                               </span>
-                              <span className={`text-[10px] font-bold uppercase tracking-widest opacity-60 ${isSelected ? 'text-white' : 'text-primary'}`}>
+                              <span className={`text-[10px] font-bold uppercase tracking-widest opacity-60 ${isSelected ? 'text-on-primary' : 'text-primary'}`}>
                                 {sport.category}
                               </span>
                             </div>

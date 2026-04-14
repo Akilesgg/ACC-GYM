@@ -153,7 +153,29 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
     return JSON.parse(response.text);
   } catch (error) {
     console.error("Gemini Nutrition Error:", error);
-    throw error;
+    // Fallback plans if AI fails
+    return [
+      {
+        id: 'fallback_a',
+        reasoning: "Plan equilibrado estándar basado en tus objetivos de salud.",
+        meals: [
+          { type: "Desayuno", name: "Avena con Frutas", ingredients: ["Avena", "Leche desnatada", "Plátano", "Nueces"], macros: { p: 15, c: 45, f: 10, kcal: 350 } },
+          { type: "Almuerzo", name: "Pollo con Arroz y Brócoli", ingredients: ["Pechuga de pollo", "Arroz integral", "Brócoli", "Aceite de oliva"], macros: { p: 35, c: 40, f: 12, kcal: 450 } },
+          { type: "Merienda", name: "Yogur Griego con Almendras", ingredients: ["Yogur griego natural", "Almendras", "Miel"], macros: { p: 20, c: 15, f: 15, kcal: 280 } },
+          { type: "Cena", name: "Salmón a la Plancha con Espárragos", ingredients: ["Salmón", "Espárragos", "Ensalada verde"], macros: { p: 30, c: 10, f: 20, kcal: 400 } }
+        ]
+      },
+      {
+        id: 'fallback_b',
+        reasoning: "Plan alto en proteínas para recuperación muscular.",
+        meals: [
+          { type: "Desayuno", name: "Tortilla de Claras con Espinacas", ingredients: ["Claras de huevo", "Espinacas", "Queso bajo en grasa"], macros: { p: 25, c: 5, f: 8, kcal: 220 } },
+          { type: "Almuerzo", name: "Ternera con Quinoa", ingredients: ["Filete de ternera magra", "Quinoa", "Pimientos asados"], macros: { p: 40, c: 35, f: 15, kcal: 500 } },
+          { type: "Merienda", name: "Batido de Proteína y Manzana", ingredients: ["Proteína de suero", "Manzana", "Agua"], macros: { p: 25, c: 20, f: 2, kcal: 200 } },
+          { type: "Cena", name: "Pavo al Horno con Calabacín", ingredients: ["Pechuga de pavo", "Calabacín", "Tomates cherry"], macros: { p: 35, c: 12, f: 10, kcal: 320 } }
+        ]
+      }
+    ];
   }
 }
 

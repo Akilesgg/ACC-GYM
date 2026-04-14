@@ -178,14 +178,16 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
         }
       }
       
-      // PERSISTENCIA REAL: Actualizar perfil con nuevos deportes y plan
+      // PERSISTENCIA REAL: Asegurar que los datos se guardan y sincronizan
       const newProfile = { 
         ...profile, 
         selectedSports: updatedSports, 
         plan: globalPlan || updatedSports[updatedSports.length - 1]?.plan 
       };
       
+      console.log("[SPORTS] Saving updated profile to Firestore...");
       await onUpdateProfile(newProfile);
+      console.log("[SPORTS] Profile saved successfully.");
     } catch (error) {
       console.error("[SPORTS] Error finalizing plans:", error);
     } finally {
