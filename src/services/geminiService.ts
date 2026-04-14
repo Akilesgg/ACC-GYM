@@ -97,11 +97,11 @@ export async function generateCombinedTrainingPlan(profile: UserProfile, configs
   }
 }
 
-export async function generateNutritionPlan(profile: UserProfile): Promise<NutritionPlan> {
+export async function generateNutritionPlan(profile: UserProfile): Promise<NutritionPlan[]> {
   try {
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
-      contents: `Genera un plan de nutrición profesional y equilibrado.
+      contents: `Genera 3 variantes de planes de nutrición profesionales y equilibrados (ej. Opción A: Alta Proteína, Opción B: Equilibrada, Opción C: Baja en Carbohidratos).
       Perfil del Usuario:
       - Nombre: ${profile.username}
       - Peso: ${profile.weight}kg, Altura: ${profile.height}cm, Edad: ${profile.age}
@@ -110,39 +110,43 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
       - Alergias/Restricciones: ${profile.allergies || 'Ninguna'}
       - Nivel de Actividad: ${profile.experienceLevel}
       
-      El plan debe incluir razonamiento científico y 4 comidas diarias (Desayuno, Almuerzo, Merienda, Cena).
+      Cada plan debe incluir razonamiento científico y 4 comidas diarias (Desayuno, Almuerzo, Merienda, Cena).
       Cada comida debe tener nombre, ingredientes y macros (proteínas, carbohidratos, grasas, kcal).`,
       config: {
-        systemInstruction: "Eres un nutricionista deportivo de élite. Diseñas planes de alimentación precisos, saludables y efectivos. Responde en formato JSON estructurado que coincida con la interfaz NutritionPlan.",
+        systemInstruction: "Eres un nutricionista deportivo de élite. Diseñas planes de alimentación precisos, saludables y efectivos. Responde en formato JSON estructurado como un ARRAY de objetos NutritionPlan.",
         responseMimeType: "application/json",
         responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            reasoning: { type: Type.STRING },
-            meals: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  type: { type: Type.STRING },
-                  name: { type: Type.STRING },
-                  ingredients: { type: Type.ARRAY, items: { type: Type.STRING } },
-                  macros: {
-                    type: Type.OBJECT,
-                    properties: {
-                      p: { type: Type.NUMBER },
-                      c: { type: Type.NUMBER },
-                      f: { type: Type.NUMBER },
-                      kcal: { type: Type.NUMBER }
-                    },
-                    required: ["p", "c", "f", "kcal"]
-                  }
-                },
-                required: ["type", "name", "ingredients", "macros"]
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              id: { type: Type.STRING },
+              reasoning: { type: Type.STRING },
+              meals: {
+                type: Type.ARRAY,
+                items: {
+                  type: Type.OBJECT,
+                  properties: {
+                    type: { type: Type.STRING },
+                    name: { type: Type.STRING },
+                    ingredients: { type: Type.ARRAY, items: { type: Type.STRING } },
+                    macros: {
+                      type: Type.OBJECT,
+                      properties: {
+                        p: { type: Type.NUMBER },
+                        c: { type: Type.NUMBER },
+                        f: { type: Type.NUMBER },
+                        kcal: { type: Type.NUMBER }
+                      },
+                      required: ["p", "c", "f", "kcal"]
+                    }
+                  },
+                  required: ["type", "name", "ingredients", "macros"]
+                }
               }
-            }
-          },
-          required: ["reasoning", "meals"]
+            },
+            required: ["id", "reasoning", "meals"]
+          }
         }
       }
     });

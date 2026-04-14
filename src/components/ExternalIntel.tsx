@@ -27,42 +27,48 @@ export default function ExternalIntel({ language }: ExternalIntelProps) {
 
   // Simulate fetching data from social sources
   useEffect(() => {
-    const mockSignals: Signal[] = [
-      {
-        id: '1',
-        asset: 'Bitcoin (BTC)',
-        type: 'long',
-        sentiment: 85,
-        source: 'X (Twitter)',
-        timestamp: new Date().toISOString(),
-        reason: 'Fuerte acumulación detectada en carteras institucionales. Sentimiento alcista en redes sociales.'
-      },
-      {
-        id: '2',
-        asset: 'Ethereum (ETH)',
-        type: 'short',
-        sentiment: 42,
-        source: 'Reddit',
-        timestamp: new Date().toISOString(),
-        reason: 'Preocupación por las altas comisiones de gas y posible retraso en la próxima actualización.'
-      },
-      {
-        id: '3',
-        asset: 'Solana (SOL)',
-        type: 'long',
-        sentiment: 78,
-        source: 'Telegram',
-        timestamp: new Date().toISOString(),
-        reason: 'Crecimiento explosivo del ecosistema DeFi y lanzamientos de nuevos protocolos.'
-      }
-    ];
+    const loadData = () => {
+      setLoading(true);
+      const mockSignals: Signal[] = [
+        {
+          id: '1',
+          asset: 'Bitcoin (BTC)',
+          type: 'long',
+          sentiment: 85,
+          source: 'X (Twitter)',
+          timestamp: new Date().toISOString(),
+          reason: 'Fuerte acumulación detectada en carteras institucionales. Sentimiento alcista en redes sociales.'
+        },
+        {
+          id: '2',
+          asset: 'Ethereum (ETH)',
+          type: 'short',
+          sentiment: 42,
+          source: 'Reddit',
+          timestamp: new Date().toISOString(),
+          reason: 'Preocupación por las altas comisiones de gas y posible retraso en la próxima actualización.'
+        },
+        {
+          id: '3',
+          asset: 'Solana (SOL)',
+          type: 'long',
+          sentiment: 78,
+          source: 'Telegram',
+          timestamp: new Date().toISOString(),
+          reason: 'Crecimiento explosivo del ecosistema DeFi y lanzamientos de nuevos protocolos.'
+        }
+      ];
 
-    const timer = setTimeout(() => {
-      setSignals(mockSignals);
-      setLoading(false);
-    }, 1500);
+      setTimeout(() => {
+        setSignals(mockSignals);
+        setLoading(false);
+      }, 1500);
+    };
 
-    return () => clearTimeout(timer);
+    loadData();
+    const interval = setInterval(loadData, 10 * 60 * 1000); // 10 minutes
+
+    return () => clearInterval(interval);
   }, []);
 
   return (

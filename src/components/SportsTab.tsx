@@ -94,11 +94,11 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
   if (!profile) return null;
 
   const handleSportToggle = (sportName: string) => {
-    setSelectedSportsList(prev => 
-      prev.includes(sportName) 
-        ? prev.filter(s => s !== sportName) 
-        : [...prev, sportName]
-    );
+    setSelectedSportsList(prev => {
+      const exists = prev.includes(sportName);
+      if (exists) return prev.filter(s => s !== sportName);
+      return [...new Set([...prev, sportName])];
+    });
   };
 
   const startConfiguration = (configs: SportConfig[]) => {
@@ -293,7 +293,7 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
             </div>
             <div className="grid grid-cols-1 gap-4">
               {(GOALS_BY_SPORT[selectedSport?.name!] || GOALS_BY_SPORT["default"]).map(goal => (
-                <Button key={goal} variant="outline" onClick={() => handleGoalSelect(goal)} className="h-20 rounded-2xl border-outline-variant/20 hover:border-tertiary/50 hover:bg-tertiary/5 transition-all font-bold text-lg justify-between px-8 group">
+                <Button key={goal} variant="outline" onClick={() => handleGoalSelect(goal)} className="h-20 rounded-2xl border-outline-variant/20 hover:border-tertiary/50 hover:bg-tertiary/5 transition-all font-bold text-lg justify-between px-8 group text-on-surface">
                   {goal}
                   <ChevronRight size={20} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                 </Button>
@@ -313,7 +313,7 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {[1, 2, 3, 4, 5, 6, 7].map(days => (
-                <Button key={days} variant="outline" onClick={() => handleFrequencySelect(days)} className="h-24 rounded-2xl border-outline-variant/20 hover:border-primary/50 hover:bg-primary/5 transition-all font-bold text-3xl">
+                <Button key={days} variant="outline" onClick={() => handleFrequencySelect(days)} className="h-24 rounded-2xl border-outline-variant/20 hover:border-primary/50 hover:bg-primary/5 transition-all font-bold text-3xl text-on-surface">
                   {days}
                 </Button>
               ))}
@@ -329,11 +329,11 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
               <p className="text-on-surface-variant mt-2">{t('yaTienesOtros')}</p>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Button variant="outline" onClick={() => handleCombinedSelect(true)} className="h-24 rounded-2xl border-secondary/30 hover:bg-secondary/10 font-bold text-lg flex flex-col">
+              <Button variant="outline" onClick={() => handleCombinedSelect(true)} className="h-24 rounded-2xl border-secondary/30 hover:bg-secondary/10 font-bold text-lg flex flex-col text-on-surface">
                 <span>{t('siCombinar')}</span>
                 <span className="text-xs font-normal opacity-60">{t('optimizaSemana')}</span>
               </Button>
-              <Button variant="outline" onClick={() => handleCombinedSelect(false)} className="h-24 rounded-2xl border-outline-variant/20 hover:bg-surface font-bold text-lg flex flex-col">
+              <Button variant="outline" onClick={() => handleCombinedSelect(false)} className="h-24 rounded-2xl border-outline-variant/20 hover:bg-surface font-bold text-lg flex flex-col text-on-surface">
                 <span>{t('noIndependiente')}</span>
                 <span className="text-xs font-normal opacity-60">{t('soloPara')} {selectedSport?.name}</span>
               </Button>

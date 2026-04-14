@@ -8,6 +8,7 @@
   --color-background: #0c0e12;
   --color-surface: #111318;
   --color-primary: #cafd00;
+  --color-on-primary: #0c0e12;
   --color-secondary: #00e3fd;
   --color-tertiary: #ff6f7c;
   --color-on-surface: #f6f6fc;
@@ -37,8 +38,22 @@
     @apply border-outline-variant/20;
   }
   body {
-    @apply bg-background text-on-surface font-sans;
+    @apply bg-background text-on-surface font-sans overflow-x-hidden;
   }
+}
+
+.sports-bg-overlay {
+  @apply fixed inset-0 z-[-1] pointer-events-none overflow-hidden;
+}
+
+.sports-bg-image {
+  @apply absolute inset-0 w-full h-full object-cover grayscale opacity-5 blur-[2px];
+  animation: slow-zoom 60s infinite alternate ease-in-out;
+}
+
+@keyframes slow-zoom {
+  from { transform: scale(1); }
+  to { transform: scale(1.1); }
 }
 
 .glass-panel {

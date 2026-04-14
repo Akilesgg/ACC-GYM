@@ -333,7 +333,7 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
                                           onClick={() => updateSportConfig(sport.name, { goal })}
                                           className={`h-10 rounded-xl text-[10px] font-bold uppercase transition-all ${
                                             (sportConfigs[sport.name]?.goal || 'Fuerza') === goal 
-                                              ? 'bg-primary text-background' 
+                                              ? 'bg-primary text-on-primary shadow-lg shadow-primary/20' 
                                               : 'bg-background/30 text-on-surface-variant hover:bg-background/50'
                                           }`}
                                         >
@@ -351,7 +351,7 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
                                           onClick={() => updateSportConfig(sport.name, { frequency: d })}
                                           className={`flex-1 h-10 rounded-xl text-xs font-bold transition-all ${
                                             (sportConfigs[sport.name]?.frequency || 3) === d 
-                                              ? 'bg-primary text-background' 
+                                              ? 'bg-primary text-on-primary shadow-lg shadow-primary/20' 
                                               : 'bg-background/30 text-on-surface-variant hover:bg-background/50'
                                           }`}
                                         >
@@ -376,7 +376,7 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
                                           onClick={() => updateSportConfig(sport.name, { duration: dur.value })}
                                           className={`h-10 rounded-xl text-[10px] font-bold uppercase transition-all ${
                                             (sportConfigs[sport.name]?.duration || 60) === dur.value 
-                                              ? 'bg-primary text-background' 
+                                              ? 'bg-primary text-on-primary shadow-lg shadow-primary/20' 
                                               : 'bg-background/30 text-on-surface-variant hover:bg-background/50'
                                           }`}
                                         >
@@ -399,7 +399,7 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
                                     <Button 
                                       size="sm" 
                                       onClick={() => setConfiguringSport(null)}
-                                      className="bg-primary text-background text-[10px] font-black uppercase tracking-widest px-6 rounded-xl h-10"
+                                      className="bg-primary text-on-primary text-[10px] font-black uppercase tracking-widest px-6 rounded-xl h-10 shadow-lg shadow-primary/20 hover:scale-105 transition-transform"
                                     >
                                       {t('aceptar')}
                                     </Button>

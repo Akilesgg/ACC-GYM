@@ -27,45 +27,51 @@ export default function News({ language }: NewsProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const mockNews: NewsItem[] = [
-      {
-        id: '1',
-        title: 'Nueva tecnología de recuperación muscular revoluciona el entrenamiento de élite',
-        summary: 'Científicos deportivos presentan un sistema de crioterapia de precisión que reduce el tiempo de recuperación en un 40%.',
-        source: 'Sports Science Daily',
-        time: 'Hace 2 horas',
-        category: 'Tecnología',
-        imageUrl: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop',
-        url: '#'
-      },
-      {
-        id: '2',
-        title: 'El impacto de la nutrición personalizada en el rendimiento olímpico',
-        summary: 'Análisis detallado sobre cómo las dietas basadas en ADN están cambiando el podio en las disciplinas de resistencia.',
-        source: 'Elite Performance',
-        time: 'Hace 5 horas',
-        category: 'Nutrición',
-        imageUrl: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=2053&auto=format&fit=crop',
-        url: '#'
-      },
-      {
-        id: '3',
-        title: 'Tendencias 2024: El auge del entrenamiento híbrido',
-        summary: 'Por qué los atletas de fuerza están incorporando más trabajo cardiovascular de alta intensidad en sus rutinas.',
-        source: 'Fitness Insider',
-        time: 'Hace 8 horas',
-        category: 'Tendencias',
-        imageUrl: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop',
-        url: '#'
-      }
-    ];
+    const loadNews = () => {
+      setLoading(true);
+      const mockNews: NewsItem[] = [
+        {
+          id: '1',
+          title: 'Nueva tecnología de recuperación muscular revoluciona el entrenamiento de élite',
+          summary: 'Científicos deportivos presentan un sistema de crioterapia de precisión que reduce el tiempo de recuperación en un 40%.',
+          source: 'Sports Science Daily',
+          time: 'Hace 2 horas',
+          category: 'Tecnología',
+          imageUrl: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop',
+          url: '#'
+        },
+        {
+          id: '2',
+          title: 'El impacto de la nutrición personalizada en el rendimiento olímpico',
+          summary: 'Análisis detallado sobre cómo las dietas basadas en ADN están cambiando el podio en las disciplinas de resistencia.',
+          source: 'Elite Performance',
+          time: 'Hace 5 horas',
+          category: 'Nutrición',
+          imageUrl: 'https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=2053&auto=format&fit=crop',
+          url: '#'
+        },
+        {
+          id: '3',
+          title: 'Tendencias 2024: El auge del entrenamiento híbrido',
+          summary: 'Por qué los atletas de fuerza están incorporando más trabajo cardiovascular de alta intensidad en sus rutinas.',
+          source: 'Fitness Insider',
+          time: 'Hace 8 horas',
+          category: 'Tendencias',
+          imageUrl: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?q=80&w=2070&auto=format&fit=crop',
+          url: '#'
+        }
+      ];
 
-    const timer = setTimeout(() => {
-      setNews(mockNews);
-      setLoading(false);
-    }, 1200);
+      setTimeout(() => {
+        setNews(mockNews);
+        setLoading(false);
+      }, 1500);
+    };
 
-    return () => clearTimeout(timer);
+    loadNews();
+    const interval = setInterval(loadNews, 3 * 60 * 60 * 1000); // 3 hours
+
+    return () => clearInterval(interval);
   }, []);
 
   return (

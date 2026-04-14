@@ -78,9 +78,9 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
     };
     
     try {
-      const plan = await generateNutritionPlan(updatedProfile);
-      const profileWithPlan = { ...updatedProfile, nutritionPlan: plan };
-      onUpdateProfile(profileWithPlan);
+      const plans = await generateNutritionPlan(updatedProfile);
+      const profileWithPlans = { ...updatedProfile, nutritionPlans: plans, nutritionPlan: plans[0] };
+      onUpdateProfile(profileWithPlans);
       setStep('plan');
     } catch (error) {
       console.error(error);
@@ -147,7 +147,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {NUTRITION_GOALS.map(goal => (
-                <Button key={goal} variant="outline" onClick={() => handleGoalSelect(goal)} className="h-20 rounded-2xl border-outline-variant/20 hover:border-secondary/50 hover:bg-secondary/5 transition-all font-bold text-lg">
+                <Button key={goal} variant="outline" onClick={() => handleGoalSelect(goal)} className="h-20 rounded-2xl border-outline-variant/20 hover:border-secondary/50 hover:bg-secondary/5 transition-all font-bold text-lg text-on-surface">
                   {goal}
                 </Button>
               ))}
@@ -162,7 +162,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {TIMEFRAMES.map(t_val => (
-                <Button key={t_val} variant="outline" onClick={() => handleTimeframeSelect(t_val)} className="h-20 rounded-2xl border-outline-variant/20 hover:border-tertiary/50 hover:bg-tertiary/5 transition-all font-bold text-lg">
+                <Button key={t_val} variant="outline" onClick={() => handleTimeframeSelect(t_val)} className="h-20 rounded-2xl border-outline-variant/20 hover:border-tertiary/50 hover:bg-tertiary/5 transition-all font-bold text-lg text-on-surface">
                   {t_val}
                 </Button>
               ))}
@@ -240,9 +240,21 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
                   {t('objetivo')}: <span className="text-secondary">{profile.nutritionGoal}</span> • {profile.nutritionTimeframe}
                 </p>
               </div>
-              <Button variant="outline" onClick={() => setStep('goal')} className="rounded-full border-primary/30 text-primary hover:bg-primary/10">
-                {t('recalibrar')}
-              </Button>
+              <div className="flex gap-2">
+                {profile.nutritionPlans?.map((_, i) => (
+                  <Button 
+                    key={i} 
+                    variant={profile.nutritionPlan?.id === profile.nutritionPlans?.[i].id ? 'default' : 'outline'}
+                    onClick={() => onUpdateProfile({ ...profile, nutritionPlan: profile.nutritionPlans![i] })}
+                    className="rounded-full w-10 h-10 p-0"
+                  >
+                    {String.fromCharCode(65 + i)}
+                  </Button>
+                ))}
+                <Button variant="outline" onClick={() => setStep('goal')} className="rounded-full border-primary/30 text-primary hover:bg-primary/10 ml-4">
+                  {t('recalibrar')}
+                </Button>
+              </div>
             </div>
 
             <Card className="bg-surface border-l-4 border-secondary p-8 relative overflow-hidden">

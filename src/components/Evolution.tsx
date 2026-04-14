@@ -78,10 +78,19 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
     .filter((p): p is TrainingPlan => !!p);
 
   const todayName = format(today, 'EEEE', { locale }).toLowerCase();
+  const dayOfWeek = today.getDay(); // 0 (Sun) to 6 (Sat)
+  const normalizedDay = dayOfWeek === 0 ? 7 : dayOfWeek; // 1 (Mon) to 7 (Sun)
   
-  const todaysExercises = activePlans.flatMap(plan => 
-    plan.table.find(day => day.day.toLowerCase().includes(todayName) || day.day.toLowerCase().includes('hoy'))?.exercises || []
-  );
+  const todaysExercises = activePlans.flatMap(plan => {
+    const dayPlan = plan.table.find(day => {
+      const d = day.day.toLowerCase();
+      return d.includes(todayName) || 
+             d.includes('hoy') || 
+             d.includes(`día ${normalizedDay}`) ||
+             d.includes(`dia ${normalizedDay}`);
+    });
+    return dayPlan?.exercises || [];
+  });
 
   const completionRate = todaysExercises.length > 0 
     ? Math.round((currentProgress.completedExercises.length / todaysExercises.length) * 100)
