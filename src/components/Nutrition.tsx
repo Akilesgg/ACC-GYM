@@ -78,6 +78,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
     };
     
     try {
+      console.log("[Nutrition] Generating plans with AI...");
       const plans = await generateNutritionPlan(updatedProfile);
       if (!plans || plans.length === 0) throw new Error("No se pudieron generar planes nutricionales.");
       
@@ -87,12 +88,11 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
         nutritionPlan: plans[0] 
       };
       
-      console.log("[Nutrition] Saving plan to profile...");
+      console.log("[Nutrition] Persisting plans to Firestore...");
       await onUpdateProfile(profileWithPlans);
       setStep('plan');
     } catch (error: any) {
       console.error("[Nutrition] Error generating plan:", error);
-      // Fallback is already handled in geminiService, but if it still fails:
       alert("Hubo un problema al generar tu plan. Por favor, inténtalo de nuevo.");
     } finally {
       setLoading(false);

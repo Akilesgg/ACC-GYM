@@ -30,6 +30,7 @@ export async function generateCombinedTrainingPlan(profile: UserProfile, configs
         2. Distribuye los días de entrenamiento de forma inteligente para evitar el sobreentrenamiento.
         3. Asegura una recuperación óptima alternando intensidades.
         4. Proporciona un razonamiento científico detallado para esta combinación.
+        5. El plan debe ser REALISTA y ejecutable.
         
         IMPORTANTE: Cada ejercicio DEBE tener un 'id' único (ej. 'ex_1', 'ex_2').`
       : `Generate a COMBINED and professional training plan for the following sports: ${sportsList}.
@@ -45,6 +46,7 @@ export async function generateCombinedTrainingPlan(profile: UserProfile, configs
         2. Distribute training days intelligently to avoid overtraining.
         3. Ensure optimal recovery by alternating intensities.
         4. Provide a detailed scientific reasoning for this combination.
+        5. The plan must be REALISTIC and executable.
         
         IMPORTANT: Each exercise MUST have a unique 'id' (e.g., 'ex_1', 'ex_2').`;
 
@@ -128,6 +130,7 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
         2. Un catálogo de comidas (entre 4 y 6 comidas diferentes por plan).
         3. Para cada comida: nombre, ingredientes, FÓRMULA DE PREPARACIÓN DETALLADA, y macros (p, c, f, kcal).
         4. Un CALENDARIO SEMANAL (Lunes a Domingo) indicando qué comidas del catálogo tomar cada día (3 a 5 comidas diarias según el plan).
+        5. Para cada comida, incluye un campo 'imageKeyword' con una palabra clave en inglés para buscar una imagen realista (ej: 'grilled-chicken', 'salad', 'oatmeal').
         
         IMPORTANTE: Devuelve un array de objetos NutritionPlan.`,
         config: {
@@ -151,6 +154,7 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
                       name: { type: Type.STRING },
                       ingredients: { type: Type.ARRAY, items: { type: Type.STRING } },
                       preparation: { type: Type.STRING },
+                      imageKeyword: { type: Type.STRING },
                       macros: {
                         type: Type.OBJECT,
                         properties: {
@@ -162,7 +166,7 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
                         required: ["p", "c", "f", "kcal"]
                       }
                     },
-                    required: ["id", "type", "name", "ingredients", "preparation", "macros"]
+                    required: ["id", "type", "name", "ingredients", "preparation", "macros", "imageKeyword"]
                   }
                 },
                 weeklySchedule: {
@@ -182,7 +186,14 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
           }
         }
       });
-      return JSON.parse(response.text);
+      const plans = JSON.parse(response.text);
+      return plans.map((plan: any) => ({
+        ...plan,
+        meals: plan.meals.map((meal: any) => ({
+          ...meal,
+          imageUrl: `https://picsum.photos/seed/${meal.imageKeyword || meal.id}/800/600`
+        }))
+      }));
     };
 
     return await Promise.race([generatePromise(), timeoutPromise]);

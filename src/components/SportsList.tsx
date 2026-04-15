@@ -447,15 +447,25 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
 
       {selectedSports.length > 0 && onConfirm && (
         <motion.div 
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 w-full max-w-lg px-6 flex flex-col gap-3"
+          className="fixed bottom-28 left-1/2 -translate-x-1/2 z-[200] w-full max-w-xl px-4"
         >
-          <div className="bg-background/80 backdrop-blur-xl p-4 rounded-3xl border border-white/10 shadow-2xl space-y-3">
-            <div className="flex items-center justify-between px-2">
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
-                {selectedSports.length} {selectedSports.length === 1 ? 'Deporte Seleccionado' : 'Deportes Seleccionados'}
-              </span>
+          <div className="bg-[#1a1c23]/95 backdrop-blur-3xl p-6 rounded-[3rem] border border-white/10 shadow-[0_32px_64px_rgba(0,0,0,0.8)] space-y-5">
+            <div className="flex items-center justify-between px-4">
+              <div className="flex flex-col">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                  <span className="text-xs font-black uppercase tracking-[0.2em] text-primary">
+                    {selectedSports.length} {selectedSports.length === 1 ? 'Disciplina' : 'Disciplinas'}
+                  </span>
+                </div>
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {selectedSports.map(s => (
+                    <span key={s} className="text-[9px] font-black bg-white/5 text-on-surface-variant/80 px-3 py-1 rounded-full uppercase border border-white/5">{s}</span>
+                  ))}
+                </div>
+              </div>
               <Button 
                 variant="ghost" 
                 size="sm" 
@@ -464,31 +474,32 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
                   setSelectedLetter(null);
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
-                className="text-[10px] font-bold uppercase tracking-widest text-secondary h-6"
+                className="text-[10px] font-black uppercase tracking-widest text-secondary h-10 bg-secondary/10 px-6 rounded-2xl hover:bg-secondary/20 border border-secondary/20 transition-all"
               >
-                + Buscar otro deporte
+                + Buscar más
               </Button>
             </div>
 
-            <div className="flex gap-3">
+            <div className="grid grid-cols-2 gap-4">
               <Button 
                 onClick={() => handleConfirm(false)}
-                className="flex-1 h-14 rounded-2xl bg-surface border-2 border-primary text-primary font-black text-sm uppercase tracking-tighter hover:bg-primary/5 transition-all"
+                className="h-20 rounded-[2rem] bg-surface-variant/10 border-2 border-primary/20 text-primary font-black text-xs uppercase tracking-widest hover:bg-primary/10 hover:border-primary transition-all flex flex-col gap-1"
               >
-                Guardar Individual
+                <User size={20} />
+                <span>Deporte Individual</span>
               </Button>
               
               <Button 
                 onClick={() => handleConfirm(true)}
                 disabled={selectedSports.length < 2}
-                className={`flex-1 h-14 rounded-2xl font-black text-sm uppercase tracking-tighter transition-all flex items-center justify-center gap-2 ${
+                className={`h-20 rounded-[2rem] font-black text-xs uppercase tracking-widest transition-all flex flex-col gap-1 shadow-2xl ${
                   selectedSports.length >= 2 
-                    ? 'bg-primary text-on-primary shadow-lg shadow-primary/40 hover:scale-105' 
-                    : 'bg-surface-variant/20 text-on-surface-variant/40 cursor-not-allowed'
+                    ? 'bg-primary text-on-primary shadow-primary/40 hover:scale-[1.02] active:scale-95' 
+                    : 'bg-surface-variant/20 text-on-surface-variant/40 cursor-not-allowed grayscale'
                 }`}
               >
-                <Zap size={18} fill="currentColor" />
-                Combinar Deportes
+                <Zap size={20} fill="currentColor" />
+                <span>Combinar Deportes</span>
               </Button>
             </div>
           </div>

@@ -81,7 +81,7 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
   const dayOfWeek = today.getDay(); // 0 (Sun) to 6 (Sat)
   const normalizedDay = dayOfWeek === 0 ? 7 : dayOfWeek; // 1 (Mon) to 7 (Sun)
   
-  const todaysExercises = activePlans.flatMap(plan => {
+  const allExercises = activePlans.flatMap(plan => {
     const dayPlan = plan.table.find(day => {
       const d = day.day.toLowerCase();
       return d.includes(todayName) || 
@@ -91,6 +91,9 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
     });
     return dayPlan?.exercises || [];
   });
+
+  // Unique exercises by ID to avoid duplicates in combined plans
+  const todaysExercises = Array.from(new Map(allExercises.map(ex => [ex.id, ex])).values());
 
   const completionRate = todaysExercises.length > 0 
     ? Math.round((currentProgress.completedExercises.length / todaysExercises.length) * 100)

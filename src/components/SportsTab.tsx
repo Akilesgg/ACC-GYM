@@ -107,92 +107,67 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
     finalizePlans(configs, isCombined);
   };
 
-  const handleGoalSelect = (goal: string) => {
-    setCurrentConfig(prev => ({ ...prev, goal }));
-    setStep('frequency');
-  };
-
-  const handleFrequencySelect = (days: number) => {
-    const config = { ...currentConfig, daysPerWeek: days } as SportConfig;
-    const nextIndex = currentConfigIndex + 1;
-    
-    if (nextIndex < configQueue.length) {
-      setAllConfigs(prev => [...prev, config]);
-      setCurrentConfigIndex(nextIndex);
-      const nextSport = sports.find(s => s.name === configQueue[nextIndex]);
-      if (nextSport) {
-        setSelectedSport(nextSport);
-        setCurrentConfig({ sport: nextSport.name });
-        setStep('goal');
-      }
-    } else {
-      const finalConfigs = [...allConfigs, config];
-      if (profile.selectedSports.length > 0 || finalConfigs.length > 1) {
-        setAllConfigs(finalConfigs);
-        setStep('combined');
-      } else {
-        finalizePlans(finalConfigs, false);
-      }
-    }
-  };
-
-  const handleCombinedSelect = (isCombined: boolean) => {
-    finalizePlans(allConfigs, isCombined);
-  };
-
   const finalizePlans = async (configs: SportConfig[], isCombined: boolean) => {
     setLoading(true);
     setError(null);
     
     try {
-      let updatedSports = [...profile.selectedSports];
+      // 1. Obtener deportes actuales evitando duplicados por nombre
+      const currentSports = [...(profile.selectedSports || [])];
+      let updatedSports: SportConfig[] = [...currentSports];
+      
+      // 2. Integrar nuevos configs
+      configs.forEach(newConfig => {
+        const existingIdx = updatedSports.findIndex(s => s.sport === newConfig.sport);
+        if (existingIdx >= 0) {
+          updatedSports[existingIdx] = { ...updatedSports[existingIdx], ...newConfig };
+        } else {
+          updatedSports.push(newConfig);
+        }
+      });
+
       let globalPlan: TrainingPlan | undefined;
       
       if (isCombined) {
-        // Combine new configs with existing ones, avoiding duplicates
-        const allTargetConfigs = [...updatedSports];
-        configs.forEach(c => {
-          const existingIdx = allTargetConfigs.findIndex(ec => ec.sport === c.sport);
-          if (existingIdx >= 0) {
-            allTargetConfigs[existingIdx] = { ...allTargetConfigs[existingIdx], ...c };
-          } else {
-            allTargetConfigs.push(c);
-          }
-        });
-
-        const combinedPlan = await generateCombinedTrainingPlan(profile, allTargetConfigs, language);
+        // Generar plan combinado para TODOS los deportes seleccionados
+        console.log("[SPORTS] Generating combined plan for:", updatedSports.map(s => s.sport));
+        const combinedPlan = await generateCombinedTrainingPlan(profile, updatedSports, language);
         
-        // Update all sports with the same combined plan
-        updatedSports = allTargetConfigs.map(c => ({ ...c, plan: combinedPlan, isCombined: true }));
+        // Asignar el mismo plan combinado a todos y marcar como combinados
+        updatedSports = updatedSports.map(s => ({ 
+          ...s, 
+          plan: combinedPlan, 
+          isCombined: true 
+        }));
         globalPlan = combinedPlan;
         setActivePlan(combinedPlan);
       } else {
-        // Individual plans for each new config
-        for (const config of configs) {
-          const plan = await generateTrainingPlan(profile, config, language);
-          const existingIdx = updatedSports.findIndex(s => s.sport === config.sport);
-          if (existingIdx >= 0) {
-            updatedSports[existingIdx] = { ...config, plan, isCombined: false };
-          } else {
-            updatedSports.push({ ...config, plan, isCombined: false });
+        // Generar planes individuales solo para los deportes que no tienen o son nuevos
+        for (let i = 0; i < updatedSports.length; i++) {
+          const config = updatedSports[i];
+          // Solo generamos si es uno de los nuevos o si no tiene plan
+          if (configs.some(c => c.sport === config.sport) || !config.plan) {
+            console.log("[SPORTS] Generating individual plan for:", config.sport);
+            const plan = await generateTrainingPlan(profile, config, language);
+            updatedSports[i] = { ...config, plan, isCombined: false };
+            setActivePlan(plan);
           }
-          setActivePlan(plan);
         }
       }
       
-      // PERSISTENCIA REAL: Asegurar que los datos se guardan y sincronizan
+      // 3. PERSISTENCIA TOTAL: Guardar en el perfil y en el campo 'plan' global
       const newProfile = { 
         ...profile, 
         selectedSports: updatedSports, 
         plan: globalPlan || updatedSports[updatedSports.length - 1]?.plan 
       };
       
-      console.log("[SPORTS] Saving updated profile to Firestore...");
+      console.log("[SPORTS] Persisting to Firestore...");
       await onUpdateProfile(newProfile);
-      console.log("[SPORTS] Profile saved successfully.");
+      console.log("[SPORTS] Save complete.");
     } catch (err: any) {
-      console.error("[SPORTS] Error finalizing plans:", err);
-      setError(err.message || "Error al generar el plan. Inténtalo de nuevo.");
+      console.error("[SPORTS] Error in finalizePlans:", err);
+      setError(err.message || "Error al procesar los deportes.");
     } finally {
       setLoading(false);
       setSelectedSport(null);
