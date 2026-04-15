@@ -79,7 +79,10 @@ export default function App() {
       
       if (!currentUser) {
         setProfile(null);
-        setActiveScreen('login');
+        // Only redirect if not already on login
+        if (activeScreenRef.current !== 'login') {
+          setActiveScreen('login');
+        }
         setLoading(false);
       }
     });
@@ -123,13 +126,14 @@ export default function App() {
         chatService.updateUserStatus(user.uid, 'online');
       }
       setLoading(false);
+      clearTimeout(timeout); // Clear timeout on success
     }, (error) => {
       console.error("[PROFILE] Subscription error:", error);
-      // Don't set loading to false immediately on error, maybe retry or wait for timeout
-      // But if it's a permission error, we should probably stop
+      setLoading(false);
       if (error.message?.includes('permission-denied')) {
         setError("Error de permisos al acceder al perfil. Contacta con soporte.");
-        setLoading(false);
+      } else {
+        setError("Error al sincronizar el perfil. Verifica tu conexión.");
       }
     });
 
@@ -137,7 +141,7 @@ export default function App() {
     const timeout = setTimeout(() => {
       console.warn("[PROFILE] Loading timeout reached");
       setLoading(false);
-    }, 5000);
+    }, 8000);
 
     return () => {
       unsubProfile();
@@ -155,11 +159,12 @@ export default function App() {
   }, [user, profile, loading, activeScreen, setActiveScreen]);
 
   const handleOnboardingComplete = async (newProfile: UserProfile) => {
+    const { setOnboardingStep } = useStore.getState();
     if (!user) return;
     console.log("[App] Starting onboarding completion for user:", user.uid);
     
     const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error("Timeout al guardar el perfil. Verifica tu conexión.")), 15000)
+      setTimeout(() => reject(new Error("La operación ha tardado demasiado. Verifica tu conexión a internet.")), 30000)
     );
 
     try {
@@ -182,6 +187,7 @@ export default function App() {
       
       console.log("[App] Profile created successfully. Updating local state...");
       setProfile(fullProfile);
+      setOnboardingStep(1); // Reset step for future use
       setActiveScreen('dashboard');
     } catch (error: any) {
       console.error("[App] Error saving profile:", error);

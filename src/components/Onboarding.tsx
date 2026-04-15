@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { UserProfile } from '../types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'motion/react';
 import { ChevronRight, User, Activity, ShieldAlert } from 'lucide-react';
-
+import { useStore } from '../store/useStore';
 import { auth, signOut } from '../lib/firebase';
 
 interface OnboardingProps {
@@ -14,9 +14,12 @@ interface OnboardingProps {
 }
 
 export default function Onboarding({ onComplete }: OnboardingProps) {
-  const [step, setStep] = useState(1);
+  const { onboardingStep: step, setOnboardingStep: setStep } = useStore();
   const [profile, setProfile] = useState<UserProfile>({
+    uid: auth.currentUser?.uid || '',
     username: '',
+    email: auth.currentUser?.email || '',
+    role: 'user',
     age: 25,
     gender: 'masculino',
     weight: 70,
@@ -26,6 +29,16 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     daysPerWeek: 3,
     selectedSports: []
   });
+
+  useEffect(() => {
+    if (auth.currentUser) {
+      setProfile(prev => ({
+        ...prev,
+        uid: auth.currentUser?.uid || prev.uid,
+        email: auth.currentUser?.email || prev.email
+      }));
+    }
+  }, []);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,13 +61,17 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     setIsSubmitting(true);
     setError(null);
     try {
+      console.log("[Onboarding] Completing profile...", profile);
       await onComplete(profile);
     } catch (err: any) {
       console.error("Onboarding error:", err);
-      setError(err.message || "Error al guardar el perfil. Inténtalo de nuevo.");
-    } finally {
-      setIsSubmitting(false);
+      const errorMessage = err.message || "Error al guardar el perfil. Inténtalo de nuevo.";
+      setError(errorMessage.includes('{') ? JSON.parse(errorMessage).error : errorMessage);
+      setIsSubmitting(false); // Reset on error
     }
+    // Note: We don't set isSubmitting(false) in finally because 
+    // App.tsx will unmount this component on success.
+    // If it fails, we reset it in catch.
   };
 
   return (

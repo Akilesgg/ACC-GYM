@@ -16,22 +16,26 @@ export const getUserProfile = async (uid: string): Promise<UserProfile | null> =
   }
 };
 
-export const createUserProfile = async (profile: UserProfile) => {
+export const createUserProfile = async (profile: UserProfile): Promise<void> => {
   const path = `users/${profile.uid}`;
+  console.log(`[FIRESTORE] Attempting to create profile at ${path}...`);
   try {
     const docRef = doc(db, 'users', profile.uid);
     await setDoc(docRef, profile);
+    console.log(`[FIRESTORE] Profile created for ${profile.uid}`);
   } catch (error) {
+    console.error(`[FIRESTORE] Error creating profile for ${profile.uid}:`, error);
     handleFirestoreError(error, OperationType.WRITE, path);
   }
 };
 
-export const updateUserProfile = async (uid: string, updates: Partial<UserProfile>) => {
+export const updateUserProfile = async (uid: string, updates: Partial<UserProfile>): Promise<void> => {
   const path = `users/${uid}`;
   const docRef = doc(db, 'users', uid);
   try {
     // Usamos setDoc con merge: true para que funcione incluso si el documento no existe
     await setDoc(docRef, updates, { merge: true });
+    console.log(`[FIRESTORE] Profile updated for ${uid}`);
   } catch (error: any) {
     if (error.code === 'resource-exhausted') {
       console.error("[FIRESTORE] Cuota excedida. Los cambios no se guardarán hasta que se reinicie la cuota diaria.");
