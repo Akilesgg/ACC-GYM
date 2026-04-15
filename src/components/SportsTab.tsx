@@ -102,20 +102,11 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
     });
   };
 
-  const startConfiguration = (configs: SportConfig[], isCombined: boolean) => {
-    if (configs.length === 0) return;
-    finalizePlans(configs, isCombined);
-  };
-
   const generatePlan = (sportsConfigs: SportConfig[]): TrainingPlan => {
-    const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-    const table = days.map((day, index) => {
-      // Alternar deportes: deporte 1 en días impares, deporte 2 en días pares, etc.
-      const sportIndex = index % sportsConfigs.length;
-      const config = sportsConfigs[sportIndex];
-      
-      // Si el deporte tiene un plan previo, usamos sus ejercicios para ese día
-      // Si no, creamos una entrada básica
+    const days = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+    let i = 0;
+    const table = days.map(day => {
+      const config = sportsConfigs[i++ % sportsConfigs.length];
       const existingExercises = config.plan?.table.find(d => d.day.includes(day))?.exercises || [
         { id: `ex-${day}-1`, name: `Entrenamiento de ${config.sport}`, sets: '4', reps: '12', notes: 'Enfoque en técnica' }
       ];
@@ -129,78 +120,62 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
     return {
       id: `plan-${Date.now()}`,
       createdAt: new Date().toISOString(),
-      reasoning: `Plan combinado alternando entre ${sportsConfigs.map(s => s.sport).join(' y ')} para maximizar recuperación y rendimiento variado.`,
+      reasoning: `Plan combinado alternando entre ${sportsConfigs.map(s => s.sport).join(' y ')}.`,
       table
     };
   };
 
-  const finalizePlans = async (configs: SportConfig[], isCombined: boolean) => {
+  const saveSport = async (newConfigs: SportConfig[], isCombined: boolean) => {
+    if (!profile?.uid) return;
+    
     setLoading(true);
     setError(null);
     
     try {
-      const currentSports = [...(profile.sports || [])];
-      let updatedSports: SportConfig[] = [...currentSports];
+      let sports = [...(profile.sports || [])];
       
-      configs.forEach(newConfig => {
-        const existingIdx = updatedSports.findIndex(s => s.sport === newConfig.sport);
-        if (existingIdx >= 0) {
-          updatedSports[existingIdx] = { ...updatedSports[existingIdx], ...newConfig };
+      newConfigs.forEach(newSport => {
+        const exists = sports.find(s => s.sport === newSport.sport);
+        if (exists) {
+          sports = sports.map(s => s.sport === newSport.sport ? { ...s, ...newSport } : s);
         } else {
-          updatedSports.push(newConfig);
+          sports.push(newSport);
         }
       });
 
       let globalPlan: TrainingPlan | undefined;
       
-      if (isCombined || updatedSports.length > 1) {
-        console.log("[SPORTS] Generating combined plan for:", updatedSports.map(s => s.sport));
-        let combinedPlan: TrainingPlan;
+      if (isCombined || sports.length > 1) {
+        console.log("[SPORTS] Generating combined plan...");
         try {
-          combinedPlan = await generateCombinedTrainingPlan(profile, updatedSports, language);
+          globalPlan = await generateCombinedTrainingPlan(profile, sports, language);
         } catch (e) {
-          console.warn("[SPORTS] AI generation failed, using fallback generatePlan");
-          combinedPlan = generatePlan(updatedSports);
+          globalPlan = generatePlan(sports);
         }
-        
-        updatedSports = updatedSports.map(s => ({ 
-          ...s, 
-          plan: combinedPlan, 
-          isCombined: true 
-        }));
-        globalPlan = combinedPlan;
-        setActivePlan(combinedPlan);
+        sports = sports.map(s => ({ ...s, plan: globalPlan, isCombined: true }));
       } else {
-        for (let i = 0; i < updatedSports.length; i++) {
-          const config = updatedSports[i];
-          if (configs.some(c => c.sport === config.sport) || !config.plan) {
-            console.log("[SPORTS] Generating individual plan for:", config.sport);
-            const plan = await generateTrainingPlan(profile, config, language);
-            updatedSports[i] = { ...config, plan, isCombined: false };
-            setActivePlan(plan);
-            globalPlan = plan;
-          }
+        const config = sports[0];
+        if (!config.plan) {
+          globalPlan = await generateTrainingPlan(profile, config, language);
+          sports[0] = { ...config, plan: globalPlan, isCombined: false };
+        } else {
+          globalPlan = config.plan;
         }
       }
-      
-      const newProfile = { 
-        ...profile, 
-        sports: updatedSports, 
-        plan: globalPlan || profile.plan
-      };
-      
-      console.log("[SPORTS] Persisting to Firestore field 'sports' and 'plan'...");
-      await onUpdateProfile(newProfile);
-      console.log("[SPORTS] Save complete.");
+
+      const updatedProfile = { ...profile, sports, plan: globalPlan };
+      await onUpdateProfile(updatedProfile);
+      setActivePlan(globalPlan || null);
     } catch (err: any) {
-      console.error("[SPORTS] Error in finalizePlans:", err);
-      setError(err.message || "Error al procesar los deportes.");
+      setError(err.message || "Error al guardar deportes");
     } finally {
       setLoading(false);
-      setSelectedSport(null);
-      setAllConfigs([]);
-      setConfigQueue([]);
     }
+  };
+
+  const startConfiguration = (configs: SportConfig[], isCombined: boolean) => {
+    if (configs.length === 0) return;
+    saveSport(configs, isCombined);
   };
 
   const removeSport = (sportName: string) => {

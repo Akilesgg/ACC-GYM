@@ -61,7 +61,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
     setStep('allergies');
   };
 
-  const generatePlan = async () => {
+  const generateDiets = async () => {
     setLoading(true);
     const allergyDetails = [
       tempData.isCeliac ? "Celíaco" : "",
@@ -78,7 +78,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
     };
     
     try {
-      console.log("[Nutrition] Generating plans with AI...");
+      console.log("[Nutrition] Generating diets with AI...");
       const plans = await generateNutritionPlan(updatedProfile);
       if (!plans || plans.length === 0) throw new Error("No se pudieron generar planes nutricionales.");
       
@@ -88,11 +88,11 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
         nutritionPlan: plans[0] 
       };
       
-      console.log("[Nutrition] Persisting plans to Firestore field 'diets'...");
+      console.log("[Nutrition] Persisting diets to Firestore...");
       await onUpdateProfile(profileWithPlans);
       setStep('plan');
     } catch (error: any) {
-      console.error("[Nutrition] Error generating plan:", error);
+      console.error("[Nutrition] Error generating diets:", error);
       alert("Hubo un problema al generar tu plan. Por favor, inténtalo de nuevo.");
     } finally {
       setLoading(false);
@@ -236,7 +236,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
                 )}
               </AnimatePresence>
 
-              <Button onClick={generatePlan} className="w-full h-14 rounded-full bg-primary text-background font-black text-lg shadow-xl shadow-primary/20">
+              <Button onClick={generateDiets} className="w-full h-14 rounded-full bg-primary text-background font-black text-lg shadow-xl shadow-primary/20">
                 {t('generarDieta')}
               </Button>
             </div>

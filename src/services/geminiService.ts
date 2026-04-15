@@ -3,31 +3,29 @@ import { UserProfile, TrainingPlan, SportConfig, NutritionPlan, Language } from 
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
-const FOOD_IMAGES: Record<string, string> = {
-  "avena": "https://images.unsplash.com/photo-1586444248902-2f64eddf13cf?q=80&w=800&auto=format&fit=crop",
-  "pollo": "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=800&auto=format&fit=crop",
-  "arroz": "https://images.unsplash.com/photo-1512058560366-cd2427ff56f3?q=80&w=800&auto=format&fit=crop",
-  "brócoli": "https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?q=80&w=800&auto=format&fit=crop",
-  "huevo": "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?q=80&w=800&auto=format&fit=crop",
-  "salmón": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?q=80&w=800&auto=format&fit=crop",
-  "ensalada": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop",
-  "fruta": "https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=800&auto=format&fit=crop",
-  "yogur": "https://images.unsplash.com/photo-1488477181946-6428a0291777?q=80&w=800&auto=format&fit=crop",
-  "carne": "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop"
+const foodImageMap: Record<string, string> = {
+  avena: "https://images.unsplash.com/photo-1586444248902-2f64eddf13cf?q=80&w=800&auto=format&fit=crop",
+  pollo: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=800&auto=format&fit=crop",
+  arroz: "https://images.unsplash.com/photo-1512058560366-cd2427ff56f3?q=80&w=800&auto=format&fit=crop",
+  brocoli: "https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?q=80&w=800&auto=format&fit=crop",
+  huevo: "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?q=80&w=800&auto=format&fit=crop",
+  salmon: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?q=80&w=800&auto=format&fit=crop",
+  ensalada: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop",
+  fruta: "https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=800&auto=format&fit=crop",
+  yogur: "https://images.unsplash.com/photo-1488477181946-6428a0291777?q=80&w=800&auto=format&fit=crop",
+  carne: "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop"
 };
 
-function getFoodImage(keyword: string, mealName: string): string {
-  const lowerKeyword = keyword.toLowerCase();
-  const lowerName = mealName.toLowerCase();
+const getImage = (ingredients: string[]): string => {
+  if (!ingredients || ingredients.length === 0) return "https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=800&auto=format&fit=crop";
+  const firstIngredient = ingredients[0].toLowerCase();
   
-  for (const [key, url] of Object.entries(FOOD_IMAGES)) {
-    if (lowerKeyword.includes(key) || lowerName.includes(key)) {
-      return url;
-    }
+  for (const [key, url] of Object.entries(foodImageMap)) {
+    if (firstIngredient.includes(key)) return url;
   }
   
-  return `https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=800&auto=format&fit=crop`; // Generic healthy food
-}
+  return "https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=800&auto=format&fit=crop";
+};
 
 export async function generateTrainingPlan(profile: UserProfile, sportConfig: SportConfig, language: Language): Promise<TrainingPlan> {
   return generateCombinedTrainingPlan(profile, [sportConfig], language);
@@ -217,7 +215,7 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
         ...plan,
         meals: plan.meals.map((meal: any) => ({
           ...meal,
-          imageUrl: getFoodImage(meal.imageKeyword || "", meal.name)
+          imageUrl: getImage(meal.ingredients)
         }))
       }));
     };
