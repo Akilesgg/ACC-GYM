@@ -73,9 +73,10 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
     onUpdateProfile({ ...profile, progress: updatedProgress });
   };
 
-  const activePlans = profile.sports
-    .map(s => s.plan)
-    .filter((p): p is TrainingPlan => !!p);
+  const activePlans = [
+    ...(profile.sports.map(s => s.plan).filter((p): p is TrainingPlan => !!p)),
+    ...(profile.plan ? [profile.plan] : [])
+  ];
 
   const todayName = format(today, 'EEEE', { locale }).toLowerCase();
   const dayOfWeek = today.getDay(); // 0 (Sun) to 6 (Sat)

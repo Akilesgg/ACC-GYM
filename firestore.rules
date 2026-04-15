@@ -23,6 +23,8 @@ service cloud.firestore {
     //   - timeframe: string (optional)
     //   - allergies: string (optional)
     //   - nutritionPlan: map (optional)
+    //   - diets: list (optional)
+    //   - plan: map (optional)
     //   - weightHistory: list (optional)
     //   - photos: list (optional)
     //   - progress: map (optional)

@@ -45,9 +45,10 @@ export default function Tracking({ profile, onUpdateProfile, onBack, language }:
 
   const [view, setView] = useState<'daily' | 'weekly'>('daily');
 
-  const activePlans = profile.sports
-    .map(s => s.plan)
-    .filter((p): p is TrainingPlan => !!p);
+  const activePlans = [
+    ...(profile.sports.map(s => s.plan).filter((p): p is TrainingPlan => !!p)),
+    ...(profile.plan ? [profile.plan] : [])
+  ];
 
   const todayName = format(today, 'EEEE', { locale }).toLowerCase();
   
@@ -175,26 +176,29 @@ export default function Tracking({ profile, onUpdateProfile, onBack, language }:
             exit={{ opacity: 0, y: -20 }}
             className="space-y-8"
           >
-            {activePlans.map((plan, pIdx) => (
-              <div key={pIdx} className="space-y-6">
-                <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight text-primary">{t('plan')}: {profile.sports[pIdx]?.sport}</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {plan.table.map((day, dIdx) => (
-                    <Card key={dIdx} className="bg-surface border-none p-6 space-y-4">
-                      <h4 className="font-bold text-lg border-b border-outline-variant/10 pb-2">{day.day}</h4>
-                      <div className="space-y-2">
-                        {day.exercises.map((ex, eIdx) => (
-                          <div key={eIdx} className="flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 rounded-full bg-secondary" />
-                            <p className="text-xs font-medium truncate">{ex.name}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </Card>
-                  ))}
+            {activePlans.map((plan, pIdx) => {
+              const sportName = profile.sports[pIdx]?.sport || "Plan Combinado";
+              return (
+                <div key={pIdx} className="space-y-6">
+                  <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight text-primary">{t('plan')}: {sportName}</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {plan.table.map((day, dIdx) => (
+                      <Card key={dIdx} className="bg-surface border-none p-6 space-y-4">
+                        <h4 className="font-bold text-lg border-b border-outline-variant/10 pb-2">{day.day}</h4>
+                        <div className="space-y-2">
+                          {day.exercises.map((ex, eIdx) => (
+                            <div key={eIdx} className="flex items-center gap-2">
+                              <div className="w-1.5 h-1.5 rounded-full bg-secondary" />
+                              <p className="text-xs font-medium truncate">{ex.name}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </motion.section>
         )}
       </AnimatePresence>

@@ -84,11 +84,11 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
       
       const profileWithPlans = { 
         ...updatedProfile, 
-        nutritionPlans: plans, 
+        diets: plans, 
         nutritionPlan: plans[0] 
       };
       
-      console.log("[Nutrition] Persisting plans to Firestore...");
+      console.log("[Nutrition] Persisting plans to Firestore field 'diets'...");
       await onUpdateProfile(profileWithPlans);
       setStep('plan');
     } catch (error: any) {
@@ -253,11 +253,11 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
                 </p>
               </div>
               <div className="flex gap-2">
-                {profile.nutritionPlans?.map((_, i) => (
+                {profile.diets?.map((_, i) => (
                   <Button 
                     key={i} 
-                    variant={profile.nutritionPlan?.id === profile.nutritionPlans?.[i].id ? 'default' : 'outline'}
-                    onClick={() => onUpdateProfile({ ...profile, nutritionPlan: profile.nutritionPlans![i] })}
+                    variant={profile.nutritionPlan?.id === profile.diets?.[i].id ? 'default' : 'outline'}
+                    onClick={() => onUpdateProfile({ ...profile, nutritionPlan: profile.diets![i] })}
                     className="rounded-full w-10 h-10 p-0"
                   >
                     {String.fromCharCode(65 + i)}

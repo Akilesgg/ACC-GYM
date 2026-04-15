@@ -73,8 +73,8 @@ export interface UserProfile {
   nutritionGoal?: string;
   nutritionTimeframe?: string;
   allergies?: string;
-  nutritionPlan?: NutritionPlan; // Legacy
-  nutritionPlans?: NutritionPlan[];
+  nutritionPlan?: NutritionPlan;
+  diets?: NutritionPlan[];
   // Evolution
   weightHistory?: WeightEntry[];
   photos?: GalleryItem[];

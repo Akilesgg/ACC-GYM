@@ -107,16 +107,41 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
     finalizePlans(configs, isCombined);
   };
 
+  const generatePlan = (sportsConfigs: SportConfig[]): TrainingPlan => {
+    const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+    const table = days.map((day, index) => {
+      // Alternar deportes: deporte 1 en días impares, deporte 2 en días pares, etc.
+      const sportIndex = index % sportsConfigs.length;
+      const config = sportsConfigs[sportIndex];
+      
+      // Si el deporte tiene un plan previo, usamos sus ejercicios para ese día
+      // Si no, creamos una entrada básica
+      const existingExercises = config.plan?.table.find(d => d.day.includes(day))?.exercises || [
+        { id: `ex-${day}-1`, name: `Entrenamiento de ${config.sport}`, sets: '4', reps: '12', notes: 'Enfoque en técnica' }
+      ];
+
+      return {
+        day,
+        exercises: existingExercises
+      };
+    });
+
+    return {
+      id: `plan-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      reasoning: `Plan combinado alternando entre ${sportsConfigs.map(s => s.sport).join(' y ')} para maximizar recuperación y rendimiento variado.`,
+      table
+    };
+  };
+
   const finalizePlans = async (configs: SportConfig[], isCombined: boolean) => {
     setLoading(true);
     setError(null);
     
     try {
-      // 1. Obtener deportes actuales evitando duplicados por nombre
       const currentSports = [...(profile.sports || [])];
       let updatedSports: SportConfig[] = [...currentSports];
       
-      // 2. Integrar nuevos configs
       configs.forEach(newConfig => {
         const existingIdx = updatedSports.findIndex(s => s.sport === newConfig.sport);
         if (existingIdx >= 0) {
@@ -128,12 +153,16 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
 
       let globalPlan: TrainingPlan | undefined;
       
-      if (isCombined) {
-        // Generar plan combinado para TODOS los deportes seleccionados
+      if (isCombined || updatedSports.length > 1) {
         console.log("[SPORTS] Generating combined plan for:", updatedSports.map(s => s.sport));
-        const combinedPlan = await generateCombinedTrainingPlan(profile, updatedSports, language);
+        let combinedPlan: TrainingPlan;
+        try {
+          combinedPlan = await generateCombinedTrainingPlan(profile, updatedSports, language);
+        } catch (e) {
+          console.warn("[SPORTS] AI generation failed, using fallback generatePlan");
+          combinedPlan = generatePlan(updatedSports);
+        }
         
-        // Asignar el mismo plan combinado a todos y marcar como combinados
         updatedSports = updatedSports.map(s => ({ 
           ...s, 
           plan: combinedPlan, 
@@ -142,27 +171,25 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
         globalPlan = combinedPlan;
         setActivePlan(combinedPlan);
       } else {
-        // Generar planes individuales solo para los deportes que no tienen o son nuevos
         for (let i = 0; i < updatedSports.length; i++) {
           const config = updatedSports[i];
-          // Solo generamos si es uno de los nuevos o si no tiene plan
           if (configs.some(c => c.sport === config.sport) || !config.plan) {
             console.log("[SPORTS] Generating individual plan for:", config.sport);
             const plan = await generateTrainingPlan(profile, config, language);
             updatedSports[i] = { ...config, plan, isCombined: false };
             setActivePlan(plan);
+            globalPlan = plan;
           }
         }
       }
       
-      // 3. PERSISTENCIA TOTAL: Guardar en el perfil y en el campo 'plan' global
       const newProfile = { 
         ...profile, 
         sports: updatedSports, 
-        plan: globalPlan || updatedSports[updatedSports.length - 1]?.plan 
+        plan: globalPlan || profile.plan
       };
       
-      console.log("[SPORTS] Persisting to Firestore...");
+      console.log("[SPORTS] Persisting to Firestore field 'sports' and 'plan'...");
       await onUpdateProfile(newProfile);
       console.log("[SPORTS] Save complete.");
     } catch (err: any) {

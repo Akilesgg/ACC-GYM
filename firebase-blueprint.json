@@ -20,6 +20,8 @@
         "timeframe": { "type": "string" },
         "allergies": { "type": "string" },
         "nutritionPlan": { "type": "object" },
+        "diets": { "type": "array" },
+        "plan": { "type": "object" },
         "weightHistory": { "type": "array" },
         "photos": { "type": "array" },
         "progress": { "type": "object" },
