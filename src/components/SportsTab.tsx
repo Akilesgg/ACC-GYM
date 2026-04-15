@@ -125,11 +125,16 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
     };
   };
 
-  const saveSport = async (newConfigs: SportConfig[], isCombined: boolean) => {
-    if (!profile?.uid) return;
+  const addSport = async (newConfigs: SportConfig[], isCombined: boolean) => {
+    if (!profile?.uid) {
+      console.error("[SPORTS] No user UID found");
+      setError("Usuario no autenticado");
+      return;
+    }
     
     setLoading(true);
     setError(null);
+    console.log("[SPORTS] Starting save process for:", newConfigs.map(c => c.sport).join(", "));
     
     try {
       let sports = [...(profile.sports || [])];
@@ -137,8 +142,10 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
       newConfigs.forEach(newSport => {
         const exists = sports.find(s => s.sport === newSport.sport);
         if (exists) {
+          console.log(`[SPORTS] Updating existing sport: ${newSport.sport}`);
           sports = sports.map(s => s.sport === newSport.sport ? { ...s, ...newSport } : s);
         } else {
+          console.log(`[SPORTS] Adding new sport: ${newSport.sport}`);
           sports.push(newSport);
         }
       });
@@ -164,7 +171,9 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
       }
 
       const updatedProfile = { ...profile, sports, plan: globalPlan };
+      console.log("[SPORTS] Persisting to Firestore...");
       await onUpdateProfile(updatedProfile);
+      console.log("[SPORTS] Save successful!");
       setActivePlan(globalPlan || null);
     } catch (err: any) {
       setError(err.message || "Error al guardar deportes");
@@ -175,7 +184,7 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
 
   const startConfiguration = (configs: SportConfig[], isCombined: boolean) => {
     if (configs.length === 0) return;
-    saveSport(configs, isCombined);
+    addSport(configs, isCombined);
   };
 
   const removeSport = (sportName: string) => {

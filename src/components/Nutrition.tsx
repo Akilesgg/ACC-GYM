@@ -107,6 +107,29 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
     else if (onBack) onBack();
   };
 
+  const resetDiets = async () => {
+    if (!confirm(language === 'es' ? '¿Eliminar todas las dietas?' : 'Delete all diets?')) return;
+    
+    setLoading(true);
+    try {
+      console.log("[Nutrition] Resetting diets in Firestore...");
+      await onUpdateProfile({ 
+        ...profile, 
+        diets: [], 
+        nutritionPlan: undefined,
+        nutritionGoal: '',
+        nutritionTimeframe: '',
+        allergies: ''
+      });
+      setStep('intro');
+      console.log("[Nutrition] Diets reset successfully.");
+    } catch (error) {
+      console.error("[Nutrition] Error resetting diets:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-12 pb-32">
       <section>
@@ -265,12 +288,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
                 ))}
                 <Button 
                   variant="destructive" 
-                  onClick={async () => {
-                    if (confirm(language === 'es' ? '¿Eliminar todas las dietas?' : 'Delete all diets?')) {
-                      await onUpdateProfile({ ...profile, diets: [], nutritionPlan: undefined });
-                      setStep('intro');
-                    }
-                  }} 
+                  onClick={resetDiets} 
                   className="rounded-full px-6 font-bold uppercase tracking-widest text-[10px]"
                 >
                   {language === 'es' ? 'Resetear' : 'Reset'}

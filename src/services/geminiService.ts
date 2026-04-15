@@ -14,17 +14,26 @@ const foodImageMap: Record<string, string> = {
   fruta: "https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=800&auto=format&fit=crop",
   yogur: "https://images.unsplash.com/photo-1488477181946-6428a0291777?q=80&w=800&auto=format&fit=crop",
   carne: "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop",
-  frutas: "https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=800&auto=format&fit=crop"
+  frutas: "https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=800&auto=format&fit=crop",
+  pavo: "https://images.unsplash.com/photo-1587593810167-a84920ea0781?q=80&w=800&auto=format&fit=crop",
+  atun: "https://images.unsplash.com/photo-1501595091296-3a970afb3ff9?q=80&w=800&auto=format&fit=crop",
+  pasta: "https://images.unsplash.com/photo-1473093226795-af9932fe5856?q=80&w=800&auto=format&fit=crop",
+  pan: "https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=800&auto=format&fit=crop",
+  leche: "https://images.unsplash.com/photo-1564419320461-6870880221ad?q=80&w=800&auto=format&fit=crop",
+  queso: "https://images.unsplash.com/photo-1485962391905-dc37bb3ac46c?q=80&w=800&auto=format&fit=crop",
+  frutos: "https://images.unsplash.com/photo-1536591376356-9b7c5b132127?q=80&w=800&auto=format&fit=crop",
+  nueces: "https://images.unsplash.com/photo-1536591376356-9b7c5b132127?q=80&w=800&auto=format&fit=crop"
 };
 
 const getImage = (ingredients: string[]): string => {
   if (!ingredients || ingredients.length === 0) return "https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=800&auto=format&fit=crop";
   
+  const lowerIngredients = ingredients.map(i => i.toLowerCase());
+  
   // Try to match any ingredient with the map
-  for (const ingredient of ingredients) {
-    const lowerIng = ingredient.toLowerCase();
+  for (const ing of lowerIngredients) {
     for (const [key, url] of Object.entries(foodImageMap)) {
-      if (lowerIng.includes(key)) return url;
+      if (ing.includes(key)) return url;
     }
   }
   

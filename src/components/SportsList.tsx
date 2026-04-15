@@ -486,7 +486,7 @@ export default function SportsList({ sports, selectedSportNames, onSelect, onCon
                 className="h-20 rounded-[2rem] bg-surface-variant/10 border-2 border-primary/20 text-primary font-black text-xs uppercase tracking-widest hover:bg-primary/10 hover:border-primary transition-all flex flex-col gap-1"
               >
                 <Plus size={20} />
-                <span>Añadir Deporte</span>
+                <span>Añadir deporte</span>
               </Button>
               
               <Button 
