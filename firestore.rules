@@ -13,7 +13,7 @@ service cloud.firestore {
     //   - displayName: string (optional)
     //   - photoURL: string (optional)
     //   - role: string (required, enum: ['user', 'admin', 'trainer'])
-    //   - selectedSports: list (optional)
+    //   - sports: list (optional)
     //   - weight: number (optional)
     //   - height: number (optional)
     //   - age: number (optional)

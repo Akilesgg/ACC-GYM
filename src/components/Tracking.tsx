@@ -45,7 +45,7 @@ export default function Tracking({ profile, onUpdateProfile, onBack, language }:
 
   const [view, setView] = useState<'daily' | 'weekly'>('daily');
 
-  const activePlans = profile.selectedSports
+  const activePlans = profile.sports
     .map(s => s.plan)
     .filter((p): p is TrainingPlan => !!p);
 
@@ -177,7 +177,7 @@ export default function Tracking({ profile, onUpdateProfile, onBack, language }:
           >
             {activePlans.map((plan, pIdx) => (
               <div key={pIdx} className="space-y-6">
-                <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight text-primary">{t('plan')}: {profile.selectedSports[pIdx]?.sport}</h3>
+                <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight text-primary">{t('plan')}: {profile.sports[pIdx]?.sport}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {plan.table.map((day, dIdx) => (
                     <Card key={dIdx} className="bg-surface border-none p-6 space-y-4">

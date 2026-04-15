@@ -132,8 +132,8 @@ export default function Profile({ profile, onBack, language }: ProfileProps) {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {profile.selectedSports.length > 0 ? (
-              profile.selectedSports.map((sport, index) => (
+            {profile.sports.length > 0 ? (
+              profile.sports.map((sport, index) => (
                 <Card key={index} className="bg-surface border-none p-6 space-y-4 group hover:bg-surface-variant/30 transition-all">
                   <div className="flex items-center justify-between">
                     <h4 className="font-headline font-bold text-xl uppercase text-primary">{sport.sport}</h4>

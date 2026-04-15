@@ -128,9 +128,9 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
         Cada plan debe incluir:
         1. Razonamiento científico detallado.
         2. Un catálogo de comidas (entre 4 y 6 comidas diferentes por plan).
-        3. Para cada comida: nombre, ingredientes, FÓRMULA DE PREPARACIÓN DETALLADA, y macros (p, c, f, kcal).
+        3. Para cada comida: nombre, ingredientes con cantidades exactas, FÓRMULA DE PREPARACIÓN PASO A PASO Y DETALLADA, y macros (p, c, f, kcal).
         4. Un CALENDARIO SEMANAL (Lunes a Domingo) indicando qué comidas del catálogo tomar cada día (3 a 5 comidas diarias según el plan).
-        5. Para cada comida, incluye un campo 'imageKeyword' con una palabra clave en inglés para buscar una imagen realista (ej: 'grilled-chicken', 'salad', 'oatmeal').
+        5. Para cada comida, incluye un campo 'imageKeyword' con una palabra clave en inglés MUY ESPECÍFICA basada en los ingredientes principales para buscar una imagen realista (ej: 'grilled-salmon-with-asparagus', 'quinoa-salad-avocado', 'oatmeal-blueberries-nuts').
         
         IMPORTANTE: Devuelve un array de objetos NutritionPlan.`,
         config: {
@@ -191,7 +191,7 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
         ...plan,
         meals: plan.meals.map((meal: any) => ({
           ...meal,
-          imageUrl: `https://picsum.photos/seed/${meal.imageKeyword || meal.id}/800/600`
+          imageUrl: `https://picsum.photos/seed/${encodeURIComponent(meal.imageKeyword || meal.name)}/800/600`
         }))
       }));
     };

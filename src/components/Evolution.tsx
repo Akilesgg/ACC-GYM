@@ -73,7 +73,7 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
     onUpdateProfile({ ...profile, progress: updatedProgress });
   };
 
-  const activePlans = profile.selectedSports
+  const activePlans = profile.sports
     .map(s => s.plan)
     .filter((p): p is TrainingPlan => !!p);
 

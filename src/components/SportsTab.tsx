@@ -67,7 +67,7 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
   const [selectedSport, setSelectedSport] = useState<Sport | null>(null);
   const [step, setStep] = useState<'list' | 'goal' | 'frequency' | 'combined'>('list');
   const [currentConfig, setCurrentConfig] = useState<Partial<SportConfig>>({});
-  const [selectedSportsList, setSelectedSportsList] = useState<string[]>(profile?.selectedSports.map(s => s.sport) || []);
+  const [selectedSportsList, setSelectedSportsList] = useState<string[]>(profile?.sports.map(s => s.sport) || []);
   const [configQueue, setConfigQueue] = useState<string[]>([]);
   const [currentConfigIndex, setCurrentConfigIndex] = useState(0);
   const [allConfigs, setAllConfigs] = useState<SportConfig[]>([]);
@@ -77,9 +77,9 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
 
   useEffect(() => {
     if (profile) {
-      setSelectedSportsList(profile.selectedSports.map(s => s.sport));
+      setSelectedSportsList(profile.sports.map(s => s.sport));
     }
-  }, [profile?.selectedSports]);
+  }, [profile?.sports]);
 
   useEffect(() => {
     console.log("[SPORTS] Subscribing to sports...");
@@ -113,7 +113,7 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
     
     try {
       // 1. Obtener deportes actuales evitando duplicados por nombre
-      const currentSports = [...(profile.selectedSports || [])];
+      const currentSports = [...(profile.sports || [])];
       let updatedSports: SportConfig[] = [...currentSports];
       
       // 2. Integrar nuevos configs
@@ -158,7 +158,7 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
       // 3. PERSISTENCIA TOTAL: Guardar en el perfil y en el campo 'plan' global
       const newProfile = { 
         ...profile, 
-        selectedSports: updatedSports, 
+        sports: updatedSports, 
         plan: globalPlan || updatedSports[updatedSports.length - 1]?.plan 
       };
       
@@ -177,8 +177,8 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
   };
 
   const removeSport = (sportName: string) => {
-    const updatedSports = profile.selectedSports.filter(s => s.sport !== sportName);
-    onUpdateProfile({ ...profile, selectedSports: updatedSports });
+    const updatedSports = profile.sports.filter(s => s.sport !== sportName);
+    onUpdateProfile({ ...profile, sports: updatedSports });
   };
 
   const goBack = () => {
@@ -229,11 +229,11 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
       )}
 
       {/* Active Sports Section */}
-      {!activePlan && !loading && profile.selectedSports.length > 0 && (
+      {!activePlan && !loading && profile.sports.length > 0 && (
         <section className="space-y-6">
           <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">{t('tusDeportesActivos')}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {profile.selectedSports.map((s, idx) => (
+            {profile.sports.map((s, idx) => (
               <Card key={idx} className="bg-surface border-none p-6 flex items-center justify-between group">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
@@ -310,7 +310,7 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
             <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">{t('laboratorioDisciplinas')}</h3>
             <SportsList 
               sports={sports} 
-              selectedSports={selectedSportsList}
+              selectedSportNames={selectedSportsList}
               onSelect={handleSportToggle}
               onConfirm={startConfiguration}
               language={language}

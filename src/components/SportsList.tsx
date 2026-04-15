@@ -10,7 +10,7 @@ import * as Icons from 'lucide-react';
 
 interface SportsListProps {
   sports: Sport[];
-  selectedSports: string[];
+  selectedSportNames: string[];
   onSelect: (sportName: string) => void;
   onConfirm?: (configs: SportConfig[], isCombined: boolean) => void;
   language: Language;
@@ -24,7 +24,7 @@ interface CategoryGroup {
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
-export default function SportsList({ sports, selectedSports, onSelect, onConfirm, language }: SportsListProps) {
+export default function SportsList({ sports, selectedSportNames, onSelect, onConfirm, language }: SportsListProps) {
   const t = useTranslation(language);
   const [search, setSearch] = useState('');
   const [openCategories, setOpenCategories] = useState<string[]>([]);
@@ -33,7 +33,7 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
   const [configuringSport, setConfiguringSport] = useState<string | null>(null);
 
   const toggleSport = (sportName: string) => {
-    const isCurrentlySelected = selectedSports.includes(sportName);
+    const isCurrentlySelected = selectedSportNames.includes(sportName);
     onSelect(sportName);
     
     if (!isCurrentlySelected) {
@@ -58,7 +58,7 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
 
   const handleConfirm = (isCombined: boolean) => {
     if (onConfirm) {
-      const configs: SportConfig[] = selectedSports.map(name => ({
+      const configs: SportConfig[] = selectedSportNames.map(name => ({
         sport: name,
         goal: sportConfigs[name]?.goal || 'Fuerza y Tonificación',
         daysPerWeek: sportConfigs[name]?.frequency || 3,
@@ -270,7 +270,7 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
                   >
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-2">
                       {group.items.map((sport) => {
-                        const isSelected = selectedSports.includes(sport.name);
+                        const isSelected = selectedSportNames.includes(sport.name);
                         const SportIcon = (Icons as any)[sport.icon] || Dumbbell;
                         
                         return (
@@ -445,11 +445,11 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
         )}
       </div>
 
-      {selectedSports.length > 0 && onConfirm && (
+      {selectedSportNames.length > 0 && onConfirm && (
         <motion.div 
           initial={{ opacity: 0, y: 50 }}
           animate={{ opacity: 1, y: 0 }}
-          className="fixed bottom-28 left-1/2 -translate-x-1/2 z-[200] w-full max-w-xl px-4"
+          className="fixed bottom-36 left-1/2 -translate-x-1/2 z-[250] w-full max-w-xl px-4"
         >
           <div className="bg-[#1a1c23]/95 backdrop-blur-3xl p-6 rounded-[3rem] border border-white/10 shadow-[0_32px_64px_rgba(0,0,0,0.8)] space-y-5">
             <div className="flex items-center justify-between px-4">
@@ -457,11 +457,11 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                   <span className="text-xs font-black uppercase tracking-[0.2em] text-primary">
-                    {selectedSports.length} {selectedSports.length === 1 ? 'Disciplina' : 'Disciplinas'}
+                    {selectedSportNames.length} {selectedSportNames.length === 1 ? 'Disciplina' : 'Disciplinas'}
                   </span>
                 </div>
                 <div className="flex flex-wrap gap-1.5 mt-2">
-                  {selectedSports.map(s => (
+                  {selectedSportNames.map(s => (
                     <span key={s} className="text-[9px] font-black bg-white/5 text-on-surface-variant/80 px-3 py-1 rounded-full uppercase border border-white/5">{s}</span>
                   ))}
                 </div>
@@ -491,9 +491,9 @@ export default function SportsList({ sports, selectedSports, onSelect, onConfirm
               
               <Button 
                 onClick={() => handleConfirm(true)}
-                disabled={selectedSports.length < 2}
+                disabled={selectedSportNames.length < 2}
                 className={`h-20 rounded-[2rem] font-black text-xs uppercase tracking-widest transition-all flex flex-col gap-1 shadow-2xl ${
-                  selectedSports.length >= 2 
+                  selectedSportNames.length >= 2 
                     ? 'bg-primary text-on-primary shadow-primary/40 hover:scale-[1.02] active:scale-95' 
                     : 'bg-surface-variant/20 text-on-surface-variant/40 cursor-not-allowed grayscale'
                 }`}

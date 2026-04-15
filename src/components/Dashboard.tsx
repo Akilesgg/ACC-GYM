@@ -22,11 +22,11 @@ export default function Dashboard({ profile, onUpdateProfile, onAddSport, onGoTo
   const [selectedSportIndex, setSelectedSportIndex] = useState(0);
 
   // Use the global plan if available (combined plan), otherwise use the first sport's plan
-  const plan = profile.plan || profile.selectedSports[selectedSportIndex]?.plan;
-  const currentSportName = profile.plan ? t('planCombinado') : profile.selectedSports[selectedSportIndex]?.sport;
+  const plan = profile.plan || profile.sports[selectedSportIndex]?.plan;
+  const currentSportName = profile.plan ? t('planCombinado') : profile.sports[selectedSportIndex]?.sport;
 
   const resetSports = () => {
-    onUpdateProfile({ ...profile, selectedSports: [], plan: undefined });
+    onUpdateProfile({ ...profile, sports: [], plan: undefined });
   };
 
   return (

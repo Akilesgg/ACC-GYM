@@ -97,11 +97,16 @@ export default function App() {
     setLoading(true);
 
     const unsubProfile = subscribeToProfile(user.uid, (fetchedProfile) => {
-      console.log("[PROFILE] Snapshot received:", fetchedProfile?.username || "No Profile");
+      console.log("[PROFILE] Snapshot received at:", new Date().toLocaleTimeString());
+      console.log("[PROFILE] Data exists:", !!fetchedProfile);
+      if (fetchedProfile) {
+        console.log("[PROFILE] Username:", fetchedProfile.username);
+        console.log("[PROFILE] Sports count:", fetchedProfile.sports?.length || 0);
+      }
       
       const sanitizedProfile = fetchedProfile ? {
         ...fetchedProfile,
-        selectedSports: fetchedProfile.selectedSports || []
+        sports: fetchedProfile.sports || []
       } : null;
       
       setProfile(sanitizedProfile);
@@ -173,7 +178,7 @@ export default function App() {
         uid: user.uid, 
         email: user.email || '',
         role: 'user',
-        selectedSports: [],
+        sports: [],
         progress: {},
         streak: 0,
         status: 'online',

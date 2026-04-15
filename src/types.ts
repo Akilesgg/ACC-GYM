@@ -68,7 +68,7 @@ export interface UserProfile {
   experienceLevel: 'sedentario' | 'activo' | 'atleta';
   injuries: string;
   daysPerWeek: number;
-  selectedSports: SportConfig[];
+  sports: SportConfig[];
   // Nutrition
   nutritionGoal?: string;
   nutritionTimeframe?: string;

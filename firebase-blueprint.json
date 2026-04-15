@@ -10,7 +10,7 @@
         "displayName": { "type": "string" },
         "photoURL": { "type": "string" },
         "role": { "type": "string", "enum": ["user", "admin", "trainer"] },
-        "selectedSports": { "type": "array" },
+        "sports": { "type": "array" },
         "weight": { "type": "number" },
         "height": { "type": "number" },
         "age": { "type": "number" },
