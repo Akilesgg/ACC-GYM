@@ -13,15 +13,19 @@ const foodImageMap: Record<string, string> = {
   ensalada: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop",
   fruta: "https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=800&auto=format&fit=crop",
   yogur: "https://images.unsplash.com/photo-1488477181946-6428a0291777?q=80&w=800&auto=format&fit=crop",
-  carne: "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop"
+  carne: "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop",
+  frutas: "https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=800&auto=format&fit=crop"
 };
 
 const getImage = (ingredients: string[]): string => {
   if (!ingredients || ingredients.length === 0) return "https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=800&auto=format&fit=crop";
-  const firstIngredient = ingredients[0].toLowerCase();
   
-  for (const [key, url] of Object.entries(foodImageMap)) {
-    if (firstIngredient.includes(key)) return url;
+  // Try to match any ingredient with the map
+  for (const ingredient of ingredients) {
+    const lowerIng = ingredient.toLowerCase();
+    for (const [key, url] of Object.entries(foodImageMap)) {
+      if (lowerIng.includes(key)) return url;
+    }
   }
   
   return "https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=800&auto=format&fit=crop";

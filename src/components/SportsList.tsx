@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'motion/react';
-import { ChevronDown, Search, Check, Dumbbell, Users, User, Zap, MoreHorizontal, LayoutGrid } from 'lucide-react';
+import { ChevronDown, Search, Check, Dumbbell, Users, User, Zap, MoreHorizontal, LayoutGrid, Plus } from 'lucide-react';
 import { useTranslation } from '../lib/i18n';
 import * as Icons from 'lucide-react';
 
@@ -485,8 +485,8 @@ export default function SportsList({ sports, selectedSportNames, onSelect, onCon
                 onClick={() => handleConfirm(false)}
                 className="h-20 rounded-[2rem] bg-surface-variant/10 border-2 border-primary/20 text-primary font-black text-xs uppercase tracking-widest hover:bg-primary/10 hover:border-primary transition-all flex flex-col gap-1"
               >
-                <User size={20} />
-                <span>Deporte Individual</span>
+                <Plus size={20} />
+                <span>Añadir Deporte</span>
               </Button>
               
               <Button 

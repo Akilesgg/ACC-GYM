@@ -263,7 +263,19 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
                     {String.fromCharCode(65 + i)}
                   </Button>
                 ))}
-                <Button variant="outline" onClick={() => setStep('goal')} className="rounded-full border-primary/30 text-primary hover:bg-primary/10 ml-4">
+                <Button 
+                  variant="destructive" 
+                  onClick={async () => {
+                    if (confirm(language === 'es' ? '¿Eliminar todas las dietas?' : 'Delete all diets?')) {
+                      await onUpdateProfile({ ...profile, diets: [], nutritionPlan: undefined });
+                      setStep('intro');
+                    }
+                  }} 
+                  className="rounded-full px-6 font-bold uppercase tracking-widest text-[10px]"
+                >
+                  {language === 'es' ? 'Resetear' : 'Reset'}
+                </Button>
+                <Button variant="outline" onClick={() => setStep('goal')} className="rounded-full border-primary/30 text-primary hover:bg-primary/10 ml-2">
                   {t('recalibrar')}
                 </Button>
               </div>
