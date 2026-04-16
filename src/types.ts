@@ -26,6 +26,7 @@ export interface NutritionPlan {
   id: string;
   name?: string;
   reasoning: string;
+  imageUrl?: string;
   meals: {
     id: string;
     type: string;

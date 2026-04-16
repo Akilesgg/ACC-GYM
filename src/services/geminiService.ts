@@ -224,13 +224,17 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
         }
       });
       const plans = JSON.parse(response.text);
-      return plans.map((plan: any) => ({
-        ...plan,
-        meals: plan.meals.map((meal: any) => ({
+      return plans.map((plan: any) => {
+        const updatedMeals = plan.meals.map((meal: any) => ({
           ...meal,
           imageUrl: getImage(meal.ingredients)
-        }))
-      }));
+        }));
+        return {
+          ...plan,
+          meals: updatedMeals,
+          imageUrl: updatedMeals[0]?.imageUrl // Use the first meal's image as the plan's representative image
+        };
+      });
     };
 
     return await Promise.race([generatePromise(), timeoutPromise]);

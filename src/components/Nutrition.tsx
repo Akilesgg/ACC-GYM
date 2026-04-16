@@ -1,4 +1,4 @@
-import { Sparkles, PlusCircle, ArrowLeft, Target, Clock, ShieldAlert, Loader2, Utensils, Info, Calendar } from 'lucide-react';
+import { Sparkles, PlusCircle, ArrowLeft, Target, Clock, ShieldAlert, Loader2, Utensils, Info, Calendar, Trash2, Edit2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -127,6 +127,33 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
       console.error("[Nutrition] Error resetting diets:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const deleteDiet = async (dietId: string) => {
+    if (!confirm(language === 'es' ? '¿Eliminar esta dieta?' : 'Delete this diet?')) return;
+    
+    const updatedDiets = profile.diets?.filter(d => d.id !== dietId) || [];
+    const updatedPlan = profile.nutritionPlan?.id === dietId ? updatedDiets[0] : profile.nutritionPlan;
+    
+    await onUpdateProfile({
+      ...profile,
+      diets: updatedDiets,
+      nutritionPlan: updatedPlan
+    });
+  };
+
+  const editDiet = (diet: NutritionPlan) => {
+    // For now, just a simple prompt to rename or similar, 
+    // or we could set step back to 'goal' with pre-filled data.
+    const newName = prompt(language === 'es' ? 'Nuevo nombre para la dieta:' : 'New name for the diet:', diet.name || '');
+    if (newName !== null) {
+      const updatedDiets = profile.diets?.map(d => d.id === diet.id ? { ...d, name: newName } : d) || [];
+      onUpdateProfile({
+        ...profile,
+        diets: updatedDiets,
+        nutritionPlan: profile.nutritionPlan?.id === diet.id ? { ...profile.nutritionPlan, name: newName } : profile.nutritionPlan
+      });
     }
   };
 
@@ -268,36 +295,92 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
           <motion.div key="plan" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-8">
             {profile.nutritionPlan ? (
               <>
+              <div className="flex flex-col gap-6">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-              <div>
-                <h3 className="text-3xl font-headline font-black uppercase italic tracking-tighter text-primary">{t('tuDieta')}</h3>
-                <p className="text-on-surface-variant font-bold uppercase text-xs tracking-widest mt-1">
-                  {t('objetivo')}: <span className="text-secondary">{profile.nutritionGoal}</span> • {profile.nutritionTimeframe}
-                </p>
+                  <div>
+                    <h3 className="text-3xl font-headline font-black uppercase italic tracking-tighter text-primary">{t('tuDieta')}</h3>
+                    <p className="text-on-surface-variant font-bold uppercase text-xs tracking-widest mt-1">
+                      {t('objetivo')}: <span className="text-secondary">{profile.nutritionGoal}</span> • {profile.nutritionTimeframe}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button 
+                      variant="destructive" 
+                      onClick={resetDiets} 
+                      className="rounded-full px-6 font-bold uppercase tracking-widest text-[10px]"
+                    >
+                      {language === 'es' ? 'Resetear Todo' : 'Reset All'}
+                    </Button>
+                    <Button variant="outline" onClick={() => setStep('goal')} className="rounded-full border-primary/30 text-primary hover:bg-primary/10">
+                      {t('recalibrar')}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Diet Variants Cards */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {profile.diets?.map((diet, i) => (
+                    <Card 
+                      key={diet.id} 
+                      className={`relative overflow-hidden border-2 transition-all cursor-pointer group ${
+                        profile.nutritionPlan?.id === diet.id 
+                          ? 'border-primary bg-primary/5 ring-2 ring-primary/20' 
+                          : 'border-outline-variant/20 bg-surface hover:border-primary/50'
+                      }`}
+                      onClick={() => onUpdateProfile({ ...profile, nutritionPlan: diet })}
+                    >
+                      <div className="h-24 overflow-hidden relative">
+                        <img 
+                          src={diet.imageUrl || `https://picsum.photos/seed/${diet.id}/400/200`} 
+                          alt={diet.name} 
+                          className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                        <div className="absolute bottom-2 left-3">
+                          <span className="text-[10px] font-black text-white uppercase tracking-widest bg-primary px-2 py-0.5 rounded">
+                            {language === 'es' ? `OPCIÓN ${String.fromCharCode(65 + i)}` : `OPTION ${String.fromCharCode(65 + i)}`}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="p-4 flex justify-between items-center">
+                        <div className="flex-1">
+                          <h4 className="font-headline font-bold uppercase text-sm truncate">{diet.name || (language === 'es' ? 'Plan Nutricional' : 'Nutrition Plan')}</h4>
+                          <p className="text-[10px] text-on-surface-variant font-medium">{diet.meals.length} {language === 'es' ? 'comidas' : 'meals'}</p>
+                        </div>
+                        <div className="flex gap-1">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 rounded-full hover:bg-secondary/20 text-secondary"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              editDiet(diet);
+                            }}
+                          >
+                            <Edit2 size={14} />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 rounded-full hover:bg-destructive/20 text-destructive"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              deleteDiet(diet.id);
+                            }}
+                          >
+                            <Trash2 size={14} />
+                          </Button>
+                        </div>
+                      </div>
+                      {profile.nutritionPlan?.id === diet.id && (
+                        <div className="absolute top-2 right-2 bg-primary text-background p-1 rounded-full">
+                          <Sparkles size={12} />
+                        </div>
+                      )}
+                    </Card>
+                  ))}
+                </div>
               </div>
-              <div className="flex gap-2">
-                {profile.diets?.map((_, i) => (
-                  <Button 
-                    key={i} 
-                    variant={profile.nutritionPlan?.id === profile.diets?.[i].id ? 'default' : 'outline'}
-                    onClick={() => onUpdateProfile({ ...profile, nutritionPlan: profile.diets![i] })}
-                    className="rounded-full w-10 h-10 p-0"
-                  >
-                    {String.fromCharCode(65 + i)}
-                  </Button>
-                ))}
-                <Button 
-                  variant="destructive" 
-                  onClick={resetDiets} 
-                  className="rounded-full px-6 font-bold uppercase tracking-widest text-[10px]"
-                >
-                  {language === 'es' ? 'Resetear' : 'Reset'}
-                </Button>
-                <Button variant="outline" onClick={() => setStep('goal')} className="rounded-full border-primary/30 text-primary hover:bg-primary/10 ml-2">
-                  {t('recalibrar')}
-                </Button>
-              </div>
-            </div>
 
             <Card className="bg-surface border-l-4 border-secondary p-8 relative overflow-hidden">
               <div className="flex items-center gap-3 mb-4">
