@@ -40,6 +40,12 @@
   body {
     @apply bg-background text-on-surface font-sans overflow-x-hidden;
   }
+  body::before {
+    content: "";
+    @apply fixed inset-0 z-[-1] pointer-events-none;
+    background: url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop') center/cover no-repeat;
+    filter: grayscale(100%) opacity(0.1);
+  }
 }
 
 .sports-bg-overlay {
