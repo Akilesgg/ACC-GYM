@@ -421,22 +421,22 @@ export default function SportsList({ sports, selectedSportNames, onSelect, onCon
                                       </button>
                                       <span className="text-[10px] font-bold uppercase tracking-widest opacity-60">{t('combinarConOtros')}</span>
                                     </div>
-                                    <div className="flex gap-2">
+                                    <div className="flex flex-col gap-2 w-full">
                                       <Button 
                                         size="sm" 
-                                        variant="outline"
                                         onClick={() => handleConfirm(false)}
-                                        className="border-primary/30 text-primary text-[10px] font-black uppercase tracking-widest px-4 rounded-xl h-10 hover:bg-primary/10"
+                                        className="bg-primary text-on-primary text-[10px] font-black uppercase tracking-widest px-6 rounded-xl h-10 shadow-lg shadow-primary/20 hover:scale-105 transition-transform w-full"
                                       >
                                         <Plus size={14} className="mr-1" />
                                         Añadir deporte
                                       </Button>
                                       <Button 
                                         size="sm" 
+                                        variant="outline"
                                         onClick={() => setConfiguringSport(null)}
-                                        className="bg-primary text-on-primary text-[10px] font-black uppercase tracking-widest px-6 rounded-xl h-10 shadow-lg shadow-primary/20 hover:scale-105 transition-transform"
+                                        className="border-primary/30 text-primary text-[10px] font-black uppercase tracking-widest px-4 rounded-xl h-10 hover:bg-primary/10 w-full"
                                       >
-                                        {t('aceptar')}
+                                        Añadir más deportes
                                       </Button>
                                     </div>
                                   </div>

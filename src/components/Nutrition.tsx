@@ -307,9 +307,10 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
                     <Button 
                       variant="destructive" 
                       onClick={resetDiets} 
-                      className="rounded-full px-6 font-bold uppercase tracking-widest text-[10px]"
+                      className="rounded-full px-8 h-12 font-black uppercase tracking-widest text-xs shadow-lg shadow-destructive/20 hover:scale-105 transition-transform"
                     >
-                      {language === 'es' ? 'Resetear Todo' : 'Reset All'}
+                      <Trash2 size={16} className="mr-2" />
+                      {language === 'es' ? 'Borrar todas las dietas' : 'Delete all diets'}
                     </Button>
                     <Button variant="outline" onClick={() => setStep('goal')} className="rounded-full border-primary/30 text-primary hover:bg-primary/10">
                       {t('recalibrar')}
@@ -360,15 +361,15 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
                             <Edit2 size={14} />
                           </Button>
                           <Button 
-                            variant="ghost" 
+                            variant="destructive" 
                             size="icon" 
-                            className="h-8 w-8 rounded-full hover:bg-destructive/20 text-destructive"
+                            className="h-10 w-10 rounded-full shadow-lg shadow-destructive/20"
                             onClick={(e) => {
                               e.stopPropagation();
                               deleteDiet(diet.id);
                             }}
                           >
-                            <Trash2 size={14} />
+                            <Trash2 size={16} />
                           </Button>
                         </div>
                       </div>

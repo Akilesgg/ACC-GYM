@@ -171,7 +171,11 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
       }
 
       const updatedProfile = { ...profile, sports, plan: globalPlan };
-      console.log("[SPORTS] Persisting to Firestore...");
+      console.log("[SPORTS] Final profile to persist:", {
+        uid: profile.uid,
+        sportsCount: updatedProfile.sports.length,
+        hasPlan: !!updatedProfile.plan
+      });
       await onUpdateProfile(updatedProfile);
       console.log("[SPORTS] Save successful!");
       setActivePlan(globalPlan || null);

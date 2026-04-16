@@ -4,37 +4,62 @@ import { UserProfile, TrainingPlan, SportConfig, NutritionPlan, Language } from 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 const foodImageMap: Record<string, string> = {
-  avena: "https://images.unsplash.com/photo-1586444248902-2f64eddf13cf?q=80&w=800&auto=format&fit=crop",
+  avena: "https://images.unsplash.com/photo-1517673132405-a56a62b18caf?q=80&w=800&auto=format&fit=crop",
   pollo: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=800&auto=format&fit=crop",
   arroz: "https://images.unsplash.com/photo-1512058560366-cd2427ff56f3?q=80&w=800&auto=format&fit=crop",
   brocoli: "https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?q=80&w=800&auto=format&fit=crop",
-  huevo: "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?q=80&w=800&auto=format&fit=crop",
+  huevo: "https://images.unsplash.com/photo-1525351484163-7529414344d8?q=80&w=800&auto=format&fit=crop",
   salmon: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?q=80&w=800&auto=format&fit=crop",
   ensalada: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop",
   fruta: "https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=800&auto=format&fit=crop",
   yogur: "https://images.unsplash.com/photo-1488477181946-6428a0291777?q=80&w=800&auto=format&fit=crop",
   carne: "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop",
-  frutas: "https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=800&auto=format&fit=crop",
   pavo: "https://images.unsplash.com/photo-1587593810167-a84920ea0781?q=80&w=800&auto=format&fit=crop",
   atun: "https://images.unsplash.com/photo-1501595091296-3a970afb3ff9?q=80&w=800&auto=format&fit=crop",
   pasta: "https://images.unsplash.com/photo-1473093226795-af9932fe5856?q=80&w=800&auto=format&fit=crop",
   pan: "https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=800&auto=format&fit=crop",
   leche: "https://images.unsplash.com/photo-1564419320461-6870880221ad?q=80&w=800&auto=format&fit=crop",
   queso: "https://images.unsplash.com/photo-1485962391905-dc37bb3ac46c?q=80&w=800&auto=format&fit=crop",
-  frutos: "https://images.unsplash.com/photo-1536591376356-9b7c5b132127?q=80&w=800&auto=format&fit=crop",
-  nueces: "https://images.unsplash.com/photo-1536591376356-9b7c5b132127?q=80&w=800&auto=format&fit=crop"
+  nueces: "https://images.unsplash.com/photo-1536591376356-9b7c5b132127?q=80&w=800&auto=format&fit=crop",
+  almendras: "https://images.unsplash.com/photo-1508061253366-f7da158b6d46?q=80&w=800&auto=format&fit=crop",
+  aguacate: "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?q=80&w=800&auto=format&fit=crop",
+  platano: "https://images.unsplash.com/photo-1603833665858-e81b1c7e4460?q=80&w=800&auto=format&fit=crop",
+  manzana: "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?q=80&w=800&auto=format&fit=crop",
+  espinacas: "https://images.unsplash.com/photo-1576045057995-568f588f82fb?q=80&w=800&auto=format&fit=crop",
+  quinoa: "https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=800&auto=format&fit=crop",
+  lentejas: "https://images.unsplash.com/photo-1518013431117-eb1465fa5752?q=80&w=800&auto=format&fit=crop",
+  garbanzos: "https://images.unsplash.com/photo-1515543904379-3d757afe72e2?q=80&w=800&auto=format&fit=crop",
+  batata: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?q=80&w=800&auto=format&fit=crop",
+  patata: "https://images.unsplash.com/photo-1518977676601-b53f82aba655?q=80&w=800&auto=format&fit=crop",
+  ternera: "https://images.unsplash.com/photo-1558034859-d60184c7350b?q=80&w=800&auto=format&fit=crop",
+  cerdo: "https://images.unsplash.com/photo-1602470520998-f4a52199a3d6?q=80&w=800&auto=format&fit=crop",
+  pescado: "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?q=80&w=800&auto=format&fit=crop",
+  marisco: "https://images.unsplash.com/photo-1551443874-32556550993a?q=80&w=800&auto=format&fit=crop",
+  tofu: "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop",
+  soja: "https://images.unsplash.com/photo-1581600140682-d4e68c8cde32?q=80&w=800&auto=format&fit=crop",
+  verduras: "https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=800&auto=format&fit=crop",
+  legumbres: "https://images.unsplash.com/photo-1518013431117-eb1465fa5752?q=80&w=800&auto=format&fit=crop",
+  "frutos secos": "https://images.unsplash.com/photo-1536591376356-9b7c5b132127?q=80&w=800&auto=format&fit=crop",
+  aceite: "https://images.unsplash.com/photo-1474979266404-7eaacabc88c5?q=80&w=800&auto=format&fit=crop",
+  pimiento: "https://images.unsplash.com/photo-1563565312-8335ff588d23?q=80&w=800&auto=format&fit=crop",
+  tomate: "https://images.unsplash.com/photo-1518977822534-7049a61ee0c2?q=80&w=800&auto=format&fit=crop",
+  cebolla: "https://images.unsplash.com/photo-1508747703725-719777637510?q=80&w=800&auto=format&fit=crop",
+  ajo: "https://images.unsplash.com/photo-1540148426945-6cf22a6b2383?q=80&w=800&auto=format&fit=crop",
+  zanahoria: "https://images.unsplash.com/photo-1598170845058-32b9d6a5da37?q=80&w=800&auto=format&fit=crop",
+  calabacin: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?q=80&w=800&auto=format&fit=crop",
+  berenjena: "https://images.unsplash.com/photo-1558818498-28c3e002b655?q=80&w=800&auto=format&fit=crop",
+  champinon: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800&auto=format&fit=crop",
+  setas: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800&auto=format&fit=crop"
 };
 
 const getImage = (ingredients: string[]): string => {
   if (!ingredients || ingredients.length === 0) return "https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=800&auto=format&fit=crop";
   
-  const lowerIngredients = ingredients.map(i => i.toLowerCase());
+  const text = ingredients.join(' ').toLowerCase();
   
   // Try to match any ingredient with the map
-  for (const ing of lowerIngredients) {
-    for (const [key, url] of Object.entries(foodImageMap)) {
-      if (ing.includes(key)) return url;
-    }
+  for (const [key, url] of Object.entries(foodImageMap)) {
+    if (text.includes(key)) return url;
   }
   
   return "https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=800&auto=format&fit=crop";
