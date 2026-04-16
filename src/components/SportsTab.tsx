@@ -9,7 +9,7 @@ import {
   ArrowLeft, Bike, Waves, Zap, Heart, Activity, 
   Flame, Timer, Trophy, Calendar, Footprints, Sword, 
   Mountain, Wind, Anchor, MountainSnow, Palette,
-  Plus, Trash2, RotateCcw
+  Plus, Trash2, RotateCcw, CheckCircle2
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '../lib/i18n';
@@ -125,6 +125,8 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
     };
   };
 
+  const [showSuccess, setShowSuccess] = useState(false);
+
   const addSport = async (newConfigs: SportConfig[], isCombined: boolean) => {
     if (!profile?.uid) {
       console.error("[SPORTS] No user UID found");
@@ -134,7 +136,8 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
     
     setLoading(true);
     setError(null);
-    console.log("[SPORTS] Starting save process for:", newConfigs.map(c => c.sport).join(", "));
+    console.log("[SPORTS] Current profile sports:", profile.sports);
+    console.log("[SPORTS] New configs to add:", newConfigs);
     
     try {
       let sports = [...(profile.sports || [])];
@@ -142,10 +145,8 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
       newConfigs.forEach(newSport => {
         const exists = sports.find(s => s.sport === newSport.sport);
         if (exists) {
-          console.log(`[SPORTS] Updating existing sport: ${newSport.sport}`);
           sports = sports.map(s => s.sport === newSport.sport ? { ...s, ...newSport } : s);
         } else {
-          console.log(`[SPORTS] Adding new sport: ${newSport.sport}`);
           sports.push(newSport);
         }
       });
@@ -153,7 +154,6 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
       let globalPlan: TrainingPlan | undefined;
       
       if (isCombined || sports.length > 1) {
-        console.log("[SPORTS] Generating combined plan...");
         try {
           globalPlan = await generateCombinedTrainingPlan(profile, sports, language);
         } catch (e) {
@@ -162,22 +162,17 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
         sports = sports.map(s => ({ ...s, plan: globalPlan, isCombined: true }));
       } else {
         const config = sports[0];
-        if (!config.plan) {
-          globalPlan = await generateTrainingPlan(profile, config, language);
-          sports[0] = { ...config, plan: globalPlan, isCombined: false };
-        } else {
-          globalPlan = config.plan;
-        }
+        globalPlan = await generateTrainingPlan(profile, config, language);
+        sports[0] = { ...config, plan: globalPlan, isCombined: false };
       }
 
       const updatedProfile = { ...profile, sports, plan: globalPlan };
-      console.log("[SPORTS] Final profile to persist:", {
-        uid: profile.uid,
-        sportsCount: updatedProfile.sports.length,
-        hasPlan: !!updatedProfile.plan
-      });
+      console.log("[SPORTS] PERSISTING TO FIRESTORE:", updatedProfile.sports);
       await onUpdateProfile(updatedProfile);
-      console.log("[SPORTS] Save successful!");
+      
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
+      
       setActivePlan(globalPlan || null);
     } catch (err: any) {
       setError(err.message || "Error al guardar deportes");
@@ -233,6 +228,18 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
           </div>
         </div>
       </section>
+
+      {showSuccess && (
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          className="fixed top-24 left-1/2 -translate-x-1/2 z-[300] bg-secondary text-background px-8 py-4 rounded-2xl font-black uppercase tracking-widest shadow-2xl flex items-center gap-3"
+        >
+          <CheckCircle2 className="text-background" />
+          {language === 'es' ? '¡DEPORTE GUARDADO CON ÉXITO!' : 'SPORT SAVED SUCCESSFULLY!'}
+        </motion.div>
+      )}
 
       {error && (
         <Card className="bg-destructive/10 border-destructive/20 p-4 rounded-2xl flex items-center justify-between gap-4">

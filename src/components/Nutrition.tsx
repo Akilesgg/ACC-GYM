@@ -107,21 +107,23 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
     else if (onBack) onBack();
   };
 
+  const [dietToDelete, setDietToDelete] = useState<string | null>(null);
+  const [isResetting, setIsResetting] = useState(false);
+
   const resetDiets = async () => {
-    if (!confirm(language === 'es' ? '¿Eliminar todas las dietas?' : 'Delete all diets?')) return;
-    
     setLoading(true);
     try {
-      console.log("[Nutrition] Resetting diets in Firestore...");
+      console.log("[Nutrition] Resetting all diets in Firestore...");
       await onUpdateProfile({ 
         ...profile, 
         diets: [], 
-        nutritionPlan: undefined,
+        nutritionPlan: null as any,
         nutritionGoal: '',
         nutritionTimeframe: '',
         allergies: ''
       });
       setStep('intro');
+      setIsResetting(false);
       console.log("[Nutrition] Diets reset successfully.");
     } catch (error) {
       console.error("[Nutrition] Error resetting diets:", error);
@@ -131,16 +133,21 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
   };
 
   const deleteDiet = async (dietId: string) => {
-    if (!confirm(language === 'es' ? '¿Eliminar esta dieta?' : 'Delete this diet?')) return;
-    
     const updatedDiets = profile.diets?.filter(d => d.id !== dietId) || [];
-    const updatedPlan = profile.nutritionPlan?.id === dietId ? updatedDiets[0] : profile.nutritionPlan;
+    const updatedPlan = profile.nutritionPlan?.id === dietId 
+      ? (updatedDiets.length > 0 ? updatedDiets[0] : null as any) 
+      : profile.nutritionPlan;
     
-    await onUpdateProfile({
-      ...profile,
-      diets: updatedDiets,
-      nutritionPlan: updatedPlan
-    });
+    try {
+      await onUpdateProfile({
+        ...profile,
+        diets: updatedDiets,
+        nutritionPlan: updatedPlan
+      });
+      setDietToDelete(null);
+    } catch (error) {
+      console.error("[Nutrition] Error deleting diet:", error);
+    }
   };
 
   const editDiet = (diet: NutritionPlan) => {
@@ -304,15 +311,41 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
                     </p>
                   </div>
                   <div className="flex gap-2">
-                    <Button 
-                      variant="destructive" 
-                      onClick={resetDiets} 
-                      className="rounded-full px-8 h-12 font-black uppercase tracking-widest text-xs shadow-lg shadow-destructive/20 hover:scale-105 transition-transform"
-                    >
-                      <Trash2 size={16} className="mr-2" />
-                      {language === 'es' ? 'Borrar todas las dietas' : 'Delete all diets'}
-                    </Button>
-                    <Button variant="outline" onClick={() => setStep('goal')} className="rounded-full border-primary/30 text-primary hover:bg-primary/10">
+                    <AnimatePresence>
+                      {isResetting ? (
+                        <motion.div 
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: 20 }}
+                          className="flex gap-2"
+                        >
+                          <Button 
+                            variant="destructive" 
+                            onClick={resetDiets} 
+                            className="rounded-full px-6 h-12 font-black uppercase tracking-widest text-xs"
+                          >
+                            {language === 'es' ? 'Confirmar Borrado' : 'Confirm Delete'}
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            onClick={() => setIsResetting(false)} 
+                            className="rounded-full px-6 h-12 font-black uppercase tracking-widest text-xs"
+                          >
+                            {language === 'es' ? 'Cancelar' : 'Cancel'}
+                          </Button>
+                        </motion.div>
+                      ) : (
+                        <Button 
+                          variant="destructive" 
+                          onClick={() => setIsResetting(true)} 
+                          className="rounded-full px-8 h-12 font-black uppercase tracking-widest text-xs shadow-lg shadow-destructive/20 hover:scale-105 transition-transform"
+                        >
+                          <Trash2 size={16} className="mr-2" />
+                          {language === 'es' ? 'Borrar todas las dietas' : 'Delete all diets'}
+                        </Button>
+                      )}
+                    </AnimatePresence>
+                    <Button variant="outline" onClick={() => setStep('goal')} className="rounded-full border-primary/30 text-primary hover:bg-primary/10 h-12 px-6">
                       {t('recalibrar')}
                     </Button>
                   </div>
@@ -349,28 +382,69 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
                           <p className="text-[10px] text-on-surface-variant font-medium">{diet.meals.length} {language === 'es' ? 'comidas' : 'meals'}</p>
                         </div>
                         <div className="flex gap-1">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8 rounded-full hover:bg-secondary/20 text-secondary"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              editDiet(diet);
-                            }}
-                          >
-                            <Edit2 size={14} />
-                          </Button>
-                          <Button 
-                            variant="destructive" 
-                            size="icon" 
-                            className="h-10 w-10 rounded-full shadow-lg shadow-destructive/20"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              deleteDiet(diet.id);
-                            }}
-                          >
-                            <Trash2 size={16} />
-                          </Button>
+                          <AnimatePresence>
+                            {dietToDelete === diet.id ? (
+                              <motion.div 
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.8 }}
+                                className="flex gap-1"
+                              >
+                                <Button 
+                                  variant="destructive" 
+                                  size="sm"
+                                  className="h-10 px-3 rounded-xl font-black text-[10px] uppercase"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    deleteDiet(diet.id);
+                                  }}
+                                >
+                                  {language === 'es' ? 'SÍ' : 'YES'}
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm"
+                                  className="h-10 px-3 rounded-xl font-black text-[10px] uppercase"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setDietToDelete(null);
+                                  }}
+                                >
+                                  NO
+                                </Button>
+                              </motion.div>
+                            ) : (
+                              <>
+                                <Button 
+                                  variant="ghost" 
+                                  size="icon" 
+                                  className="h-8 w-8 rounded-full hover:bg-secondary/20 text-secondary"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    // Simple toggle for now
+                                    const newName = diet.name === 'Plan A' ? 'Plan B' : 'Plan A';
+                                    onUpdateProfile({
+                                      ...profile,
+                                      diets: profile.diets?.map(d => d.id === diet.id ? { ...d, name: newName } : d)
+                                    });
+                                  }}
+                                >
+                                  <Edit2 size={14} />
+                                </Button>
+                                <Button 
+                                  variant="destructive" 
+                                  size="icon" 
+                                  className="h-10 w-10 rounded-full shadow-lg shadow-destructive/20"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setDietToDelete(diet.id);
+                                  }}
+                                >
+                                  <Trash2 size={16} />
+                                </Button>
+                              </>
+                            )}
+                          </AnimatePresence>
                         </div>
                       </div>
                       {profile.nutritionPlan?.id === diet.id && (

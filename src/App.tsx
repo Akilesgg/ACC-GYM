@@ -106,7 +106,8 @@ export default function App() {
       
       const sanitizedProfile = fetchedProfile ? {
         ...fetchedProfile,
-        sports: fetchedProfile.sports || []
+        sports: fetchedProfile.sports || [],
+        nutritionPlan: fetchedProfile.nutritionPlan || null
       } : null;
       
       setProfile(sanitizedProfile);

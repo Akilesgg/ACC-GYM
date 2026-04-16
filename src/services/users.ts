@@ -33,9 +33,14 @@ export const updateUserProfile = async (uid: string, updates: Partial<UserProfil
   const path = `users/${uid}`;
   const docRef = doc(db, 'users', uid);
   try {
-    // Usamos setDoc con merge: true para que funcione incluso si el documento no existe
+    console.log(`[FIRESTORE] Updating profile for ${uid}:`, {
+      sportsCount: updates.sports?.length,
+      hasPlan: !!updates.plan,
+      dietsCount: updates.diets?.length,
+      hasNutritionPlan: !!updates.nutritionPlan
+    });
     await setDoc(docRef, updates, { merge: true });
-    console.log(`[FIRESTORE] Profile updated for ${uid}`);
+    console.log(`[FIRESTORE] Profile updated successfully for ${uid}`);
   } catch (error: any) {
     if (error.code === 'resource-exhausted') {
       console.error("[FIRESTORE] Cuota excedida. Los cambios no se guardarán hasta que se reinicie la cuota diaria.");
