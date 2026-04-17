@@ -243,16 +243,17 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
         return {
           ...plan,
           meals: updatedMeals,
-          imageUrl: updatedMeals[0]?.imageUrl // Use the first meal's image as the plan's representative image
+          imageUrl: updatedMeals[0]?.imageUrl
         };
       });
     };
 
-    return await Promise.race([generatePromise(), timeoutPromise]);
+    const plans = await Promise.race([generatePromise(), timeoutPromise]);
+    return plans;
   } catch (error) {
     console.error("Gemini Nutrition Error:", error);
     // Fallback plans if AI fails
-    return [
+    const fallbackPlans = [
       {
         id: 'fallback_a',
         name: "Plan Equilibrado Vital",
@@ -274,6 +275,12 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
         ]
       }
     ];
+
+    return fallbackPlans.map(plan => ({
+      ...plan,
+      meals: plan.meals.map(m => ({ ...m, imageUrl: getImage(m.ingredients) })),
+      imageUrl: getImage(plan.meals[0].ingredients)
+    }));
   }
 }
 

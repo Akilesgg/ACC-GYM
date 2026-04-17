@@ -169,69 +169,9 @@ export default function SportsList({ sports, selectedSportNames, onSelect, onCon
   }, [search, selectedLetter, categories]);
 
   return (
-    <div className="space-y-6">
-      {/* Search Bar */}
-      <div className="relative z-10">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant/40" size={20} />
-        <Input 
-          placeholder={t('buscarDeporte')} 
-          className="bg-surface border-none pl-12 h-14 rounded-2xl font-medium text-lg shadow-inner"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
-      </div>
-
-      {/* Alphabet Filter */}
-      <div className="flex flex-col gap-4">
-        <div className="flex items-center justify-between px-2">
-          <span className="text-[10px] font-black uppercase tracking-[0.3em] text-on-surface-variant/60">Filtrar por letra</span>
-          <div className="flex gap-2">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => toggleAllCategories(true)}
-              className="text-[10px] font-black uppercase tracking-widest text-primary"
-            >
-              Expandir Todo
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => toggleAllCategories(false)}
-              className="text-[10px] font-black uppercase tracking-widest text-on-surface-variant/40"
-            >
-              Contraer Todo
-            </Button>
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-1 justify-center bg-surface/30 p-2 rounded-2xl backdrop-blur-sm">
-          <button
-            onClick={() => {
-              setSelectedLetter(null);
-              toggleAllCategories(true);
-            }}
-            className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${!selectedLetter ? 'bg-primary text-on-primary scale-110' : 'text-on-surface-variant hover:bg-surface'}`}
-          >
-            ALL
-          </button>
-          {ALPHABET.map(letter => (
-            <button
-              key={letter}
-              onClick={() => {
-                const newLetter = selectedLetter === letter ? null : letter;
-                setSelectedLetter(newLetter);
-                if (newLetter) toggleAllCategories(true);
-              }}
-              className={`w-8 h-8 rounded-lg text-xs font-bold transition-all ${selectedLetter === letter ? 'bg-primary text-on-primary scale-110' : 'text-on-surface-variant hover:bg-surface'}`}
-            >
-              {letter}
-            </button>
-          ))}
-        </div>
-      </div>
-
+    <div className="space-y-4">
       <div className="space-y-3">
-        {filteredCategories.length === 0 ? (
+        {categories.length === 0 ? (
           <div className="text-center py-20 opacity-40">
             <Dumbbell size={48} className="mx-auto mb-4" />
             <p className="font-headline font-bold uppercase tracking-widest">
@@ -239,17 +179,17 @@ export default function SportsList({ sports, selectedSportNames, onSelect, onCon
             </p>
           </div>
         ) : (
-          filteredCategories.map((group) => (
+          categories.map((group) => (
             <div key={group.category} className="space-y-2">
               <button
                 onClick={() => toggleCategory(group.category)}
-                className="w-full flex items-center justify-between p-5 bg-surface rounded-2xl hover:bg-surface-variant/30 transition-all group border border-white/5"
+                className="w-full flex items-center justify-between p-6 bg-[#111318] rounded-2xl hover:bg-[#1a1c23] transition-all group border border-white/5 shadow-lg"
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
+                <div className="flex items-center gap-5">
+                  <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
                     <group.icon size={24} />
                   </div>
-                  <span className="font-headline font-bold text-xl uppercase tracking-tight group-hover:scale-110 transition-transform origin-left">{group.category}</span>
+                  <span className="font-headline font-bold text-lg uppercase tracking-widest text-white">{group.category}</span>
                 </div>
                 <motion.div
                   animate={{ rotate: openCategories.includes(group.category) ? 180 : 0 }}
@@ -268,52 +208,36 @@ export default function SportsList({ sports, selectedSportNames, onSelect, onCon
                     transition={{ duration: 0.3, ease: 'easeInOut' }}
                     className="overflow-hidden"
                   >
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 p-2">
+                    <div className="grid grid-cols-1 gap-3 p-2">
                       {group.items.map((sport) => {
                         const isSelected = selectedSportNames.includes(sport.name);
                         const SportIcon = (Icons as any)[sport.icon] || Dumbbell;
                         
                         return (
-                        <div className="space-y-3">
+                        <div key={sport.name} className="space-y-3">
                           <motion.button
-                            key={sport.name}
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
+                            whileHover={{ scale: 1.01 }}
+                            whileTap={{ scale: 0.99 }}
                             onClick={() => toggleSport(sport.name)}
-                            className={`relative w-full flex items-center gap-4 p-3 rounded-2xl transition-all group/item overflow-hidden border border-white/5 h-24 ${
+                            className={`relative w-full flex items-center gap-4 p-4 rounded-2xl transition-all group/item overflow-hidden border border-white/5 h-20 ${
                               isSelected 
-                                ? 'bg-primary text-on-primary shadow-xl shadow-primary/30' 
-                                : 'bg-surface/50 hover:bg-surface text-on-surface-variant'
+                                ? 'bg-primary text-on-primary shadow-xl shadow-primary/20' 
+                                : 'bg-[#1a1c23] hover:bg-[#22252e] text-on-surface-variant'
                             }`}
                           >
-                            {/* Sport Image Background (Subtle) */}
-                            {sport.imageUrl && (
-                              <div className="absolute inset-0 opacity-30 group-hover/item:opacity-50 transition-opacity">
-                                <img 
-                                  src={sport.imageUrl} 
-                                  alt="" 
-                                  className="w-full h-full object-cover grayscale"
-                                  referrerPolicy="no-referrer"
-                                />
-                              </div>
-                            )}
-
-                            <div className={`relative w-14 h-14 rounded-xl flex items-center justify-center shrink-0 shadow-lg ${isSelected ? 'bg-white/20' : 'bg-background/50'}`}>
-                              <SportIcon size={28} strokeWidth={2.5} />
+                            <div className={`relative w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${isSelected ? 'bg-white/20' : 'bg-background/50'}`}>
+                              <SportIcon size={24} strokeWidth={2.5} />
                             </div>
 
                             <div className="relative flex flex-col items-start text-left">
-                              <span className="font-headline font-bold text-lg uppercase tracking-tight group-hover/item:scale-105 transition-transform origin-left">
+                              <span className="font-headline font-bold text-base uppercase tracking-tight">
                                 {sport.name}
-                              </span>
-                              <span className={`text-[10px] font-bold uppercase tracking-widest opacity-60 ${isSelected ? 'text-on-primary' : 'text-primary'}`}>
-                                {sport.category}
                               </span>
                             </div>
 
                             {isSelected && (
                               <div className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                                <Check size={20} strokeWidth={3} />
+                                <Check size={18} strokeWidth={3} />
                               </div>
                             )}
                           </motion.button>

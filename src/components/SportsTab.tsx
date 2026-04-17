@@ -136,11 +136,16 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
     
     setLoading(true);
     setError(null);
-    console.log("[SPORTS] Current profile sports:", profile.sports);
-    console.log("[SPORTS] New configs to add:", newConfigs);
     
     try {
-      let sports = [...(profile.sports || [])];
+      // 1. LEER DE FIRESTORE (PARA ASEGURAR DATOS MÁS RECIENTES)
+      const { doc, getDoc, setDoc } = await import('firebase/firestore');
+      const { db } = await import('../lib/firebase');
+      const docRef = doc(db, 'users', profile.uid);
+      const snap = await getDoc(docRef);
+      
+      let currentSports = snap.exists() ? snap.data().sports || [] : [];
+      let sports = [...currentSports];
       
       newConfigs.forEach(newSport => {
         const exists = sports.find(s => s.sport === newSport.sport);
@@ -161,20 +166,29 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
         }
         sports = sports.map(s => ({ ...s, plan: globalPlan, isCombined: true }));
       } else {
-        const config = sports[0];
+        const config = sports[sports.length - 1]; // El último añadido
         globalPlan = await generateTrainingPlan(profile, config, language);
-        sports[0] = { ...config, plan: globalPlan, isCombined: false };
+        sports = sports.map(s => s.sport === config.sport ? { ...s, plan: globalPlan, isCombined: false } : s);
       }
 
-      const updatedProfile = { ...profile, sports, plan: globalPlan };
-      console.log("[SPORTS] PERSISTING TO FIRESTORE:", updatedProfile.sports);
-      await onUpdateProfile(updatedProfile);
+      const updates = { sports, plan: globalPlan };
+      
+      // 2. GUARDAR EN FIRESTORE
+      await setDoc(docRef, updates, { merge: true });
+      
+      // 3. RECARGAR ESTADO LOCAL (A TRAVÉS DE App.tsx)
+      await onUpdateProfile({ ...profile, ...updates });
       
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
       
+      // Limpiar selección local
+      setSelectedSportsList([]);
       setActivePlan(globalPlan || null);
+      
+      console.log("[SPORTS] Guardado y recargado con éxito");
     } catch (err: any) {
+      console.error("[SPORTS] Error:", err);
       setError(err.message || "Error al guardar deportes");
     } finally {
       setLoading(false);

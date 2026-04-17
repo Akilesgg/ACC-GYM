@@ -3,7 +3,7 @@ import { UserProfile, DailyProgress, TrainingPlan, Language, GalleryItem, Weight
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'motion/react';
-import { CheckCircle2, Circle, Calendar as CalendarIcon, Trophy, Flame, TrendingUp, ArrowLeft, Brain, Loader2, Scale, Camera, BarChart3 } from 'lucide-react';
+import { CheckCircle2, Circle, Calendar as CalendarIcon, Trophy, Flame, TrendingUp, ArrowLeft, Brain, Loader2, Scale, Camera, BarChart3, Dumbbell } from 'lucide-react';
 import { format, startOfToday, isSameDay, parseISO, eachDayOfInterval, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useTranslation } from '../lib/i18n';
@@ -190,6 +190,42 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
             exit={{ opacity: 0, y: -20 }}
             className="space-y-12"
           >
+            {/* Active Sports */}
+            <section className="space-y-6">
+              <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">{t('misDeportesSeleccionados')}</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {profile.sports.map((s, idx) => (
+                  <Card key={idx} className="bg-surface border-none p-6 flex items-center gap-4">
+                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+                      <Dumbbell size={24} />
+                    </div>
+                    <div>
+                      <h4 className="font-headline font-bold text-lg uppercase">{s.sport}</h4>
+                      <p className="text-xs text-on-surface-variant font-bold uppercase tracking-widest">{s.daysPerWeek} {t('activos').toLowerCase()}</p>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </section>
+
+            {/* Active Sports */}
+            <section className="space-y-6">
+              <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">{t('misDeportesSeleccionados')}</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {profile.sports.map((s, idx) => (
+                  <Card key={idx} className="bg-surface border-none p-6 flex items-center gap-4">
+                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+                      <Dumbbell size={24} />
+                    </div>
+                    <div>
+                      <h4 className="font-headline font-bold text-lg uppercase">{s.sport}</h4>
+                      <p className="text-xs text-on-surface-variant font-bold uppercase tracking-widest">{s.daysPerWeek} {t('activos').toLowerCase()}</p>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </section>
+
             {/* Daily Routine */}
             <section className="space-y-6">
               <div className="flex items-center justify-between">
