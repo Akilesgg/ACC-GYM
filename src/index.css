@@ -44,8 +44,14 @@
     content: "";
     @apply fixed inset-0 z-[-1] pointer-events-none;
     background: url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=2070&auto=format&fit=crop') center/cover no-repeat;
-    filter: grayscale(100%) opacity(0.1);
+    filter: grayscale(100%) opacity(0.15);
+    animation: slowZoom 60s infinite alternate ease-in-out;
   }
+}
+
+@keyframes slowZoom {
+  from { transform: scale(1); }
+  to { transform: scale(1.15); }
 }
 
 .sports-bg-overlay {

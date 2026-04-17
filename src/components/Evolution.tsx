@@ -78,6 +78,10 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
     ...(profile.plan ? [profile.plan] : [])
   ];
 
+  // Logic to show whole weekly table if sports exist
+  const hasSports = profile.sports.length > 0;
+  const mainPlan = activePlans[0];
+
   const todayName = format(today, 'EEEE', { locale }).toLowerCase();
   const dayOfWeek = today.getDay(); // 0 (Sun) to 6 (Sat)
   const normalizedDay = dayOfWeek === 0 ? 7 : dayOfWeek; // 1 (Mon) to 7 (Sun)
@@ -93,7 +97,7 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
     return dayPlan?.exercises || [];
   });
 
-  // Unique exercises by ID to avoid duplicates in combined plans
+  // Unique exercises by ID
   const todaysExercises = Array.from(new Map(allExercises.map(ex => [ex.id, ex])).values());
 
   const completionRate = todaysExercises.length > 0 
@@ -258,6 +262,21 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
                       </Card>
                     );
                   })
+                ) : hasSports ? (
+                  <div className="space-y-4">
+                    <Card className="p-8 text-center bg-surface/50 border-dashed border-2 border-primary/20">
+                      <p className="text-primary font-bold uppercase tracking-widest text-sm mb-4">Descanso o actividad libre hoy</p>
+                      <p className="text-on-surface-variant text-xs italic">Tu plan semanal está activo. Estos son tus próximos entrenamientos:</p>
+                    </Card>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {mainPlan?.table.slice(0, 4).map((day, i) => (
+                        <div key={i} className="bg-surface/30 p-4 rounded-2xl border border-white/5">
+                          <p className="text-[10px] font-black uppercase text-primary mb-2">{day.day}</p>
+                          <p className="text-xs font-bold truncate">{day.exercises[0]?.name || 'Entrenamiento'}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 ) : (
                   <Card className="p-12 text-center bg-surface border-none">
                     <p className="text-on-surface-variant italic">{t('noEjerciciosHoy')}</p>

@@ -6,6 +6,7 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 const foodImageMap: Record<string, string> = {
   "huevo": "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?q=80&w=2070&auto=format&fit=crop",
   "pollo": "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=2026&auto=format&fit=crop",
+  "pavo": "https://images.unsplash.com/photo-1518492104633-130d0cc84637?q=80&w=1926&auto=format&fit=crop",
   "avena": "https://images.unsplash.com/photo-1586444248902-2f64eddf13cf?q=80&w=2070&auto=format&fit=crop",
   "yogur": "https://images.unsplash.com/photo-1488477181946-6428a0291777?q=80&w=1974&auto=format&fit=crop",
   "fruta": "https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=2070&auto=format&fit=crop",
@@ -26,7 +27,6 @@ const foodImageMap: Record<string, string> = {
   "queso": "https://images.unsplash.com/photo-1485962391905-dc37bb364645?q=80&w=1974&auto=format&fit=crop",
   "verduras": "https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=1968&auto=format&fit=crop",
   "tortilla": "https://images.unsplash.com/photo-1510627489930-0c1b0ba84707?q=80&w=2070&auto=format&fit=crop",
-  "pavo": "https://images.unsplash.com/photo-1518492104633-130d0cc84637?q=80&w=1926&auto=format&fit=crop",
   "atun": "https://images.unsplash.com/photo-1501595091296-3a970afb3ffb?q=80&w=2070&auto=format&fit=crop",
   "brocoli": "https://images.unsplash.com/photo-1452948491233-ad8a1ed01085?q=80&w=2074&auto=format&fit=crop",
   "espinacas": "https://images.unsplash.com/photo-1576045057995-568f588f82fb?q=80&w=2080&auto=format&fit=crop",

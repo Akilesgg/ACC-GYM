@@ -235,9 +235,14 @@ export default function SportsList({ sports, selectedSportNames, onSelect, onCon
                               </span>
                             </div>
 
-                            {isSelected && (
-                              <div className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                                <Check size={18} strokeWidth={3} />
+                            {isSelected ? (
+                              <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center gap-2 bg-primary/20 px-3 py-1 rounded-full border border-primary/20 backdrop-blur-sm">
+                                <span className="text-[10px] font-black uppercase tracking-tighter text-on-primary">AÑADIDO</span>
+                                <Check size={16} strokeWidth={3} className="text-on-primary" />
+                              </div>
+                            ) : (
+                              <div className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/5 flex items-center justify-center opacity-0 group-hover/item:opacity-100 transition-opacity">
+                                <Plus size={16} />
                               </div>
                             )}
                           </motion.button>
