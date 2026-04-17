@@ -16,20 +16,44 @@ const foodImageMap: Record<string, string> = {
   "pasta": "https://images.unsplash.com/photo-1473093226795-af9932fe5856?q=80&w=1988&auto=format&fit=crop",
   "arroz": "https://images.unsplash.com/photo-1512058560366-cd2427ba5e73?q=80&w=2070&auto=format&fit=crop",
   "batido": "https://images.unsplash.com/photo-1553530666-ba11a7da3888?q=80&w=1974&auto=format&fit=crop",
-  "frutos secos": "https://images.unsplash.com/photo-1511067007398-7e4b90cfa4bc?q=80&w=2069&auto=format&fit=crop"
+  "frutos secos": "https://images.unsplash.com/photo-1511067007398-7e4b90cfa4bc?q=80&w=2069&auto=format&fit=crop",
+  "aguacate": "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?q=80&w=1975&auto=format&fit=crop",
+  "salmon": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?q=80&w=1974&auto=format&fit=crop",
+  "quinoa": "https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=2070&auto=format&fit=crop",
+  "tofu": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=2080&auto=format&fit=crop",
+  "lentejas": "https://images.unsplash.com/photo-1518779578993-ec3579fee39f?q=80&w=2070&auto=format&fit=crop",
+  "garbanzos": "https://images.unsplash.com/photo-1585914924626-45adbcba00f1?q=80&w=2070&auto=format&fit=crop",
+  "pan": "https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=2072&auto=format&fit=crop",
+  "queso": "https://images.unsplash.com/photo-1485962391905-dc37bb364645?q=80&w=1974&auto=format&fit=crop",
+  "verduras": "https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=1968&auto=format&fit=crop",
+  "tortilla": "https://images.unsplash.com/photo-1510627489930-0c1b0ba84707?q=80&w=2070&auto=format&fit=crop",
+  "atun": "https://images.unsplash.com/photo-1501595091296-3a970afb3ffb?q=80&w=2070&auto=format&fit=crop",
+  "brocoli": "https://images.unsplash.com/photo-1452948491233-ad8a1ed01085?q=80&w=2074&auto=format&fit=crop",
+  "espinacas": "https://images.unsplash.com/photo-1576045057995-568f588f82fb?q=80&w=2080&auto=format&fit=crop",
+  "platano": "https://images.unsplash.com/photo-1603833665858-e81b1c7e4460?q=80&w=1912&auto=format&fit=crop",
+  "manzana": "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?q=80&w=1974&auto=format&fit=crop",
+  "almendras": "https://images.unsplash.com/photo-1508817628294-5a453fa0b8fb?q=80&w=2070&auto=format&fit=crop",
+  "nueces": "https://images.unsplash.com/photo-1525385133336-2441672400dd?q=80&w=1974&auto=format&fit=crop",
+  "cafe": "https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?q=80&w=2070&auto=format&fit=crop",
+  "te": "https://images.unsplash.com/photo-1544787210-22bb840c5d6f?q=80&w=2070&auto=format&fit=crop"
 };
 
 const getImage = (ingredients: string[]): string => {
   if (!ingredients || ingredients.length === 0) return "https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=800&auto=format&fit=crop";
-  
   const text = ingredients.join(' ').toLowerCase();
   
-  // Try to match any ingredient with the map
+  // Try precise matches first
+  const words = text.split(/\W+/);
+  for (const word of words) {
+    if (foodImageMap[word]) return foodImageMap[word];
+  }
+
+  // Then try substring matches
   for (const [key, url] of Object.entries(foodImageMap)) {
     if (text.includes(key)) return url;
   }
   
-  return `https://picsum.photos/seed/${encodeURIComponent(ingredients[0] || 'food')}/800/600`;
+  return `https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=800&auto=format&fit=crop`;
 };
 
 export async function generateTrainingPlan(profile: UserProfile, sportConfig: SportConfig, language: Language): Promise<TrainingPlan> {

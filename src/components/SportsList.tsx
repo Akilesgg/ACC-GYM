@@ -11,6 +11,7 @@ import * as Icons from 'lucide-react';
 interface SportsListProps {
   sports: Sport[];
   selectedSportNames: string[];
+  savedSportNames?: string[];
   onSelect: (sportName: string) => void;
   onConfirm?: (configs: SportConfig[], isCombined: boolean) => void;
   language: Language;
@@ -24,7 +25,7 @@ interface CategoryGroup {
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
-export default function SportsList({ sports, selectedSportNames, onSelect, onConfirm, language }: SportsListProps) {
+export default function SportsList({ sports, selectedSportNames, savedSportNames = [], onSelect, onConfirm, language }: SportsListProps) {
   const t = useTranslation(language);
   const [search, setSearch] = useState('');
   const [openCategories, setOpenCategories] = useState<string[]>([]);
@@ -349,10 +350,24 @@ export default function SportsList({ sports, selectedSportNames, onSelect, onCon
                                       <Button 
                                         size="sm" 
                                         onClick={() => handleConfirm(false)}
-                                        className="bg-primary text-on-primary text-[10px] font-black uppercase tracking-widest px-6 rounded-xl h-10 shadow-lg shadow-primary/20 hover:scale-105 transition-transform w-full"
+                                        disabled={savedSportNames.includes(sport.name)}
+                                        className={`text-[10px] font-black uppercase tracking-widest px-6 rounded-xl h-10 shadow-lg w-full transition-all ${
+                                          savedSportNames.includes(sport.name)
+                                            ? 'bg-secondary text-background shadow-secondary/20 cursor-default'
+                                            : 'bg-primary text-on-primary shadow-primary/20 hover:scale-105'
+                                        }`}
                                       >
-                                        <Plus size={14} className="mr-1" />
-                                        Añadir deporte
+                                        {savedSportNames.includes(sport.name) ? (
+                                          <div className="flex items-center gap-1">
+                                            <Check size={14} />
+                                            DEPORTE AÑADIDO
+                                          </div>
+                                        ) : (
+                                          <div className="flex items-center gap-1">
+                                            <Plus size={14} />
+                                            Añadir deporte
+                                          </div>
+                                        )}
                                       </Button>
                                       <Button 
                                         size="sm" 
@@ -360,7 +375,7 @@ export default function SportsList({ sports, selectedSportNames, onSelect, onCon
                                         onClick={() => setConfiguringSport(null)}
                                         className="border-primary/30 text-primary text-[10px] font-black uppercase tracking-widest px-4 rounded-xl h-10 hover:bg-primary/10 w-full"
                                       >
-                                        Añadir más deportes
+                                        {language === 'es' ? 'Añadir más disciplinas' : 'Add more disciplines'}
                                       </Button>
                                     </div>
                                   </div>
@@ -421,7 +436,7 @@ export default function SportsList({ sports, selectedSportNames, onSelect, onCon
                 className="h-20 rounded-[2rem] bg-surface-variant/10 border-2 border-primary/20 text-primary font-black text-xs uppercase tracking-widest hover:bg-primary/10 hover:border-primary transition-all flex flex-col gap-1"
               >
                 <Plus size={20} />
-                <span>Añadir deporte</span>
+                <span>{selectedSportNames.every(name => savedSportNames.includes(name)) ? 'Deporte añadido' : 'Añadir deporte'}</span>
               </Button>
               
               <Button 

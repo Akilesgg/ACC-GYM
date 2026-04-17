@@ -549,9 +549,17 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
             )}
           </>
         ) : (
-          <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <Loader2 className="w-12 h-12 text-primary animate-spin" />
-            <p className="text-on-surface-variant font-black uppercase tracking-widest text-sm">Sincronizando plan...</p>
+          <div className="flex flex-col items-center justify-center py-20 gap-6 text-center max-w-sm mx-auto">
+            <div className="w-20 h-20 bg-surface rounded-3xl flex items-center justify-center border border-outline-variant/10">
+              <Utensils className="text-on-surface-variant opacity-20" size={40} />
+            </div>
+            <div>
+              <h3 className="text-2xl font-headline font-black uppercase text-on-surface-variant">No hay dietas activas</h3>
+              <p className="text-on-surface-variant text-sm mt-2">Personaliza y genera tu plan nutricional para ver tus dietas aquí.</p>
+            </div>
+            <Button onClick={() => setStep('goal')} className="rounded-full bg-primary text-background font-black uppercase tracking-widest w-full h-14 shadow-lg shadow-primary/20">
+              <PlusCircle className="mr-2" size={20} /> Generar nueva dieta
+            </Button>
           </div>
         )}
       </motion.div>

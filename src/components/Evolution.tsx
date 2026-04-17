@@ -3,7 +3,7 @@ import { UserProfile, DailyProgress, TrainingPlan, Language, GalleryItem, Weight
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'motion/react';
-import { CheckCircle2, Circle, Calendar as CalendarIcon, Trophy, Flame, TrendingUp, ArrowLeft, Brain, Loader2, Scale, Camera, BarChart3, Dumbbell } from 'lucide-react';
+import { CheckCircle2, Circle, Calendar as CalendarIcon, Trophy, Flame, TrendingUp, ArrowLeft, Brain, Loader2, Scale, Camera, BarChart3, Dumbbell, Clock } from 'lucide-react';
 import { format, startOfToday, isSameDay, parseISO, eachDayOfInterval, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useTranslation } from '../lib/i18n';
@@ -223,12 +223,93 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
                     );
                   })
                 ) : (
-                  <Card className="p-12 text-center bg-surface border-none">
-                    <p className="text-on-surface-variant italic">{t('noEjerciciosHoy')}</p>
+                  <Card className="p-12 text-center bg-surface border-none flex flex-col items-center justify-center gap-4">
+                    <div className="w-16 h-16 bg-background rounded-full flex items-center justify-center text-on-surface-variant/20">
+                      <Clock size={32} />
+                    </div>
+                    <div>
+                      <p className="text-on-surface-variant italic font-medium">{t('noEjerciciosHoy')}</p>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-secondary mt-2">Día de recuperación activa</p>
+                    </div>
                   </Card>
                 )}
               </div>
             </section>
+
+            {/* Disciplinas Activas */}
+            {profile.sports.length > 0 && (
+              <section className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-primary/20 rounded-2xl flex items-center justify-center text-primary">
+                    <Dumbbell size={24} />
+                  </div>
+                  <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">Disciplinas Activas</h3>
+                </div>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  {profile.sports.map((sport, i) => (
+                    <Card key={i} className="bg-surface border-none p-4 flex items-center gap-4 group hover:bg-surface-variant/30 transition-all">
+                      <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary font-black uppercase text-xs">
+                        {sport.sport.charAt(0)}
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-sm uppercase opacity-80">{sport.sport}</h4>
+                        <p className="text-[10px] font-black text-secondary uppercase tracking-widest">{sport.daysPerWeek} DÍAS</p>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Weekly Training Table */}
+            {profile.sports.length > 0 && (
+              <section className="space-y-6">
+                <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">Planificación Semanal</h3>
+                <Card className="bg-surface border-none p-2 overflow-hidden overflow-x-auto">
+                  <table className="w-full text-left border-collapse min-w-[600px]">
+                    <thead>
+                      <tr className="bg-background/50">
+                        {['LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO', 'DOMINGO'].map((day, dIdx) => (
+                          <th key={day} className={`px-4 py-3 text-[10px] font-black text-on-surface-variant tracking-widest text-center border-l border-outline-variant/10 first:border-l-0 ${dIdx === (new Date().getDay() + 6) % 7 ? 'text-primary' : ''}`}>
+                            {day}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => {
+                          const workout = profile.plan?.table?.find(t => t.day === day);
+                          return (
+                            <td key={day} className="p-4 border-l border-outline-variant/10 first:border-l-0 align-top min-h-[140px]">
+                              {workout ? (
+                                <div className="space-y-3">
+                                  <p className="text-[10px] font-black text-primary uppercase leading-tight min-h-[20px]">{workout.exercises[0]?.name.split(' ')[0] || 'Entrenamiento'}</p>
+                                  <div className="space-y-2">
+                                    {workout.exercises.slice(0, 3).map((ex, i) => (
+                                      <p key={i} className="text-[9px] font-bold text-on-surface-variant leading-none flex items-start gap-1">
+                                        <span className="text-secondary mt-0.5">•</span> {ex.name}
+                                      </p>
+                                    ))}
+                                    {workout.exercises.length > 3 && (
+                                      <p className="text-[8px] font-black text-secondary/60 tracking-widest pt-1 border-t border-outline-variant/5">+{workout.exercises.length - 3} MÁS</p>
+                                    )}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="h-full py-8 flex items-center justify-center opacity-10">
+                                  <Clock size={20} />
+                                </div>
+                              )}
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    </tbody>
+                  </table>
+                </Card>
+              </section>
+            )}
 
             {/* Progress Calendar */}
             <section className="space-y-6">

@@ -347,6 +347,7 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
             <SportsList 
               sports={sports} 
               selectedSportNames={selectedSportsList}
+              savedSportNames={profile.sports.map(s => s.sport)}
               onSelect={handleSportToggle}
               onConfirm={startConfiguration}
               language={language}
