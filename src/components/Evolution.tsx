@@ -78,10 +78,6 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
     ...(profile.plan ? [profile.plan] : [])
   ];
 
-  // Logic to show whole weekly table if sports exist
-  const hasSports = profile.sports.length > 0;
-  const mainPlan = activePlans[0];
-
   const todayName = format(today, 'EEEE', { locale }).toLowerCase();
   const dayOfWeek = today.getDay(); // 0 (Sun) to 6 (Sat)
   const normalizedDay = dayOfWeek === 0 ? 7 : dayOfWeek; // 1 (Mon) to 7 (Sun)
@@ -97,7 +93,7 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
     return dayPlan?.exercises || [];
   });
 
-  // Unique exercises by ID
+  // Unique exercises by ID to avoid duplicates in combined plans
   const todaysExercises = Array.from(new Map(allExercises.map(ex => [ex.id, ex])).values());
 
   const completionRate = todaysExercises.length > 0 
@@ -194,42 +190,6 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
             exit={{ opacity: 0, y: -20 }}
             className="space-y-12"
           >
-            {/* Active Sports */}
-            <section className="space-y-6">
-              <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">{t('misDeportesSeleccionados')}</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {profile.sports.map((s, idx) => (
-                  <Card key={idx} className="bg-surface border-none p-6 flex items-center gap-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
-                      <Dumbbell size={24} />
-                    </div>
-                    <div>
-                      <h4 className="font-headline font-bold text-lg uppercase">{s.sport}</h4>
-                      <p className="text-xs text-on-surface-variant font-bold uppercase tracking-widest">{s.daysPerWeek} {t('activos').toLowerCase()}</p>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </section>
-
-            {/* Active Sports */}
-            <section className="space-y-6">
-              <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">{t('misDeportesSeleccionados')}</h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {profile.sports.map((s, idx) => (
-                  <Card key={idx} className="bg-surface border-none p-6 flex items-center gap-4">
-                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
-                      <Dumbbell size={24} />
-                    </div>
-                    <div>
-                      <h4 className="font-headline font-bold text-lg uppercase">{s.sport}</h4>
-                      <p className="text-xs text-on-surface-variant font-bold uppercase tracking-widest">{s.daysPerWeek} {t('activos').toLowerCase()}</p>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            </section>
-
             {/* Daily Routine */}
             <section className="space-y-6">
               <div className="flex items-center justify-between">
@@ -262,21 +222,6 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
                       </Card>
                     );
                   })
-                ) : hasSports ? (
-                  <div className="space-y-4">
-                    <Card className="p-8 text-center bg-surface/50 border-dashed border-2 border-primary/20">
-                      <p className="text-primary font-bold uppercase tracking-widest text-sm mb-4">Descanso o actividad libre hoy</p>
-                      <p className="text-on-surface-variant text-xs italic">Tu plan semanal está activo. Estos son tus próximos entrenamientos:</p>
-                    </Card>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      {mainPlan?.table.slice(0, 4).map((day, i) => (
-                        <div key={i} className="bg-surface/30 p-4 rounded-2xl border border-white/5">
-                          <p className="text-[10px] font-black uppercase text-primary mb-2">{day.day}</p>
-                          <p className="text-xs font-bold truncate">{day.exercises[0]?.name || 'Entrenamiento'}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
                 ) : (
                   <Card className="p-12 text-center bg-surface border-none">
                     <p className="text-on-surface-variant italic">{t('noEjerciciosHoy')}</p>

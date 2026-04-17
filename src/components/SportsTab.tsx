@@ -14,7 +14,6 @@ import {
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '../lib/i18n';
 import { subscribeToSports } from '../services/sports';
-import { toast } from 'sonner';
 import SportsList from './SportsList';
 import { useStore } from '../store/useStore';
 
@@ -180,7 +179,8 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
       // 3. RECARGAR ESTADO LOCAL (A TRAVÉS DE App.tsx)
       await onUpdateProfile({ ...profile, ...updates });
       
-      toast.success(language === 'es' ? 'Deporte añadido' : 'Sport added');
+      setShowSuccess(true);
+      setTimeout(() => setShowSuccess(false), 3000);
       
       // Limpiar selección local
       setSelectedSportsList([]);
