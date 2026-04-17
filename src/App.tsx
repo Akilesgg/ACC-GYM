@@ -262,7 +262,7 @@ export default function App() {
 
     switch (activeScreen) {
       case 'dashboard': return <Dashboard profile={profile!} onUpdateProfile={handleProfileUpdate} onAddSport={() => setActiveScreen('workout')} onGoToTracking={() => setActiveScreen('evolution')} onGoToProfile={() => setActiveScreen('profile')} onGoToNews={() => setActiveScreen('news')} onGoToMovies={() => setActiveScreen('movies')} language={language} />;
-      case 'workout': return <SportsTab onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
+      case 'workout': return <SportsTab profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
       case 'nutrition': return <Nutrition profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
       case 'evolution': return <Evolution profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
       case 'profile': return <Profile profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;

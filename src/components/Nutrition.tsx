@@ -46,6 +46,8 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
   useEffect(() => {
     if (profile.nutritionPlan) {
       setStep('plan');
+    } else if (step === 'plan') {
+      setStep('intro');
     }
   }, [profile.nutritionPlan]);
 

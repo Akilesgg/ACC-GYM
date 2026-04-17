@@ -350,16 +350,15 @@ export default function SportsList({ sports, selectedSportNames, savedSportNames
                                       <Button 
                                         size="sm" 
                                         onClick={() => handleConfirm(false)}
-                                        disabled={savedSportNames.includes(sport.name)}
                                         className={`text-[10px] font-black uppercase tracking-widest px-6 rounded-xl h-10 shadow-lg w-full transition-all ${
                                           savedSportNames.includes(sport.name)
-                                            ? 'bg-secondary text-background shadow-secondary/20 cursor-default'
-                                            : 'bg-primary text-on-primary shadow-primary/20 hover:scale-105'
+                                            ? 'bg-secondary text-background shadow-secondary/20 cursor-default ring-4 ring-secondary/10'
+                                            : 'bg-primary text-on-primary shadow-primary/20 hover:scale-105 active:scale-95'
                                         }`}
                                       >
                                         {savedSportNames.includes(sport.name) ? (
                                           <div className="flex items-center gap-1">
-                                            <Check size={14} />
+                                            <Check size={14} className="animate-in zoom-in duration-300" />
                                             DEPORTE AÑADIDO
                                           </div>
                                         ) : (

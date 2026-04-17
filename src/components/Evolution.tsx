@@ -269,19 +269,32 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
                   <table className="w-full text-left border-collapse min-w-[600px]">
                     <thead>
                       <tr className="bg-background/50">
-                        {['LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO', 'DOMINGO'].map((day, dIdx) => (
-                          <th key={day} className={`px-4 py-3 text-[10px] font-black text-on-surface-variant tracking-widest text-center border-l border-outline-variant/10 first:border-l-0 ${dIdx === (new Date().getDay() + 6) % 7 ? 'text-primary' : ''}`}>
-                            {day}
+                        {['LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO', 'DOMINGO'].map((dayName, dIdx) => (
+                          <th key={dayName} className={`px-4 py-3 text-[10px] font-black text-on-surface-variant tracking-widest text-center border-l border-outline-variant/10 first:border-l-0 ${dIdx === (new Date().getDay() + 6) % 7 ? 'text-primary' : ''}`}>
+                            {dayName}
                           </th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
-                        {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => {
-                          const workout = profile.plan?.table?.find(t => t.day === day);
+                        {[0, 1, 2, 3, 4, 5, 6].map(idx => {
+                          const SpanishDays = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+                          const EnglishDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+                          const DayNamesFull = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+                          
+                          const dayLabel = SpanishDays[idx];
+                          const engLabel = EnglishDays[idx];
+                          const engFull = DayNamesFull[idx];
+                          
+                          const workout = profile.plan?.table?.find(t => 
+                            t.day.toLowerCase().includes(dayLabel.toLowerCase()) || 
+                            t.day.toLowerCase().includes(engLabel.toLowerCase()) ||
+                            t.day.toLowerCase().includes(engFull.toLowerCase())
+                          );
+                          
                           return (
-                            <td key={day} className="p-4 border-l border-outline-variant/10 first:border-l-0 align-top min-h-[140px]">
+                            <td key={idx} className="p-4 border-l border-outline-variant/10 first:border-l-0 align-top min-h-[140px]">
                               {workout ? (
                                 <div className="space-y-3">
                                   <p className="text-[10px] font-black text-primary uppercase leading-tight min-h-[20px]">{workout.exercises[0]?.name.split(' ')[0] || 'Entrenamiento'}</p>

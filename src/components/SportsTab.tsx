@@ -59,20 +59,25 @@ const GOALS_BY_SPORT: Record<string, string[]> = {
   "default": ["Mejora de Rendimiento", "Salud General", "Pérdida de Peso", "Fuerza y Tonificación"]
 };
 
-export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpdateProfile: (p: UserProfile) => void, onBack?: () => void, language: Language }) {
+export default function SportsTab({ profile, onUpdateProfile, onBack, language }: { profile: UserProfile, onUpdateProfile: (p: UserProfile) => void, onBack?: () => void, language: Language }) {
   const t = useTranslation(language);
-  const { profile } = useStore();
   const [search, setSearch] = useState('');
   const [sports, setSports] = useState<Sport[]>([]);
   const [selectedSport, setSelectedSport] = useState<Sport | null>(null);
   const [step, setStep] = useState<'list' | 'goal' | 'frequency' | 'combined'>('list');
   const [currentConfig, setCurrentConfig] = useState<Partial<SportConfig>>({});
-  const [selectedSportsList, setSelectedSportsList] = useState<string[]>(profile?.sports.map(s => s.sport) || []);
+  const [selectedSportsList, setSelectedSportsList] = useState<string[]>([]);
   const [configQueue, setConfigQueue] = useState<string[]>([]);
   const [currentConfigIndex, setCurrentConfigIndex] = useState(0);
   const [allConfigs, setAllConfigs] = useState<SportConfig[]>([]);
   const [loading, setLoading] = useState(false);
   const [activePlan, setActivePlan] = useState<TrainingPlan | null>(null);
+
+  useEffect(() => {
+    if (profile?.sports) {
+      console.log("[SPORTS] Profile updated from parent, count:", profile.sports.length);
+    }
+  }, [profile?.sports]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -136,59 +141,62 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
     
     setLoading(true);
     setError(null);
+    console.log("[SPORTS] Adding sports:", newConfigs, "isCombined:", isCombined);
     
     try {
-      // 1. LEER DE FIRESTORE (PARA ASEGURAR DATOS MÁS RECIENTES)
-      const { doc, getDoc, setDoc } = await import('firebase/firestore');
+      // 1. OBTENER DATOS ACTUALES PARA EVITAR SOBREESCRIBIR POR ERROR
+      const { doc, getDoc } = await import('firebase/firestore');
       const { db } = await import('../lib/firebase');
       const docRef = doc(db, 'users', profile.uid);
       const snap = await getDoc(docRef);
       
-      let currentSports = snap.exists() ? snap.data().sports || [] : [];
-      let sports = [...currentSports];
+      const firestoreData = snap.exists() ? snap.data() : profile;
+      let currentSports = [...(firestoreData.sports || [])];
       
       newConfigs.forEach(newSport => {
-        const exists = sports.find(s => s.sport === newSport.sport);
-        if (exists) {
-          sports = sports.map(s => s.sport === newSport.sport ? { ...s, ...newSport } : s);
+        const index = currentSports.findIndex(s => s.sport === newSport.sport);
+        if (index !== -1) {
+          currentSports[index] = { ...currentSports[index], ...newSport };
         } else {
-          sports.push(newSport);
+          currentSports.push(newSport);
         }
       });
 
       let globalPlan: TrainingPlan | undefined;
       
-      if (isCombined || sports.length > 1) {
+      if (isCombined || currentSports.length > 1) {
+        console.log("[SPORTS] Generating combined plan for:", currentSports.map(s => s.sport));
         try {
-          globalPlan = await generateCombinedTrainingPlan(profile, sports, language);
+          globalPlan = await generateCombinedTrainingPlan(profile, currentSports, language);
         } catch (e) {
-          globalPlan = generatePlan(sports);
+          console.warn("[SPORTS] Combined AI generation failed, using local generator");
+          globalPlan = generatePlan(currentSports);
         }
-        sports = sports.map(s => ({ ...s, plan: globalPlan, isCombined: true }));
+        currentSports = currentSports.map(s => ({ ...s, plan: globalPlan, isCombined: true }));
       } else {
-        const config = sports[sports.length - 1]; // El último añadido
+        console.log("[SPORTS] Generating individual plan for:", newConfigs[0].sport);
+        const config = newConfigs[0];
         globalPlan = await generateTrainingPlan(profile, config, language);
-        sports = sports.map(s => s.sport === config.sport ? { ...s, plan: globalPlan, isCombined: false } : s);
+        currentSports = currentSports.map(s => s.sport === config.sport ? { ...s, plan: globalPlan, isCombined: false } : s);
       }
 
-      const updates = { sports, plan: globalPlan };
+      console.log("[SPORTS] Final data to save:", { sportsCount: currentSports.length, hasGlobalPlan: !!globalPlan });
+      const updates = { sports: currentSports, plan: globalPlan };
       
-      // 2. GUARDAR EN FIRESTORE
-      await setDoc(docRef, updates, { merge: true });
-      
-      // 3. RECARGAR ESTADO LOCAL (A TRAVÉS DE App.tsx)
+      // 2. ACTUALIZAR A TRAVÉS DE App.tsx (QUE YA MANEJA FIRESTORE + ESTADO LOCAL)
       await onUpdateProfile({ ...profile, ...updates });
       
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
       
-      // Limpiar selección local
+      // Limpiar selección local pero NO poner activePlan para que el usuario siga en la lista
+      // y pueda ver el estado "AÑADIDO" en los botones
       setSelectedSportsList([]);
-      setActivePlan(globalPlan || null);
+      // setActivePlan(globalPlan || null); // <--- Comentado para evitar el salto automático
       
       console.log("[SPORTS] Guardado y recargado con éxito");
     } catch (err: any) {
-      console.error("[SPORTS] Error:", err);
+      console.error("[SPORTS] Error in addSport:", err);
       setError(err.message || "Error al guardar deportes");
     } finally {
       setLoading(false);
@@ -250,8 +258,8 @@ export default function SportsTab({ onUpdateProfile, onBack, language }: { onUpd
           exit={{ opacity: 0, y: -20 }}
           className="fixed top-24 left-1/2 -translate-x-1/2 z-[300] bg-secondary text-background px-8 py-4 rounded-2xl font-black uppercase tracking-widest shadow-2xl flex items-center gap-3"
         >
-          <CheckCircle2 className="text-background" />
-          {language === 'es' ? '¡DEPORTE GUARDADO CON ÉXITO!' : 'SPORT SAVED SUCCESSFULLY!'}
+          <CheckCircle2 className="text-primary" />
+          {language === 'es' ? 'DEPORTE AÑADIDO' : 'SPORT ADDED'}
         </motion.div>
       )}
 
