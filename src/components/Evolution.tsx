@@ -9,6 +9,7 @@ import { es } from 'date-fns/locale';
 import { useTranslation } from '../lib/i18n';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { getPhysicalAnalysis } from '@/src/services/geminiService';
+import TabBackground from './TabBackground';
 
 interface EvolutionProps {
   profile: UserProfile;
@@ -73,10 +74,12 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
     onUpdateProfile({ ...profile, progress: updatedProgress });
   };
 
-  const activePlans = [
-    ...(profile.sports.map(s => s.plan).filter((p): p is TrainingPlan => !!p)),
-    ...(profile.plan ? [profile.plan] : [])
-  ];
+  const activePlans = profile.sports
+    .map(s => s.plan)
+    .filter((p): p is TrainingPlan => !!p);
+  if (profile.plan && !activePlans.find(p => p.id === profile.plan!.id)) {
+    activePlans.push(profile.plan);
+  }
 
   const todayName = format(today, 'EEEE', { locale }).toLowerCase();
   const dayOfWeek = today.getDay(); // 0 (Sun) to 6 (Sat)
@@ -115,6 +118,7 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
 
   return (
     <div className="space-y-12 pb-32">
+      <TabBackground tab="evolution" />
       <section>
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
           <div className="flex items-center gap-4">

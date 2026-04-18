@@ -7,6 +7,8 @@ import { generateNutritionPlan } from '@/src/services/geminiService';
 import { UserProfile, NutritionPlan, Language } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from '../lib/i18n';
+import TabBackground from './TabBackground';
+import { useStore } from '../store/useStore';
 
 interface NutritionProps {
   profile: UserProfile;
@@ -32,8 +34,10 @@ const TIMEFRAMES = [
 
 export default function Nutrition({ profile, onUpdateProfile, onBack, language }: NutritionProps) {
   const t = useTranslation(language);
+  const { setProfile } = useStore();
   const [step, setStep] = useState<'intro' | 'goal' | 'timeframe' | 'allergies' | 'plan'>('intro');
   const [loading, setLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [autoGenerate, setAutoGenerate] = useState(true);
   const [tempData, setTempData] = useState({
     goal: profile.nutritionGoal || '',
@@ -45,15 +49,19 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
   });
 
   useEffect(() => {
-    if (profile.nutritionPlan) {
+    if (profile.nutritionPlan && profile.nutritionAutoGenerate !== false) {
       setStep('plan');
-    } else if (step === 'plan') {
+    } else if (step === 'plan' && !profile.nutritionPlan) {
       setStep('intro');
     }
-  }, [profile.nutritionPlan]);
+  }, [profile.nutritionPlan, profile.nutritionAutoGenerate]);
 
   const handleStart = () => {
     setAutoGenerate(true);
+    // Ensure we reset the suppression flag when manually starting
+    if (profile.nutritionAutoGenerate === false) {
+      onUpdateProfile({ ...profile, nutritionAutoGenerate: true });
+    }
     setStep('goal');
   };
 
@@ -73,6 +81,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
       return;
     }
     setLoading(true);
+    const allergyDetails = [
       tempData.isCeliac ? "Celíaco" : "",
       tempData.hasIntolerance ? "Intolerancia" : "",
       tempData.hasAllergy ? "Alergia" : "",
@@ -120,26 +129,31 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
   const [isResetting, setIsResetting] = useState(false);
 
   const resetDiets = async () => {
-    setLoading(true);
+    setIsDeleting(true);
     try {
-      console.log("[Nutrition] Resetting all diets in Firestore...");
-      await onUpdateProfile({ 
+      console.log("[Nutrition] Resetting all diets with optimistic update...");
+      const clearedProfile: UserProfile = { 
         ...profile, 
         diets: [], 
-        nutritionPlan: null as any,
+        nutritionPlan: undefined,
         nutritionGoal: '',
         nutritionTimeframe: '',
         allergies: '',
-        nutritionAutoGenerate: false // CLAVE: evitar regeneración automática
-      });
-      setAutoGenerate(false);
+        nutritionAutoGenerate: false
+      };
+      
+      // Optimistic update
+      setProfile(clearedProfile);
       setStep('intro');
       setIsResetting(false);
-      console.log("[Nutrition] Diets reset successfully.");
+      setAutoGenerate(false);
+
+      await onUpdateProfile(clearedProfile);
+      console.log("[Nutrition] Diets reset successfully in Firestore.");
     } catch (error) {
       console.error("[Nutrition] Error resetting diets:", error);
     } finally {
-      setLoading(false);
+      setIsDeleting(false);
     }
   };
 
@@ -177,6 +191,25 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
 
   return (
     <div className="space-y-12 pb-32">
+      <TabBackground tab="nutrition" />
+      
+      <AnimatePresence>
+        {isDeleting && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[500] bg-background/80 backdrop-blur-md flex flex-col items-center justify-center gap-4"
+          >
+            <div className="relative">
+              <Loader2 className="w-16 h-16 text-primary animate-spin" />
+              <Trash2 className="absolute inset-0 m-auto w-6 h-6 text-primary" />
+            </div>
+            <p className="font-headline text-xl font-black uppercase tracking-widest animate-pulse">Eliminando planes...</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <section>
         <div className="flex items-center gap-4 mb-2">
           <Button variant="ghost" size="icon" onClick={goBack} className="rounded-full bg-surface">
@@ -376,9 +409,9 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
                     >
                       <div className="h-24 overflow-hidden relative">
                         <img 
-                          src={diet.imageUrl || `https://picsum.photos/seed/${diet.id}/400/200`} 
+                          src={diet.imageUrl || `https://source.unsplash.com/400x200/?${encodeURIComponent(diet.imageSearchQuery || diet.name || 'healthy-food')},food`} 
                           alt={diet.name} 
-                          className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all"
+                          className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all text-[0]"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                         <div className="absolute bottom-2 left-3">
@@ -481,9 +514,9 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
                 <Card key={idx} className="bg-surface border-none overflow-hidden flex flex-col group hover:bg-surface-variant/30 transition-all duration-500">
                   <div className="h-48 overflow-hidden relative">
                     <img 
-                      src={meal.imageUrl || `https://picsum.photos/seed/${meal.name.replace(/\s/g, '')}/800/600`} 
+                      src={meal.imageUrl || `https://source.unsplash.com/800x600/?${encodeURIComponent(meal.imageSearchQuery || meal.name)},food`} 
                       alt={meal.name} 
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 text-[0]"
                       referrerPolicy="no-referrer"
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-surface via-transparent to-transparent" />

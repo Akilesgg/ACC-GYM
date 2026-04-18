@@ -13,7 +13,6 @@ import UserPanel from './components/UserPanel';
 import Devices from './components/Devices';
 import News from './components/News';
 import Movies from './components/Movies';
-import DynamicBackground from './components/DynamicBackground';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth, onAuthStateChanged } from './lib/firebase';
 import { subscribeToProfile, createUserProfile, updateUserProfile } from './services/users';
@@ -275,9 +274,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-on-surface relative">
-      <DynamicBackground />
-
+    <div className="min-h-screen bg-transparent text-on-surface relative">
       <TopNav 
         userPhoto={user?.photoURL || undefined} 
         language={language} 

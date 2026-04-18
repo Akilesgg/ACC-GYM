@@ -5,67 +5,22 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 const foodImageMap: Record<string, string> = {
   // User Requested Exact Maps
-  "pollo": "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=800&auto=format&fit=crop",
-  "chicken": "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=800&auto=format&fit=crop",
-  "arroz": "https://images.unsplash.com/photo-1512058560366-cd2427ba5e73?q=80&w=800&auto=format&fit=crop",
-  "rice": "https://images.unsplash.com/photo-1512058560366-cd2427ba5e73?q=80&w=800&auto=format&fit=crop",
-  "ensalada": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop",
-  "salad": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop",
-  "pescado": "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?q=80&w=800&auto=format&fit=crop",
-  "fish": "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?q=80&w=800&auto=format&fit=crop",
-  "fruta": "https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=800&auto=format&fit=crop",
-  "fruit": "https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=800&auto=format&fit=crop",
-  "frutas": "https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=800&auto=format&fit=crop",
-  "fruits": "https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=800&auto=format&fit=crop",
-  
-  // Others
-  "huevo": "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?q=80&w=800&auto=format&fit=crop",
-  "egg": "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?q=80&w=800&auto=format&fit=crop",
-  "pavo": "https://images.unsplash.com/photo-1518492104633-130d0cc84637?q=80&w=800&auto=format&fit=crop",
-  "turkey": "https://images.unsplash.com/photo-1518492104633-130d0cc84637?q=80&w=800&auto=format&fit=crop",
-  "ternera": "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop",
-  "steak": "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop",
-  "meat": "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop",
-  "beef": "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop",
-  "salmon": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?q=80&w=800&auto=format&fit=crop",
-  "merluza": "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?q=80&w=800&auto=format&fit=crop",
-  "atun": "https://images.unsplash.com/photo-1501595091296-3a97056645bd?q=80&w=800&auto=format&fit=crop",
-  "tuna": "https://images.unsplash.com/photo-1501595091296-3a97056645bd?q=80&w=800&auto=format&fit=crop",
-  "avena": "https://images.unsplash.com/photo-1517673132405-a56a62b189ee?q=80&w=800&auto=format&fit=crop",
-  "oats": "https://images.unsplash.com/photo-1517673132405-a56a62b189ee?q=80&w=800&auto=format&fit=crop",
-  "oatmeal": "https://images.unsplash.com/photo-1517673132405-a56a62b189ee?q=80&w=800&auto=format&fit=crop",
-  "pasta": "https://images.unsplash.com/photo-1473093226795-af9932fe5856?q=80&w=800&auto=format&fit=crop",
-  "espaguetis": "https://images.unsplash.com/photo-1589227365533-dee630bb59bd?q=80&w=800&auto=format&fit=crop",
-  "pan": "https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=800&auto=format&fit=crop",
-  "bread": "https://images.unsplash.com/photo-1509440159596-0249088772ff?q=80&w=800&auto=format&fit=crop",
-  "patata": "https://images.unsplash.com/photo-1518977676601-b53f02ac6d31?q=80&w=800&auto=format&fit=crop",
-  "potato": "https://images.unsplash.com/photo-1518977676601-b53f02ac6d31?q=80&w=800&auto=format&fit=crop",
-  "quinoa": "https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=800&auto=format&fit=crop",
-  "verdura": "https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=800&auto=format&fit=crop",
-  "vegetable": "https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=800&auto=format&fit=crop",
-  "brocoli": "https://images.unsplash.com/photo-1452948491233-ad8a1ed01085?q=80&w=800&auto=format&fit=crop",
-  "broccoli": "https://images.unsplash.com/photo-1452948491233-ad8a1ed01085?q=80&w=800&auto=format&fit=crop",
-  "aguacate": "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?q=80&w=800&auto=format&fit=crop",
-  "avocado": "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?q=80&w=800&auto=format&fit=crop",
-  "manzana": "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?q=80&w=800&auto=format&fit=crop",
-  "apple": "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?q=80&w=800&auto=format&fit=crop",
-  "platano": "https://images.unsplash.com/photo-1603833665858-e8151693e587?q=80&w=800&auto=format&fit=crop",
-  "banana": "https://images.unsplash.com/photo-1603833665858-e8151693e587?q=80&w=800&auto=format&fit=crop",
-  "yogur": "https://images.unsplash.com/photo-1488477181946-6428a0291777?q=80&w=800&auto=format&fit=crop",
-  "yogurt": "https://images.unsplash.com/photo-1488477181946-6428a0291777?q=80&w=800&auto=format&fit=crop",
-  "leche": "https://images.unsplash.com/photo-1563636619-e910009355dc?q=80&w=800&auto=format&fit=crop",
-  "milk": "https://images.unsplash.com/photo-1563636619-e910009355dc?q=80&w=800&auto=format&fit=crop",
-  "nueces": "https://images.unsplash.com/photo-1511067007398-7e4b90cfa4bc?q=80&w=800&auto=format&fit=crop",
-  "nuts": "https://images.unsplash.com/photo-1511067007398-7e4b90cfa4bc?q=80&w=800&auto=format&fit=crop",
-  "almendras": "https://images.unsplash.com/photo-1508817628294-5a453fa0b8fb?q=80&w=800&auto=format&fit=crop",
-  "almonds": "https://images.unsplash.com/photo-1508817628294-5a453fa0b8fb?q=80&w=800&auto=format&fit=crop",
-  "smoothie": "https://images.unsplash.com/photo-1553530666-ba11a7da3888?q=80&w=800&auto=format&fit=crop",
-  "batido": "https://images.unsplash.com/photo-1553530666-ba11a7da3888?q=80&w=800&auto=format&fit=crop",
-  "default": "https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=800&auto=format&fit=crop"
+  "pollo": "/foods/chicken.jpg",
+  "chicken": "/foods/chicken.jpg",
+  "arroz": "/foods/rice.jpg",
+  "rice": "/foods/rice.jpg",
+  "ensalada": "/foods/salad.jpg",
+  "salad": "/foods/salad.jpg",
+  "pescado": "/foods/fish.jpg",
+  "fish": "/foods/fish.jpg",
+  "fruta": "/foods/fruit.jpg",
+  "fruit": "/foods/fruit.jpg",
+  "frutas": "/foods/fruit.jpg",
+  "fruits": "/foods/fruit.jpg"
 };
 
 const getImage = (ingredients: string[], keyword?: string): string => {
-  const fallback = foodImageMap["default"];
+  const fallback = "/foods/default.jpg";
   const searchTerms = [...(ingredients || []), keyword].filter(Boolean).map(t => t?.toLowerCase());
   
   if (searchTerms.length === 0) return fallback;
@@ -74,11 +29,6 @@ const getImage = (ingredients: string[], keyword?: string): string => {
   const combined = searchTerms.join(' ');
   for (const [key, url] of Object.entries(foodImageMap)) {
     if (combined.includes(key)) return url;
-  }
-
-  // Dynamic variety if keyword exists
-  if (keyword) {
-    return `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop&sig=${encodeURIComponent(keyword)}`;
   }
 
   return fallback;
@@ -206,14 +156,14 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
         - Alergias/Restricciones: ${profile.allergies || 'Ninguna'}
         - Nivel de Actividad: ${profile.experienceLevel}
         
-        Cada plan debe incluir:
-        1. Razonamiento científico detallado.
-        2. Un catálogo de comidas (entre 4 y 6 comidas diferentes por plan).
-        3. Para cada comida: nombre, ingredientes con cantidades exactas, FÓRMULA DE PREPARACIÓN PASO A PASO Y DETALLADA, y macros (p, c, f, kcal).
-        4. Un CALENDARIO SEMANAL (Lunes a Domingo) indicando qué comidas del catálogo tomar cada día (3 a 5 comidas diarias según el plan).
-        5. Para cada comida, incluye un campo 'imageKeyword' con una palabra clave en inglés MUY ESPECÍFICA basada en los ingredientes principales para buscar una imagen realista (ej: 'grilled-salmon-with-asparagus', 'quinoa-salad-avocado', 'oatmeal-blueberries-nuts').
+        Each plan must include:
+        1. Detailed scientific reasoning.
+        2. A catalog of meals (between 4 and 6 different meals per plan).
+        3. For each meal: name, ingredients with exact amounts, STEP-BY-STEP AND DETAILED PREPARATION FORMULA, and macros (p, c, f, kcal).
+        4. A WEEKLY CALENDAR (Monday to Sunday) indicating which meals from the catalog to take each day (3 to 5 daily meals according to the plan).
+        5. For each meal AND for the plan itself, include an 'imageSearchQuery' field with 2-3 English keywords of the main ingredients (e.g., "chicken rice broccoli", "oatmeal blueberries nuts", "salmon asparagus salad").
         
-        IMPORTANTE: Devuelve un array de objetos NutritionPlan.`,
+        IMPORTANT: Return an array of NutritionPlan objects.`,
         config: {
           systemInstruction: "Eres un nutricionista deportivo de élite. Diseñas planes de alimentación precisos, saludables y efectivos. Responde en formato JSON estructurado como un ARRAY de objetos NutritionPlan.",
           responseMimeType: "application/json",
@@ -225,6 +175,7 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
                 id: { type: Type.STRING },
                 name: { type: Type.STRING },
                 reasoning: { type: Type.STRING },
+                imageSearchQuery: { type: Type.STRING },
                 meals: {
                   type: Type.ARRAY,
                   items: {
@@ -235,7 +186,7 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
                       name: { type: Type.STRING },
                       ingredients: { type: Type.ARRAY, items: { type: Type.STRING } },
                       preparation: { type: Type.STRING },
-                      imageKeyword: { type: Type.STRING },
+                      imageSearchQuery: { type: Type.STRING },
                       macros: {
                         type: Type.OBJECT,
                         properties: {
@@ -247,7 +198,7 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
                         required: ["p", "c", "f", "kcal"]
                       }
                     },
-                    required: ["id", "type", "name", "ingredients", "preparation", "macros", "imageKeyword"]
+                    required: ["id", "type", "name", "ingredients", "preparation", "macros", "imageSearchQuery"]
                   }
                 },
                 weeklySchedule: {
@@ -262,7 +213,7 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
                   }
                 }
               },
-              required: ["id", "name", "reasoning", "meals", "weeklySchedule"]
+              required: ["id", "name", "reasoning", "meals", "weeklySchedule", "imageSearchQuery"]
             }
           }
         }
@@ -271,12 +222,12 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
       return plans.map((plan: any) => {
         const updatedMeals = plan.meals.map((meal: any) => ({
           ...meal,
-          imageUrl: getImage(meal.ingredients, meal.imageKeyword)
+          imageUrl: `https://source.unsplash.com/400x200/?${encodeURIComponent(meal.imageSearchQuery || meal.name)},food`
         }));
         return {
           ...plan,
           meals: updatedMeals,
-          imageUrl: updatedMeals[0]?.imageUrl
+          imageUrl: `https://source.unsplash.com/800x400/?${encodeURIComponent(plan.imageSearchQuery || plan.name)},food`
         };
       });
     };

@@ -8,6 +8,7 @@ import { logout } from '../services/auth';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useStore } from '../store/useStore';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
+import TabBackground from './TabBackground';
 
 interface ProfileProps {
   profile: UserProfile;
@@ -30,6 +31,7 @@ export default function Profile({ profile, onBack, language }: ProfileProps) {
 
   return (
     <div className="space-y-12 pb-32">
+      <TabBackground tab="profile" />
       <section>
         <div className="flex items-center gap-4 mb-8">
           <Button variant="ghost" size="icon" onClick={onBack} className="rounded-full bg-surface">
@@ -133,8 +135,8 @@ export default function Profile({ profile, onBack, language }: ProfileProps) {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {profile.sports.length > 0 ? (
-              profile.sports.map((sport, index) => (
-                <Card key={index} className="bg-surface border-none p-6 space-y-4 group hover:bg-surface-variant/30 transition-all">
+              profile.sports.map((sport) => (
+                <Card key={sport.sport} className="bg-surface border-none p-6 space-y-4 group hover:bg-surface-variant/30 transition-all">
                   <div className="flex items-center justify-between">
                     <h4 className="font-headline font-bold text-xl uppercase text-primary">{sport.sport}</h4>
                     <div className="flex flex-col items-end gap-1">

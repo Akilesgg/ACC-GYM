@@ -16,6 +16,7 @@ import { useTranslation } from '../lib/i18n';
 import { subscribeToSports } from '../services/sports';
 import SportsList from './SportsList';
 import { useStore } from '../store/useStore';
+import TabBackground from './TabBackground';
 
 const SPORT_ICONS: Record<string, any> = {
   "Dumbbell": Dumbbell,
@@ -186,13 +187,6 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
       // 2. ACTUALIZAR A TRAVÉS DE App.tsx (QUE YA MANEJA FIRESTORE + ESTADO LOCAL)
       await onUpdateProfile({ ...profile, ...updates });
       
-      // RELOAD FORZADO PARA GARANTIZAR SINCRONIZACIÓN (SEGÚN REGLA BLOQUEANTE 4)
-      const latestSnap = await getDoc(doc(db, 'users', profile.uid));
-      if (latestSnap.exists()) {
-        const latestData = latestSnap.data() as UserProfile;
-        onUpdateProfile(latestData);
-      }
-
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
       
@@ -240,6 +234,7 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
 
   return (
     <div className="space-y-12 pb-32">
+      <TabBackground tab="sports" />
       <section>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
           <div className="flex items-center gap-4">

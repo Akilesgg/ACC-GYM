@@ -27,6 +27,7 @@ export interface NutritionPlan {
   name?: string;
   reasoning: string;
   imageUrl?: string;
+  imageSearchQuery?: string;
   meals: {
     id: string;
     type: string;
@@ -35,6 +36,7 @@ export interface NutritionPlan {
     preparation: string;
     macros: { p: number, c: number, f: number, kcal: number };
     imageUrl?: string;
+    imageSearchQuery?: string;
   }[];
   weeklySchedule?: {
     day: string;
@@ -76,6 +78,7 @@ export interface UserProfile {
   allergies?: string;
   nutritionPlan?: NutritionPlan;
   diets?: NutritionPlan[];
+  nutritionAutoGenerate?: boolean;
   // Evolution
   weightHistory?: WeightEntry[];
   photos?: GalleryItem[];
