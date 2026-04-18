@@ -212,6 +212,7 @@ export default function SportsList({ sports, selectedSportNames, savedSportNames
                     <div className="grid grid-cols-1 gap-3 p-2">
                       {group.items.map((sport) => {
                         const isSelected = selectedSportNames.includes(sport.name);
+                        const isSaved = savedSportNames.includes(sport.name);
                         const SportIcon = (Icons as any)[sport.icon] || Dumbbell;
                         
                         return (
@@ -223,10 +224,12 @@ export default function SportsList({ sports, selectedSportNames, savedSportNames
                             className={`relative w-full flex items-center gap-4 p-4 rounded-2xl transition-all group/item overflow-hidden border border-white/5 h-20 ${
                               isSelected 
                                 ? 'bg-primary text-on-primary shadow-xl shadow-primary/20' 
-                                : 'bg-[#1a1c23] hover:bg-[#22252e] text-on-surface-variant'
+                                : isSaved
+                                  ? 'bg-secondary/10 border-secondary/20 text-secondary'
+                                  : 'bg-[#1a1c23] hover:bg-[#22252e] text-on-surface-variant'
                             }`}
                           >
-                            <div className={`relative w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${isSelected ? 'bg-white/20' : 'bg-background/50'}`}>
+                            <div className={`relative w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${isSelected ? 'bg-white/20' : isSaved ? 'bg-secondary/20' : 'bg-background/50'}`}>
                               <SportIcon size={24} strokeWidth={2.5} />
                             </div>
 
@@ -234,10 +237,13 @@ export default function SportsList({ sports, selectedSportNames, savedSportNames
                               <span className="font-headline font-bold text-base uppercase tracking-tight">
                                 {sport.name}
                               </span>
+                              {isSaved && !isSelected && (
+                                <span className="text-[9px] font-black uppercase tracking-widest opacity-60">YA AÑADIDO</span>
+                              )}
                             </div>
 
-                            {isSelected && (
-                              <div className="absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+                            {(isSelected || isSaved) && (
+                              <div className={`absolute right-4 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full flex items-center justify-center ${isSelected ? 'bg-white/20' : 'bg-secondary text-background'}`}>
                                 <Check size={18} strokeWidth={3} />
                               </div>
                             )}

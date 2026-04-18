@@ -177,9 +177,8 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
       await onUpdateProfile(updatedProfile);
 
       setShowSuccess(true);
+      setSelectedSportsList([]); // Limpiar selección ahora que se ha guardado con éxito
       setTimeout(() => setShowSuccess(false), 3000);
-      // NO llamar setSelectedSportsList([]) aquí — dejar que el snapshot actualice profile.sports
-      // y SportsList lo detecte automáticamente via savedSportNames
     } catch (err: any) {
       console.error("[SPORTS] Error in addSport:", err);
       setError(err.message || "Error al guardar deportes");

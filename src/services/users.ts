@@ -33,21 +33,28 @@ export const createUserProfile = async (profile: UserProfile): Promise<void> => 
 export const updateUserProfile = async (uid: string, updates: Partial<UserProfile>): Promise<void> => {
   const docRef = doc(db, 'users', uid);
   try {
-    // Para arrays (sports, diets), usar setDoc sin merge para garantizar sobreescritura
-    // Para campos parciales sin arrays críticos, merge es aceptable
+    console.log(`[FIRESTORE] Syncing profile for ${uid}. Array fields detected:`, {
+      sports: updates.sports?.length,
+      diets: updates.diets?.length
+    });
+
     const hasArrayFields = updates.sports !== undefined || updates.diets !== undefined;
     if (hasArrayFields) {
       // Obtener doc actual y mergear manualmente para no perder otros campos
       const snap = await getDoc(docRef);
       const current = snap.exists() ? snap.data() : {};
-      await setDoc(docRef, { ...current, ...updates });
+      const finalPayload = { ...current, ...updates };
+      
+      console.log(`[FIRESTORE] Performing full replace (no merge) for arrays. Final sports count: ${finalPayload.sports?.length}`);
+      await setDoc(docRef, finalPayload);
     } else {
+      console.log(`[FIRESTORE] Performing partial update (merge).`);
       await setDoc(docRef, updates, { merge: true });
     }
-    console.log(`[FIRESTORE] Profile updated successfully for ${uid}`);
+    console.log(`[FIRESTORE] Update completed successfully for ${uid}`);
   } catch (error: any) {
+    console.error(`[FIRESTORE] Error updating profile for ${uid}:`, error);
     if (error.code === 'resource-exhausted') {
-      console.error("[FIRESTORE] Cuota excedida. Los cambios no se guardarán hasta que se reinicie la cuota diaria.");
       throw new Error("QUOTA_EXCEEDED");
     }
     handleFirestoreError(error, OperationType.UPDATE, `users/${uid}`);
