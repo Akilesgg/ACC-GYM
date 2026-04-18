@@ -4,11 +4,23 @@ import { UserProfile, TrainingPlan, SportConfig, NutritionPlan, Language } from 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 const foodImageMap: Record<string, string> = {
-  // Proteins (Spanish & English)
-  "huevo": "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?q=80&w=800&auto=format&fit=crop",
-  "egg": "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?q=80&w=800&auto=format&fit=crop",
+  // User Requested Exact Maps
   "pollo": "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=800&auto=format&fit=crop",
   "chicken": "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=800&auto=format&fit=crop",
+  "arroz": "https://images.unsplash.com/photo-1512058560366-cd2427ba5e73?q=80&w=800&auto=format&fit=crop",
+  "rice": "https://images.unsplash.com/photo-1512058560366-cd2427ba5e73?q=80&w=800&auto=format&fit=crop",
+  "ensalada": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop",
+  "salad": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop",
+  "pescado": "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?q=80&w=800&auto=format&fit=crop",
+  "fish": "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?q=80&w=800&auto=format&fit=crop",
+  "fruta": "https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=800&auto=format&fit=crop",
+  "fruit": "https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=800&auto=format&fit=crop",
+  "frutas": "https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=800&auto=format&fit=crop",
+  "fruits": "https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=800&auto=format&fit=crop",
+  
+  // Others
+  "huevo": "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?q=80&w=800&auto=format&fit=crop",
+  "egg": "https://images.unsplash.com/photo-1582722872445-44dc5f7e3c8f?q=80&w=800&auto=format&fit=crop",
   "pavo": "https://images.unsplash.com/photo-1518492104633-130d0cc84637?q=80&w=800&auto=format&fit=crop",
   "turkey": "https://images.unsplash.com/photo-1518492104633-130d0cc84637?q=80&w=800&auto=format&fit=crop",
   "ternera": "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop",
@@ -17,13 +29,8 @@ const foodImageMap: Record<string, string> = {
   "beef": "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800&auto=format&fit=crop",
   "salmon": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?q=80&w=800&auto=format&fit=crop",
   "merluza": "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?q=80&w=800&auto=format&fit=crop",
-  "fish": "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?q=80&w=800&auto=format&fit=crop",
   "atun": "https://images.unsplash.com/photo-1501595091296-3a97056645bd?q=80&w=800&auto=format&fit=crop",
   "tuna": "https://images.unsplash.com/photo-1501595091296-3a97056645bd?q=80&w=800&auto=format&fit=crop",
-  
-  // Carbs
-  "arroz": "https://images.unsplash.com/photo-1512058560366-cd2427ba5e73?q=80&w=800&auto=format&fit=crop",
-  "rice": "https://images.unsplash.com/photo-1512058560366-cd2427ba5e73?q=80&w=800&auto=format&fit=crop",
   "avena": "https://images.unsplash.com/photo-1517673132405-a56a62b189ee?q=80&w=800&auto=format&fit=crop",
   "oats": "https://images.unsplash.com/photo-1517673132405-a56a62b189ee?q=80&w=800&auto=format&fit=crop",
   "oatmeal": "https://images.unsplash.com/photo-1517673132405-a56a62b189ee?q=80&w=800&auto=format&fit=crop",
@@ -34,10 +41,6 @@ const foodImageMap: Record<string, string> = {
   "patata": "https://images.unsplash.com/photo-1518977676601-b53f02ac6d31?q=80&w=800&auto=format&fit=crop",
   "potato": "https://images.unsplash.com/photo-1518977676601-b53f02ac6d31?q=80&w=800&auto=format&fit=crop",
   "quinoa": "https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=800&auto=format&fit=crop",
-  
-  // Veggies & Fruits
-  "ensalada": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop",
-  "salad": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800&auto=format&fit=crop",
   "verdura": "https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=800&auto=format&fit=crop",
   "vegetable": "https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=800&auto=format&fit=crop",
   "brocoli": "https://images.unsplash.com/photo-1452948491233-ad8a1ed01085?q=80&w=800&auto=format&fit=crop",
@@ -48,10 +51,6 @@ const foodImageMap: Record<string, string> = {
   "apple": "https://images.unsplash.com/photo-1560806887-1e4cd0b6cbd6?q=80&w=800&auto=format&fit=crop",
   "platano": "https://images.unsplash.com/photo-1603833665858-e8151693e587?q=80&w=800&auto=format&fit=crop",
   "banana": "https://images.unsplash.com/photo-1603833665858-e8151693e587?q=80&w=800&auto=format&fit=crop",
-  "fruta": "https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=800&auto=format&fit=crop",
-  "fruit": "https://images.unsplash.com/photo-1610832958506-aa56368176cf?q=80&w=800&auto=format&fit=crop",
-
-  // Others
   "yogur": "https://images.unsplash.com/photo-1488477181946-6428a0291777?q=80&w=800&auto=format&fit=crop",
   "yogurt": "https://images.unsplash.com/photo-1488477181946-6428a0291777?q=80&w=800&auto=format&fit=crop",
   "leche": "https://images.unsplash.com/photo-1563636619-e910009355dc?q=80&w=800&auto=format&fit=crop",
@@ -62,39 +61,22 @@ const foodImageMap: Record<string, string> = {
   "almonds": "https://images.unsplash.com/photo-1508817628294-5a453fa0b8fb?q=80&w=800&auto=format&fit=crop",
   "smoothie": "https://images.unsplash.com/photo-1553530666-ba11a7da3888?q=80&w=800&auto=format&fit=crop",
   "batido": "https://images.unsplash.com/photo-1553530666-ba11a7da3888?q=80&w=800&auto=format&fit=crop",
+  "default": "https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=800&auto=format&fit=crop"
 };
 
 const getImage = (ingredients: string[], keyword?: string): string => {
-  const fallback = "https://images.unsplash.com/photo-1490645935967-10de6ba17061?q=80&w=800&auto=format&fit=crop";
+  const fallback = foodImageMap["default"];
   const searchTerms = [...(ingredients || []), keyword].filter(Boolean).map(t => t?.toLowerCase());
   
   if (searchTerms.length === 0) return fallback;
 
-  // Try precise matches first from keyword if exists
-  if (keyword) {
-    const k = keyword.toLowerCase().replace(/-/g, ' ');
-    if (foodImageMap[k]) return foodImageMap[k];
-    
-    // Sub-keyword search
-    for (const [key, url] of Object.entries(foodImageMap)) {
-      if (k.includes(key) || key.includes(k)) return url;
-    }
-  }
-
-  const combinedText = searchTerms.join(' ');
-  const words = combinedText.split(/\W+/).filter(w => w.length > 2);
-  
-  // Try matching individual words from ingredients
-  for (const word of words) {
-    if (foodImageMap[word]) return foodImageMap[word];
-  }
-
-  // Then try substring matches on the whole text
+  // Exact map search
+  const combined = searchTerms.join(' ');
   for (const [key, url] of Object.entries(foodImageMap)) {
-    if (combinedText.includes(key)) return url;
+    if (combined.includes(key)) return url;
   }
-  
-  // Simple variety for fallback if keyword is present
+
+  // Dynamic variety if keyword exists
   if (keyword) {
     return `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800&auto=format&fit=crop&sig=${encodeURIComponent(keyword)}`;
   }

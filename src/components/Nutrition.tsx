@@ -34,6 +34,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
   const t = useTranslation(language);
   const [step, setStep] = useState<'intro' | 'goal' | 'timeframe' | 'allergies' | 'plan'>('intro');
   const [loading, setLoading] = useState(false);
+  const [autoGenerate, setAutoGenerate] = useState(true);
   const [tempData, setTempData] = useState({
     goal: profile.nutritionGoal || '',
     timeframe: profile.nutritionTimeframe || '',
@@ -51,7 +52,10 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
     }
   }, [profile.nutritionPlan]);
 
-  const handleStart = () => setStep('goal');
+  const handleStart = () => {
+    setAutoGenerate(true);
+    setStep('goal');
+  };
 
   const handleGoalSelect = (goal: string) => {
     setTempData(prev => ({ ...prev, goal }));
@@ -64,8 +68,11 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
   };
 
   const generateDiets = async () => {
+    if (!autoGenerate && !loading) {
+      console.log("[Nutrition] Automatic generation blocked.");
+      return;
+    }
     setLoading(true);
-    const allergyDetails = [
       tempData.isCeliac ? "Celíaco" : "",
       tempData.hasIntolerance ? "Intolerancia" : "",
       tempData.hasAllergy ? "Alergia" : "",
@@ -122,8 +129,10 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
         nutritionPlan: null as any,
         nutritionGoal: '',
         nutritionTimeframe: '',
-        allergies: ''
+        allergies: '',
+        nutritionAutoGenerate: false // CLAVE: evitar regeneración automática
       });
+      setAutoGenerate(false);
       setStep('intro');
       setIsResetting(false);
       console.log("[Nutrition] Diets reset successfully.");

@@ -276,14 +276,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-background text-on-surface relative">
-      <div className="sports-bg-overlay">
-        <img 
-          src="https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80&w=1920&auto=format&fit=crop" 
-          className="sports-bg-image" 
-          alt=""
-          referrerPolicy="no-referrer"
-        />
-      </div>
       <DynamicBackground />
 
       <TopNav 

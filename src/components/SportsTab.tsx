@@ -186,6 +186,13 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
       // 2. ACTUALIZAR A TRAVÉS DE App.tsx (QUE YA MANEJA FIRESTORE + ESTADO LOCAL)
       await onUpdateProfile({ ...profile, ...updates });
       
+      // RELOAD FORZADO PARA GARANTIZAR SINCRONIZACIÓN (SEGÚN REGLA BLOQUEANTE 4)
+      const latestSnap = await getDoc(doc(db, 'users', profile.uid));
+      if (latestSnap.exists()) {
+        const latestData = latestSnap.data() as UserProfile;
+        onUpdateProfile(latestData);
+      }
+
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
       
