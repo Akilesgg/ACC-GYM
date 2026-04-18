@@ -9,6 +9,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useTranslation } from '../lib/i18n';
 import TabBackground from './TabBackground';
 import { useStore } from '../store/useStore';
+import { clearUserDiets } from '../services/users';
 
 interface NutritionProps {
   profile: UserProfile;
@@ -49,9 +50,9 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
   });
 
   useEffect(() => {
-    if (profile.nutritionPlan && profile.nutritionAutoGenerate !== false) {
+    if (profile.nutritionPlan && profile.nutritionAutoGenerate !== false && autoGenerate) {
       setStep('plan');
-    } else if (step === 'plan' && !profile.nutritionPlan) {
+    } else if (!profile.nutritionPlan && step === 'plan') {
       setStep('intro');
     }
   }, [profile.nutritionPlan, profile.nutritionAutoGenerate]);
@@ -129,27 +130,26 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
   const [isResetting, setIsResetting] = useState(false);
 
   const resetDiets = async () => {
+    if (!profile?.uid) return;
     setIsDeleting(true);
     try {
-      console.log("[Nutrition] Resetting all diets with optimistic update...");
-      const clearedProfile: UserProfile = { 
-        ...profile, 
-        diets: [], 
+      // Optimistic: limpiar estado local inmediatamente
+      const cleared: UserProfile = {
+        ...profile,
+        diets: [],
         nutritionPlan: undefined,
         nutritionGoal: '',
         nutritionTimeframe: '',
         allergies: '',
-        nutritionAutoGenerate: false
+        nutritionAutoGenerate: false,
       };
-      
-      // Optimistic update
-      setProfile(clearedProfile);
+      setProfile(cleared);  // setProfile del store (ya importado)
       setStep('intro');
-      setIsResetting(false);
       setAutoGenerate(false);
+      setIsResetting(false);
 
-      await onUpdateProfile(clearedProfile);
-      console.log("[Nutrition] Diets reset successfully in Firestore.");
+      // Firestore: usar deleteField para nutritionPlan (no merge)
+      await clearUserDiets(profile.uid);
     } catch (error) {
       console.error("[Nutrition] Error resetting diets:", error);
     } finally {
@@ -158,18 +158,24 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
   };
 
   const deleteDiet = async (dietId: string) => {
-    const updatedDiets = profile.diets?.filter(d => d.id !== dietId) || [];
-    const updatedPlan = profile.nutritionPlan?.id === dietId 
-      ? (updatedDiets.length > 0 ? updatedDiets[0] : null as any) 
+    if (!profile?.uid) return;
+    const updatedDiets = (profile.diets || []).filter(d => d.id !== dietId);
+    const updatedPlan = profile.nutritionPlan?.id === dietId
+      ? (updatedDiets[0] ?? undefined)
       : profile.nutritionPlan;
+
+    const updated: UserProfile = { ...profile, diets: updatedDiets, nutritionPlan: updatedPlan };
+    setProfile(updated);  // optimistic
+    setDietToDelete(null);
     
     try {
-      await onUpdateProfile({
-        ...profile,
-        diets: updatedDiets,
-        nutritionPlan: updatedPlan
-      });
-      setDietToDelete(null);
+      // setDoc sin merge para que el array se sobreescriba
+      const { doc, setDoc, getDoc } = await import('firebase/firestore');
+      const { db } = await import('../lib/firebase');
+      const ref = doc(db, 'users', profile.uid);
+      const snap = await getDoc(ref);
+      const current = snap.exists() ? snap.data() : {};
+      await setDoc(ref, { ...current, diets: updatedDiets, nutritionPlan: updatedPlan || null });
     } catch (error) {
       console.error("[Nutrition] Error deleting diet:", error);
     }

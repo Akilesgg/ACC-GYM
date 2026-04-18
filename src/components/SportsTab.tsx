@@ -135,25 +135,16 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
 
   const addSport = async (newConfigs: SportConfig[], isCombined: boolean) => {
     if (!profile?.uid) {
-      console.error("[SPORTS] No user UID found");
       setError("Usuario no autenticado");
       return;
     }
-    
     setLoading(true);
     setError(null);
-    console.log("[SPORTS] Adding sports:", newConfigs, "isCombined:", isCombined);
-    
+
     try {
-      // 1. OBTENER DATOS ACTUALES PARA EVITAR SOBREESCRIBIR POR ERROR
-      const { doc, getDoc } = await import('firebase/firestore');
-      const { db } = await import('../lib/firebase');
-      const docRef = doc(db, 'users', profile.uid);
-      const snap = await getDoc(docRef);
-      
-      const firestoreData = snap.exists() ? snap.data() : profile;
-      let currentSports = [...(firestoreData.sports || [])];
-      
+      // Partir SIEMPRE del perfil actual en memoria (ya sincronizado por onSnapshot)
+      let currentSports = [...(profile.sports || [])];
+
       newConfigs.forEach(newSport => {
         const index = currentSports.findIndex(s => s.sport === newSport.sport);
         if (index !== -1) {
@@ -164,38 +155,31 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
       });
 
       let globalPlan: TrainingPlan | undefined;
-      
+
       if (isCombined || currentSports.length > 1) {
-        console.log("[SPORTS] Generating combined plan for:", currentSports.map(s => s.sport));
         try {
           globalPlan = await generateCombinedTrainingPlan(profile, currentSports, language);
-        } catch (e) {
-          console.warn("[SPORTS] Combined AI generation failed, using local generator");
+        } catch {
           globalPlan = generatePlan(currentSports);
         }
         currentSports = currentSports.map(s => ({ ...s, plan: globalPlan, isCombined: true }));
       } else {
-        console.log("[SPORTS] Generating individual plan for:", newConfigs[0].sport);
         const config = newConfigs[0];
         globalPlan = await generateTrainingPlan(profile, config, language);
-        currentSports = currentSports.map(s => s.sport === config.sport ? { ...s, plan: globalPlan, isCombined: false } : s);
+        currentSports = currentSports.map(s =>
+          s.sport === config.sport ? { ...s, plan: globalPlan, isCombined: false } : s
+        );
       }
 
-      console.log("[SPORTS] Final data to save:", { sportsCount: currentSports.length, hasGlobalPlan: !!globalPlan });
-      const updates = { sports: currentSports, plan: globalPlan };
-      
-      // 2. ACTUALIZAR A TRAVÉS DE App.tsx (QUE YA MANEJA FIRESTORE + ESTADO LOCAL)
-      await onUpdateProfile({ ...profile, ...updates });
-      
+      const updatedProfile: UserProfile = { ...profile, sports: currentSports, plan: globalPlan };
+
+      // Una sola llamada — onSnapshot en App.tsx se encargará de rehidratar el estado
+      await onUpdateProfile(updatedProfile);
+
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
-      
-      // Limpiar selección local pero NO poner activePlan para que el usuario siga en la lista
-      // y pueda ver el estado "AÑADIDO" en los botones
-      setSelectedSportsList([]);
-      // setActivePlan(globalPlan || null); // <--- Comentado para evitar el salto automático
-      
-      console.log("[SPORTS] Guardado y recargado con éxito");
+      // NO llamar setSelectedSportsList([]) aquí — dejar que el snapshot actualice profile.sports
+      // y SportsList lo detecte automáticamente via savedSportNames
     } catch (err: any) {
       console.error("[SPORTS] Error in addSport:", err);
       setError(err.message || "Error al guardar deportes");

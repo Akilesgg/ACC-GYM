@@ -3,35 +3,27 @@ import { UserProfile, TrainingPlan, SportConfig, NutritionPlan, Language } from 
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
-const foodImageMap: Record<string, string> = {
-  // User Requested Exact Maps
-  "pollo": "/foods/chicken.jpg",
-  "chicken": "/foods/chicken.jpg",
-  "arroz": "/foods/rice.jpg",
-  "rice": "/foods/rice.jpg",
-  "ensalada": "/foods/salad.jpg",
-  "salad": "/foods/salad.jpg",
-  "pescado": "/foods/fish.jpg",
-  "fish": "/foods/fish.jpg",
-  "fruta": "/foods/fruit.jpg",
-  "fruit": "/foods/fruit.jpg",
-  "frutas": "/foods/fruit.jpg",
-  "fruits": "/foods/fruit.jpg"
-};
-
-const getImage = (ingredients: string[], keyword?: string): string => {
-  const fallback = "/foods/default.jpg";
-  const searchTerms = [...(ingredients || []), keyword].filter(Boolean).map(t => t?.toLowerCase());
-  
-  if (searchTerms.length === 0) return fallback;
-
-  // Exact map search
-  const combined = searchTerms.join(' ');
-  for (const [key, url] of Object.entries(foodImageMap)) {
-    if (combined.includes(key)) return url;
-  }
-
-  return fallback;
+// Función helper para obtener imagen por keywords de ingredientes
+const getDietImage = (query: string): string => {
+  const q = query.toLowerCase();
+  const map: Record<string, string> = {
+    chicken: 'photo-1598103442097-8b74394b95c3',
+    salmon: 'photo-1467003909585-2f8a72700288',
+    beef: 'photo-1546833999-b9f581a1996d',
+    egg: 'photo-1482049016688-2d3e1b311543',
+    oatmeal: 'photo-1495214783159-3503fd1b572d',
+    pasta: 'photo-1473093295043-cdd812d0e601',
+    rice: 'photo-1536304929831-ee1ca9d44906',
+    salad: 'photo-1512621776951-a57141f2eefd',
+    soup: 'photo-1547592166-23ac45744acd',
+    smoothie: 'photo-1502741224143-90386d7f8c82',
+    avocado: 'photo-1523049673857-eb18f1d7b578',
+    vegetable: 'photo-1540420773420-3366772f4999',
+    fruit: 'photo-1490474418585-ba9bad8fd0ea',
+    protein: 'photo-1532550907401-a500c9a57435',
+  };
+  const key = Object.keys(map).find(k => q.includes(k)) || 'vegetable';
+  return `https://images.unsplash.com/${map[key]}?w=800&auto=format&fit=crop&q=80`;
 };
 
 export async function generateTrainingPlan(profile: UserProfile, sportConfig: SportConfig, language: Language): Promise<TrainingPlan> {
@@ -222,12 +214,12 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
       return plans.map((plan: any) => {
         const updatedMeals = plan.meals.map((meal: any) => ({
           ...meal,
-          imageUrl: `https://source.unsplash.com/400x200/?${encodeURIComponent(meal.imageSearchQuery || meal.name)},food`
+          imageUrl: getDietImage(meal.imageSearchQuery || meal.ingredients?.join(' ') || meal.name)
         }));
         return {
           ...plan,
           meals: updatedMeals,
-          imageUrl: `https://source.unsplash.com/800x400/?${encodeURIComponent(plan.imageSearchQuery || plan.name)},food`
+          imageUrl: getDietImage(plan.imageSearchQuery || plan.name)
         };
       });
     };
@@ -262,8 +254,8 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
 
     return fallbackPlans.map(plan => ({
       ...plan,
-      meals: plan.meals.map(m => ({ ...m, imageUrl: getImage(m.ingredients) })),
-      imageUrl: getImage(plan.meals[0].ingredients)
+      meals: plan.meals.map(m => ({ ...m, imageUrl: getDietImage(m.name) })),
+      imageUrl: getDietImage(plan.meals[0].name)
     }));
   }
 }
