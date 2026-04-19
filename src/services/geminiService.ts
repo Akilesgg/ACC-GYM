@@ -5,25 +5,90 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 
 // Función helper para obtener imagen por keywords de ingredientes
 const getDietImage = (query: string): string => {
-  const q = query.toLowerCase();
-  const map: Record<string, string> = {
-    chicken: 'photo-1598103442097-8b74394b95c3',
-    salmon: 'photo-1467003909585-2f8a72700288',
-    beef: 'photo-1546833999-b9f581a1996d',
-    egg: 'photo-1482049016688-2d3e1b311543',
-    oatmeal: 'photo-1495214783159-3503fd1b572d',
-    pasta: 'photo-1473093295043-cdd812d0e601',
-    rice: 'photo-1536304929831-ee1ca9d44906',
-    salad: 'photo-1512621776951-a57141f2eefd',
-    soup: 'photo-1547592166-23ac45744acd',
-    smoothie: 'photo-1502741224143-90386d7f8c82',
-    avocado: 'photo-1523049673857-eb18f1d7b578',
-    vegetable: 'photo-1540420773420-3366772f4999',
-    fruit: 'photo-1490474418585-ba9bad8fd0ea',
-    protein: 'photo-1532550907401-a500c9a57435',
-  };
-  const key = Object.keys(map).find(k => q.includes(k)) || 'vegetable';
-  return `https://images.unsplash.com/${map[key]}?w=800&auto=format&fit=crop&q=80`;
+  const q = (query || '').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, ''); // quitar acentos
+
+  const map: [string, string][] = [
+    // Pollo / Chicken
+    ['pollo', 'photo-1598103442097-8b74394b95c3'],
+    ['chicken', 'photo-1598103442097-8b74394b95c3'],
+    ['pechuga', 'photo-1598103442097-8b74394b95c3'],
+    // Salmon
+    ['salmon', 'photo-1467003909585-2f8a72700288'],
+    ['pescado', 'photo-1467003909585-2f8a72700288'],
+    ['fish', 'photo-1467003909585-2f8a72700288'],
+    ['atun', 'photo-1467003909585-2f8a72700288'],
+    ['merluza', 'photo-1467003909585-2f8a72700288'],
+    // Carne / Beef
+    ['ternera', 'photo-1546833999-b9f581a1996d'],
+    ['beef', 'photo-1546833999-b9f581a1996d'],
+    ['carne', 'photo-1546833999-b9f581a1996d'],
+    ['cerdo', 'photo-1546833999-b9f581a1996d'],
+    // Huevos / Eggs
+    ['huevo', 'photo-1482049016688-2d3e1b311543'],
+    ['egg', 'photo-1482049016688-2d3e1b311543'],
+    ['tortilla', 'photo-1482049016688-2d3e1b311543'],
+    ['revuelto', 'photo-1482049016688-2d3e1b311543'],
+    // Avena / Oats
+    ['avena', 'photo-1495214783159-3503fd1b572d'],
+    ['oat', 'photo-1495214783159-3503fd1b572d'],
+    ['porridge', 'photo-1495214783159-3503fd1b572d'],
+    ['cereales', 'photo-1495214783159-3503fd1b572d'],
+    // Pasta
+    ['pasta', 'photo-1473093295043-cdd812d0e601'],
+    ['espagueti', 'photo-1473093295043-cdd812d0e601'],
+    ['macarron', 'photo-1473093295043-cdd812d0e601'],
+    // Arroz / Rice
+    ['arroz', 'photo-1536304929831-ee1ca9d44906'],
+    ['rice', 'photo-1536304929831-ee1ca9d44906'],
+    // Ensalada / Salad
+    ['ensalada', 'photo-1512621776951-a57141f2eefd'],
+    ['salad', 'photo-1512621776951-a57141f2eefd'],
+    ['lechuga', 'photo-1512621776951-a57141f2eefd'],
+    // Sopa
+    ['sopa', 'photo-1547592166-23ac45744acd'],
+    ['soup', 'photo-1547592166-23ac45744acd'],
+    ['caldo', 'photo-1547592166-23ac45744acd'],
+    ['crema', 'photo-1547592166-23ac45744acd'],
+    // Batido / Smoothie
+    ['batido', 'photo-1502741224143-90386d7f8c82'],
+    ['smoothie', 'photo-1502741224143-90386d7f8c82'],
+    ['proteina', 'photo-1502741224143-90386d7f8c82'],
+    ['shake', 'photo-1502741224143-90386d7f8c82'],
+    // Aguacate / Avocado
+    ['aguacate', 'photo-1523049673857-eb18f1d7b578'],
+    ['avocado', 'photo-1523049673857-eb18f1d7b578'],
+    // Fruta / Fruit
+    ['fruta', 'photo-1490474418585-ba9bad8fd0ea'],
+    ['fruit', 'photo-1490474418585-ba9bad8fd0ea'],
+    ['platano', 'photo-1490474418585-ba9bad8fd0ea'],
+    ['manzana', 'photo-1490474418585-ba9bad8fd0ea'],
+    ['fresa', 'photo-1490474418585-ba9bad8fd0ea'],
+    ['arandano', 'photo-1490474418585-ba9bad8fd0ea'],
+    // Verdura / Vegetable
+    ['verdura', 'photo-1540420773420-3366772f4999'],
+    ['brocoli', 'photo-1540420773420-3366772f4999'],
+    ['espinaca', 'photo-1540420773420-3366772f4999'],
+    ['vegetable', 'photo-1540420773420-3366772f4999'],
+    ['esparragos', 'photo-1540420773420-3366772f4999'],
+    ['esparrago', 'photo-1540420773420-3366772f4999'],
+    // Yogur
+    ['yogur', 'photo-1488477181946-6428a0291777'],
+    ['yogurt', 'photo-1488477181946-6428a0291777'],
+    ['queso', 'photo-1488477181946-6428a0291777'],
+    // Almendras / Frutos secos
+    ['almendra', 'photo-1508061253366-f7da158b6d46'],
+    ['nuez', 'photo-1508061253366-f7da158b6d46'],
+    ['fruto seco', 'photo-1508061253366-f7da158b6d46'],
+    // Pan / Toast
+    ['pan', 'photo-1509440159596-0249088772ff'],
+    ['tostada', 'photo-1509440159596-0249088772ff'],
+    ['toast', 'photo-1509440159596-0249088772ff'],
+  ];
+
+  const match = map.find(([k]) => q.includes(k));
+  const photoId = match ? match[1] : 'photo-1512621776951-a57141f2eefd';
+  return `https://images.unsplash.com/${photoId}?w=800&auto=format&fit=crop&q=80`;
 };
 
 export async function generateTrainingPlan(profile: UserProfile, sportConfig: SportConfig, language: Language): Promise<TrainingPlan> {

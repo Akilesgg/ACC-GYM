@@ -204,14 +204,20 @@ export default function App() {
     if (!user) return;
     try {
       setError(null);
-      // Optimistic update
-      setProfile(updatedProfile);
       await updateUserProfile(user.uid, updatedProfile);
+      // Solo actualizar estado local DESPUÉS de confirmar Firestore
+      setProfile(updatedProfile);
     } catch (error: any) {
-      console.error("Error updating profile:", error);
-      if (error.message === 'QUOTA_EXCEEDED') {
-        setError("Límite de datos alcanzado para hoy. Tu progreso se guardará localmente pero no en la nube hasta mañana.");
+      console.error("[App] Error updating profile:", error.code, error.message);
+      // Mostrar error SIEMPRE, no solo para QUOTA_EXCEEDED
+      if (error.message?.includes('QUOTA_EXCEEDED')) {
+        setError("Límite de datos alcanzado. Intenta mañana.");
+      } else if (error.message?.includes('PERMISSION_DENIED') || error.code === 'permission-denied') {
+        setError("Sin permisos para guardar. Revisa las reglas de Firestore para la base de datos 'ai-studio-8e1e2aa2-1f84-482e-b11c-0a299a78ee89'.");
+      } else {
+        setError(`Error al guardar: ${error.message}`);
       }
+      throw error; // Re-lanzar para que SportsTab muestre el error también
     }
   };
 

@@ -38,7 +38,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
   const { setProfile } = useStore();
 
   const getFallbackImage = (text: string): string => {
-    const q = (text || '').toLowerCase();
+    const q = (text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     const map: [string, string][] = [
       ['pollo', 'photo-1598103442097-8b74394b95c3'],
       ['chicken', 'photo-1598103442097-8b74394b95c3'],
