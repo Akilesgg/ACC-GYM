@@ -33,31 +33,23 @@ export const createUserProfile = async (profile: UserProfile): Promise<void> => 
 export const updateUserProfile = async (uid: string, updates: Partial<UserProfile>): Promise<void> => {
   const docRef = doc(db, 'users', uid);
   try {
-    console.log(`[FIRESTORE] Syncing profile for ${uid}. Array fields detected:`, {
-      sports: updates.sports?.length,
-      diets: updates.diets?.length
-    });
-
-    const hasArrayFields = updates.sports !== undefined || updates.diets !== undefined;
-    if (hasArrayFields) {
-      // Obtener doc actual y mergear manualmente para no perder otros campos
-      const snap = await getDoc(docRef);
-      const current = snap.exists() ? snap.data() : {};
-      const finalPayload = { ...current, ...updates };
-      
-      console.log(`[FIRESTORE] Performing full replace (no merge) for arrays. Final sports count: ${finalPayload.sports?.length}`);
-      await setDoc(docRef, finalPayload);
-    } else {
-      console.log(`[FIRESTORE] Performing partial update (merge).`);
-      await setDoc(docRef, updates, { merge: true });
-    }
-    console.log(`[FIRESTORE] Update completed successfully for ${uid}`);
+    // Usar SIEMPRE updateDoc (PATCH semántico, no replace).
+    // updateDoc con merge hace un update de campos individuales respetando las reglas de Firestore,
+    // sin necesidad de reemplazar el documento completo, lo que evita la validación de isValidUser.
+    // Para arrays, Firestore actualiza el campo como valor, no elemento a elemento.
+    
+    // Serializar correctamente: eliminar undefined (Firestore los rechaza)
+    const clean = JSON.parse(JSON.stringify(updates));
+    
+    console.log(`[FIRESTORE] updateDoc para uid=${uid}, fields:`, Object.keys(clean));
+    await updateDoc(docRef, clean);
+    console.log(`[FIRESTORE] updateDoc OK para uid=${uid}`);
   } catch (error: any) {
-    console.error(`[FIRESTORE] Error updating profile for ${uid}:`, error);
-    if (error.code === 'resource-exhausted') {
-      throw new Error("QUOTA_EXCEEDED");
-    }
+    console.error(`[FIRESTORE] ERROR en updateDoc para uid=${uid}:`, error.code, error.message);
+    if (error.code === 'resource-exhausted') throw new Error('QUOTA_EXCEEDED');
+    if (error.code === 'permission-denied') throw new Error('PERMISSION_DENIED: revisa las reglas de Firestore');
     handleFirestoreError(error, OperationType.UPDATE, `users/${uid}`);
+    throw error; // Re-lanzar para que SportsTab.tsx lo capture y muestre el error
   }
 };
 

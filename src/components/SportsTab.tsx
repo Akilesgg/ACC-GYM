@@ -180,8 +180,8 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
       setSelectedSportsList([]); // Limpiar selección ahora que se ha guardado con éxito
       setTimeout(() => setShowSuccess(false), 3000);
     } catch (err: any) {
-      console.error("[SPORTS] Error in addSport:", err);
-      setError(err.message || "Error al guardar deportes");
+      console.error("[SPORTS] FALLO AL GUARDAR:", err.message, err.code || '');
+      setError(`Error: ${err.message}. Código: ${err.code || 'desconocido'}`);  // mostrar en UI
     } finally {
       setLoading(false);
     }

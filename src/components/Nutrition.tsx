@@ -36,6 +36,38 @@ const TIMEFRAMES = [
 export default function Nutrition({ profile, onUpdateProfile, onBack, language }: NutritionProps) {
   const t = useTranslation(language);
   const { setProfile } = useStore();
+
+  const getFallbackImage = (text: string): string => {
+    const q = (text || '').toLowerCase();
+    const map: [string, string][] = [
+      ['pollo', 'photo-1598103442097-8b74394b95c3'],
+      ['chicken', 'photo-1598103442097-8b74394b95c3'],
+      ['salmon', 'photo-1467003909585-2f8a72700288'],
+      ['ternera', 'photo-1546833999-b9f581a1996d'],
+      ['beef', 'photo-1546833999-b9f581a1996d'],
+      ['huevo', 'photo-1482049016688-2d3e1b311543'],
+      ['egg', 'photo-1482049016688-2d3e1b311543'],
+      ['avena', 'photo-1495214783159-3503fd1b572d'],
+      ['oat', 'photo-1495214783159-3503fd1b572d'],
+      ['pasta', 'photo-1473093295043-cdd812d0e601'],
+      ['arroz', 'photo-1536304929831-ee1ca9d44906'],
+      ['rice', 'photo-1536304929831-ee1ca9d44906'],
+      ['ensalada', 'photo-1512621776951-a57141f2eefd'],
+      ['salad', 'photo-1512621776951-a57141f2eefd'],
+      ['sopa', 'photo-1547592166-23ac45744acd'],
+      ['soup', 'photo-1547592166-23ac45744acd'],
+      ['batido', 'photo-1502741224143-90386d7f8c82'],
+      ['smoothie', 'photo-1502741224143-90386d7f8c82'],
+      ['aguacate', 'photo-1523049673857-eb18f1d7b578'],
+      ['fruta', 'photo-1490474418585-ba9bad8fd0ea'],
+      ['fruit', 'photo-1490474418585-ba9bad8fd0ea'],
+      ['verdura', 'photo-1540420773420-3366772f4999'],
+    ];
+    const match = map.find(([k]) => q.includes(k));
+    const photoId = match ? match[1] : 'photo-1512621776951-a57141f2eefd';
+    return `https://images.unsplash.com/${photoId}?w=800&auto=format&fit=crop&q=80`;
+  };
+
   const [step, setStep] = useState<'intro' | 'goal' | 'timeframe' | 'allergies' | 'plan'>('intro');
   const [loading, setLoading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -415,8 +447,9 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
                     >
                       <div className="h-24 overflow-hidden relative">
                         <img 
-                          src={diet.imageUrl || `https://source.unsplash.com/400x200/?${encodeURIComponent(diet.imageSearchQuery || diet.name || 'healthy-food')},food`} 
+                          src={diet.imageUrl || getFallbackImage(diet.name || '')} 
                           alt={diet.name} 
+                          onError={(e) => { (e.target as HTMLImageElement).src = getFallbackImage('ensalada'); }}
                           className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all text-[0]"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -520,8 +553,9 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
                 <Card key={idx} className="bg-surface border-none overflow-hidden flex flex-col group hover:bg-surface-variant/30 transition-all duration-500">
                   <div className="h-48 overflow-hidden relative">
                     <img 
-                      src={meal.imageUrl || `https://source.unsplash.com/800x600/?${encodeURIComponent(meal.imageSearchQuery || meal.name)},food`} 
+                      src={meal.imageUrl || getFallbackImage(meal.name || '')} 
                       alt={meal.name} 
+                      onError={(e) => { (e.target as HTMLImageElement).src = getFallbackImage('ensalada'); }}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 text-[0]"
                       referrerPolicy="no-referrer"
                     />

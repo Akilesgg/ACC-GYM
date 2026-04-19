@@ -74,8 +74,7 @@ service cloud.firestore {
       allow read: if isOwner(userId) || isAdmin();
       allow create: if isAuthenticated() && isValidUser(request.resource.data) && 
                     (isOwner(userId) && request.resource.data.role == 'user' || isAdmin());
-      allow update: if isAuthenticated() && 
-                    (isOwner(userId) && request.resource.data.role == resource.data.role || isAdmin());
+      allow update: if isOwner(userId) || isAdmin();
     }
 
     match /sports/{sportId} {
