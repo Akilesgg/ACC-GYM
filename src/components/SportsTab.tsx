@@ -74,6 +74,12 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
   const [allConfigs, setAllConfigs] = useState<SportConfig[]>([]);
   const [loading, setLoading] = useState(false);
   const [activePlan, setActivePlan] = useState<TrainingPlan | null>(null);
+  const [justSavedSports, setJustSavedSports] = useState<string[]>([]);
+  
+  // Reset cuando profile.sports se actualiza
+  useEffect(() => {
+    setJustSavedSports([]);
+  }, [profile.sports.length]);
 
   useEffect(() => {
     if (profile?.sports) {
@@ -190,6 +196,7 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
       const updatedProfile: UserProfile = { ...profile, sports: currentSports, plan: globalPlan };
       console.log("[SPORTS] Enviando perfil actualizado con deportes:", currentSports.map(s => s.sport));
       await onUpdateProfile(updatedProfile);
+      setJustSavedSports(prev => [...prev, ...newConfigs.map(c => c.sport)]);
 
       console.log("[SPORTS] Guardado confirmado por el padre.");
       setShowSuccess(true);
@@ -405,7 +412,10 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
             <SportsList 
               sports={sports} 
               selectedSportNames={selectedSportsList}
-              savedSportNames={profile.sports.map(s => s.sport)}
+              savedSportNames={[
+                ...profile.sports.map(s => s.sport),
+                ...justSavedSports
+              ]}
               onSelect={handleSportToggle}
               onConfirm={startConfiguration}
               language={language}

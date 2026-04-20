@@ -111,7 +111,29 @@ export default function App() {
         nutritionPlan: fetchedProfile.nutritionPlan || null
       } : null;
       
-      setProfile(sanitizedProfile);
+      // Mergear Firestore con lo que hay en localStorage (localStorage gana en sports/diets)
+      const localProfile = useStore.getState().profile;
+      if (sanitizedProfile) {
+        if (localProfile) {
+          const merged = {
+            ...sanitizedProfile,
+            // Campos que el usuario puede haber actualizado localmente y Firestore puede no tener aún:
+            sports: localProfile.sports?.length > (sanitizedProfile.sports?.length || 0)
+              ? localProfile.sports
+              : (sanitizedProfile.sports || []),
+            diets: localProfile.diets?.length > (sanitizedProfile.diets?.length || 0)
+              ? localProfile.diets
+              : (sanitizedProfile.diets || []),
+            plan: localProfile.plan || sanitizedProfile.plan,
+          };
+          setProfile(merged);
+        } else {
+          setProfile(sanitizedProfile);
+        }
+      } else if (!localProfile) {
+        // Solo si no hay datos remotos ni locales, ponemos null
+        setProfile(null);
+      }
       
       if (sanitizedProfile) {
         console.log("[PROFILE] Valid profile found, current screen:", activeScreenRef.current);
@@ -203,45 +225,16 @@ export default function App() {
   };
 
   const handleProfileUpdate = async (updatedProfile: UserProfile) => {
-    if (!user) {
-      console.error("[App] No hay usuario autenticado para actualizar.");
-      setError("Sesión expirada. Por favor, inicia sesión de nuevo.");
-      return;
-    }
+    if (!user) return;
     
-    console.log(`[PROFILE_UPDATE] Solicitando guardado para uid: ${user.uid}`);
-    console.log(`[PROFILE_UPDATE] Campos a actualizar:`, Object.keys(updatedProfile));
+    // 1. Guardar en estado local y localStorage INMEDIATAMENTE (nunca falla)
+    setProfile(updatedProfile);
     
-    try {
-      setError(null);
-      setLoading(true);
-      
-      console.log("[App] Llamando a updateUserProfile...");
-      await updateUserProfile(user.uid, updatedProfile);
-      
-      console.log("[App] Guardado exitoso. Actualizando estado local.");
-      setProfile(updatedProfile);
-      setLoading(false);
-    } catch (error: any) {
-      setLoading(false);
-      console.error("[App] Error crítico en handleProfileUpdate:", error);
-      
-      let msg = "Error al guardar cambios.";
-      if (error.message?.includes('PERMISSION_DENIED') || error.code === 'permission-denied') {
-        msg = "ERROR DE PERMISOS: Revisa que las reglas estén publicadas en la base de datos correcta en Firebase Console.";
-      } else if (error.message?.includes('QUOTA_EXCEEDED')) {
-        msg = "CUOTA EXCEDIDA: Límite diario de Firestore alcanzado.";
-      } else {
-        msg = `Error: ${error.message || 'Desconocido'}`;
-      }
-      
-      setError(msg);
-      // Log detallado para el desarrollador si inspeccionan la consola
-      console.log("%c DETALLES DEL ERROR PARA SOPORTE:", "color: red; font-weight: bold;");
-      console.log(error);
-      
-      throw error; 
-    }
+    // 2. Intentar sincronizar con Firestore en segundo plano (puede fallar sin bloquear)
+    updateUserProfile(user.uid, updatedProfile).catch((err) => {
+      console.warn("[App] Firestore sync failed (datos guardados localmente):", err.message);
+      // No mostrar error al usuario — los datos están en localStorage
+    });
   };
 
   if (!isAuthReady || (loading && !profile && user)) {

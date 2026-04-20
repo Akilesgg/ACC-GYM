@@ -43,7 +43,8 @@ export const useStore = create<AppState>()(
       partialize: (state) => ({ 
         activeScreen: state.activeScreen, 
         onboardingStep: state.onboardingStep,
-        language: state.language 
+        language: state.language,
+        profile: state.profile
       }),
     }
   )
