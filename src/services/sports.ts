@@ -25,21 +25,25 @@ export const seedSports = async (sports: Omit<Sport, 'id'>[]) => {
     console.log(`[SEED] Found ${existing.length} existing sports in DB.`);
     const existingMap = new Map(existing.map(s => [s.name, s]));
 
-    let addedCount = 0;
-    let updatedCount = 0;
+    const sportsToCreate = [];
+    const sportsToUpdate = [];
 
     for (const sport of sports) {
       const existingSport = existingMap.get(sport.name);
       if (!existingSport) {
-        await addDoc(sportsRef, sport);
-        addedCount++;
+        sportsToCreate.push(addDoc(sportsRef, sport));
       } else if (!existingSport.imageUrl && sport.imageUrl) {
         const sportDoc = doc(db, 'sports', existingSport.id);
-        await updateDoc(sportDoc, { imageUrl: sport.imageUrl });
-        updatedCount++;
+        sportsToUpdate.push(updateDoc(sportDoc, { imageUrl: sport.imageUrl }));
       }
     }
-    console.log(`[SEED] Seeding finished. Added: ${addedCount}, Updated: ${updatedCount}`);
+
+    if (sportsToCreate.length > 0 || sportsToUpdate.length > 0) {
+      console.log(`[SEED] Executing ${sportsToCreate.length} creations and ${sportsToUpdate.length} updates...`);
+      await Promise.all([...sportsToCreate, ...sportsToUpdate]);
+    }
+    
+    console.log(`[SEED] Seeding finished. Added: ${sportsToCreate.length}, Updated: ${sportsToUpdate.length}`);
   } catch (error) {
     console.error("[SEED] Error during seeding:", error);
     throw error;

@@ -9,7 +9,7 @@ import {
   ArrowLeft, Bike, Waves, Zap, Heart, Activity, 
   Flame, Timer, Trophy, Calendar, Footprints, Sword, 
   Mountain, Wind, Anchor, MountainSnow, Palette,
-  Plus, Trash2, RotateCcw, CheckCircle2
+  Plus, Trash2, RotateCcw, CheckCircle2, ShieldAlert
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '../lib/i18n';
@@ -204,13 +204,51 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
 
   const getIcon = (iconName: string) => SPORT_ICONS[iconName] || SPORT_ICONS.Activity;
 
+  const [loadTimeout, setLoadTimeout] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (sports.length === 0) setLoadTimeout(true);
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, [sports]);
+
+  const handleRetry = () => {
+    window.location.reload();
+  };
+
   if (sports.length === 0 && !loading) {
     return (
-      <div className="flex flex-col items-center justify-center py-40 gap-4">
-        <Loader2 className="w-12 h-12 text-primary animate-spin" />
-        <p className="text-on-surface-variant font-black uppercase tracking-widest text-sm">
-          {language === 'es' ? 'Cargando disciplinas...' : 'Cargando disciplinas...'}
-        </p>
+      <div className="flex flex-col items-center justify-center py-40 gap-6">
+        {!loadTimeout ? (
+          <>
+            <Loader2 className="w-12 h-12 text-primary animate-spin" />
+            <p className="text-on-surface-variant font-black uppercase tracking-widest text-sm animate-pulse">
+              {language === 'es' ? 'Cargando disciplinas...' : 'Loading disciplines...'}
+            </p>
+          </>
+        ) : (
+          <>
+            <div className="w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center text-destructive">
+              <ShieldAlert size={32} />
+            </div>
+            <div className="text-center space-y-2">
+              <p className="text-on-surface font-bold uppercase tracking-widest text-sm">
+                Error de Conexión
+              </p>
+              <p className="text-xs text-on-surface-variant max-w-[200px]">
+                No se han podido cargar los deportes. Esto puede deberse a la migración de base de datos.
+              </p>
+            </div>
+            <Button 
+              variant="outline" 
+              onClick={handleRetry}
+              className="bg-white/5 border-primary/20 text-primary font-black uppercase tracking-widest hover:bg-primary/10"
+            >
+              Reintentar Carga
+            </Button>
+          </>
+        )}
       </div>
     );
   }
