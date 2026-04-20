@@ -172,16 +172,16 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
       }
 
       const updatedProfile: UserProfile = { ...profile, sports: currentSports, plan: globalPlan };
-
-      // Una sola llamada — onSnapshot en App.tsx se encargará de rehidratar el estado
+      console.log("[SPORTS] Enviando perfil actualizado con deportes:", currentSports.map(s => s.sport));
       await onUpdateProfile(updatedProfile);
 
+      console.log("[SPORTS] Guardado confirmado por el padre.");
       setShowSuccess(true);
-      setSelectedSportsList([]); // Limpiar selección ahora que se ha guardado con éxito
+      setSelectedSportsList([]); 
       setTimeout(() => setShowSuccess(false), 3000);
     } catch (err: any) {
-      console.error("[SPORTS] FALLO AL GUARDAR:", err.message, err.code || '');
-      // El error ya lo maneja App.tsx de forma global y más visible
+      console.error("[SPORTS] ERROR CRÍTICO:", err);
+      setError(`FALLO AL GUARDAR: ${err.message || 'Error desconocido'}`);
     } finally {
       setLoading(false);
     }

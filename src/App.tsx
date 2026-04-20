@@ -214,12 +214,10 @@ export default function App() {
       setError(null);
       setLoading(true);
       
-      // Intentar el guardado
+      console.log("[App] Llamando a updateUserProfile...");
       await updateUserProfile(user.uid, updatedProfile);
       
-      console.log(`[PROFILE_UPDATE] Éxito en Firestore para: ${user.uid}`);
-      
-      // Actualización local
+      console.log("[App] Guardado exitoso. Actualizando estado local.");
       setProfile(updatedProfile);
       setLoading(false);
     } catch (error: any) {
