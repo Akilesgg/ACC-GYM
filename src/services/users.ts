@@ -31,25 +31,35 @@ export const createUserProfile = async (profile: UserProfile): Promise<void> => 
 };
 
 export const updateUserProfile = async (uid: string, updates: Partial<UserProfile>): Promise<void> => {
+  if (!uid) throw new Error("UID de usuario requerido para actualizar perfil.");
+  
   const docRef = doc(db, 'users', uid);
   try {
-    // Usar SIEMPRE updateDoc (PATCH semántico, no replace).
-    // updateDoc con merge hace un update de campos individuales respetando las reglas de Firestore,
-    // sin necesidad de reemplazar el documento completo, lo que evita la validación de isValidUser.
-    // Para arrays, Firestore actualiza el campo como valor, no elemento a elemento.
-    
-    // Serializar correctamente: eliminar undefined (Firestore los rechaza)
+    // Serializar a JSON para limpiar tipos no soportados (undefined, clases complejas)
     const clean = JSON.parse(JSON.stringify(updates));
     
-    console.log(`[FIRESTORE] updateDoc para uid=${uid}, fields:`, Object.keys(clean));
-    await updateDoc(docRef, clean);
-    console.log(`[FIRESTORE] updateDoc OK para uid=${uid}`);
+    // Elminar campos que NUNCA deben sobreescribirse accidentalmente o que no existen en el modelo
+    delete clean.id; // Firestore usa el ID del documento
+    
+    console.log(`[FIRESTORE] setDoc (merge:true) -> database: ${db.app.options.projectId}, doc: users/${uid}`);
+    
+    // setDoc con merge:true es el método más robusto: Crea el doc si no existe o lo actualiza si existe
+    await setDoc(docRef, clean, { merge: true });
+    
+    console.log(`[FIRESTORE] Guardado exitoso para: ${uid}`);
   } catch (error: any) {
-    console.error(`[FIRESTORE] ERROR en updateDoc para uid=${uid}:`, error.code, error.message);
-    if (error.code === 'resource-exhausted') throw new Error('QUOTA_EXCEEDED');
-    if (error.code === 'permission-denied') throw new Error('PERMISSION_DENIED: revisa las reglas de Firestore');
+    console.error(`[FIRESTORE] FALLO en setDoc para: ${uid}`, error);
+    
+    if (error.code === 'permission-denied' || error.message?.includes('permission-denied')) {
+      throw new Error('PERMISSION_DENIED');
+    }
+    if (error.code === 'resource-exhausted' || error.message?.includes('quota exceeded')) {
+      throw new Error('QUOTA_EXCEEDED');
+    }
+    
+    // Usar el handler global para logging detallado
     handleFirestoreError(error, OperationType.UPDATE, `users/${uid}`);
-    throw error; // Re-lanzar para que SportsTab.tsx lo capture y muestre el error
+    throw error;
   }
 };
 

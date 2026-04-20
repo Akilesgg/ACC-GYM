@@ -181,7 +181,7 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
       setTimeout(() => setShowSuccess(false), 3000);
     } catch (err: any) {
       console.error("[SPORTS] FALLO AL GUARDAR:", err.message, err.code || '');
-      setError(`Error: ${err.message}. Código: ${err.code || 'desconocido'}`);  // mostrar en UI
+      // El error ya lo maneja App.tsx de forma global y más visible
     } finally {
       setLoading(false);
     }

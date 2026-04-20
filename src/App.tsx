@@ -201,23 +201,46 @@ export default function App() {
   };
 
   const handleProfileUpdate = async (updatedProfile: UserProfile) => {
-    if (!user) return;
+    if (!user) {
+      console.error("[App] No hay usuario autenticado para actualizar.");
+      setError("Sesión expirada. Por favor, inicia sesión de nuevo.");
+      return;
+    }
+    
+    console.log(`[PROFILE_UPDATE] Solicitando guardado para uid: ${user.uid}`);
+    console.log(`[PROFILE_UPDATE] Campos a actualizar:`, Object.keys(updatedProfile));
+    
     try {
       setError(null);
+      setLoading(true);
+      
+      // Intentar el guardado
       await updateUserProfile(user.uid, updatedProfile);
-      // Solo actualizar estado local DESPUÉS de confirmar Firestore
+      
+      console.log(`[PROFILE_UPDATE] Éxito en Firestore para: ${user.uid}`);
+      
+      // Actualización local
       setProfile(updatedProfile);
+      setLoading(false);
     } catch (error: any) {
-      console.error("[App] Error updating profile:", error.code, error.message);
-      // Mostrar error SIEMPRE, no solo para QUOTA_EXCEEDED
-      if (error.message?.includes('QUOTA_EXCEEDED')) {
-        setError("Límite de datos alcanzado. Intenta mañana.");
-      } else if (error.message?.includes('PERMISSION_DENIED') || error.code === 'permission-denied') {
-        setError("Sin permisos para guardar. Revisa las reglas de Firestore para la base de datos 'ai-studio-8e1e2aa2-1f84-482e-b11c-0a299a78ee89'.");
+      setLoading(false);
+      console.error("[App] Error crítico en handleProfileUpdate:", error);
+      
+      let msg = "Error al guardar cambios.";
+      if (error.message?.includes('PERMISSION_DENIED') || error.code === 'permission-denied') {
+        msg = "ERROR DE PERMISOS: Revisa que las reglas estén publicadas en la base de datos correcta en Firebase Console.";
+      } else if (error.message?.includes('QUOTA_EXCEEDED')) {
+        msg = "CUOTA EXCEDIDA: Límite diario de Firestore alcanzado.";
       } else {
-        setError(`Error al guardar: ${error.message}`);
+        msg = `Error: ${error.message || 'Desconocido'}`;
       }
-      throw error; // Re-lanzar para que SportsTab muestre el error también
+      
+      setError(msg);
+      // Log detallado para el desarrollador si inspeccionan la consola
+      console.log("%c DETALLES DEL ERROR PARA SOPORTE:", "color: red; font-weight: bold;");
+      console.log(error);
+      
+      throw error; 
     }
   };
 
@@ -292,16 +315,36 @@ export default function App() {
         <AnimatePresence>
           {error && (
             <motion.div 
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] w-full max-w-md px-6"
+              initial={{ opacity: 0, y: -20, scale: 0.9 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.9 }}
+              className="fixed top-24 left-1/2 -translate-x-1/2 z-[500] w-full max-w-lg px-6"
             >
-              <Card className="bg-destructive text-destructive-foreground p-4 rounded-2xl shadow-2xl flex items-center justify-between gap-4">
-                <p className="text-xs font-bold uppercase tracking-widest">{error}</p>
-                <Button variant="ghost" size="icon" onClick={() => setError(null)} className="rounded-full hover:bg-white/20">
-                  <RotateCcw size={16} />
-                </Button>
+              <Card className="bg-destructive text-destructive-foreground p-6 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] border-2 border-white/20 backdrop-blur-xl flex flex-col gap-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center animate-pulse">
+                      <ShieldAlert size={24} />
+                    </div>
+                    <h4 className="font-headline font-black uppercase tracking-widest text-lg">Error de Sistema</h4>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={() => setError(null)} className="rounded-full hover:bg-white/20 -mt-1 -mr-1">
+                    <RotateCcw size={20} />
+                  </Button>
+                </div>
+                <p className="text-sm font-bold uppercase tracking-tight leading-relaxed italic opacity-90 border-l-4 border-white/30 pl-4">
+                   {error}
+                </p>
+                <div className="pt-2 flex justify-end">
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => window.location.reload()}
+                    className="bg-white/10 hover:bg-white/20 border-white/20 text-[10px] font-black uppercase tracking-widest h-10 px-6 rounded-xl"
+                  >
+                    Recargar Aplicación
+                  </Button>
+                </div>
               </Card>
             </motion.div>
           )}
