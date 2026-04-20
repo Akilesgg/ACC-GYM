@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '../lib/i18n';
+import { INITIAL_SPORTS } from '../constants';
 import { subscribeToSports } from '../services/sports';
 import SportsList from './SportsList';
 import { useStore } from '../store/useStore';
@@ -175,7 +176,12 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
         currentSports = currentSports.map(s => ({ ...s, plan: globalPlan, isCombined: true }));
       } else {
         const config = newConfigs[0];
-        globalPlan = await generateTrainingPlan(profile, config, language);
+        try {
+          globalPlan = await generateTrainingPlan(profile, config, language);
+        } catch (planErr) {
+          console.warn("[SPORTS] AI Plan generation failed for single sport, using template.", planErr);
+          globalPlan = generatePlan([config]);
+        }
         currentSports = currentSports.map(s =>
           s.sport === config.sport ? { ...s, plan: globalPlan, isCombined: false } : s
         );
@@ -212,7 +218,11 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
     else if (onBack) onBack();
   };
 
-  const getIcon = (iconName: string) => SPORT_ICONS[iconName] || SPORT_ICONS.Activity;
+  const getSportIcon = (sportName: string) => {
+    const found = sports.find(s => s.name === sportName);
+    const iconName = found?.icon || "Activity";
+    return SPORT_ICONS[iconName] || SPORT_ICONS.Activity;
+  };
 
   const [loadTimeout, setLoadTimeout] = useState(false);
 
@@ -315,7 +325,7 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
                           {(() => {
-                            const Icon = getIcon(s.sport); // Use helper or find in list
+                            const Icon = getSportIcon(s.sport);
                             return <Icon className="text-primary" size={24} />;
                           })()}
                         </div>

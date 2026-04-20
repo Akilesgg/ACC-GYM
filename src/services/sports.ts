@@ -1,4 +1,4 @@
-import { db, collection, getDocs, addDoc, query, where, onSnapshot, doc, updateDoc } from '../lib/firebase';
+import { db, collection, getDocs, addDoc, query, where, onSnapshot, doc, updateDoc, setDoc } from '../lib/firebase';
 import { Sport } from '../types';
 
 export const getSports = async (): Promise<Sport[]> => {
