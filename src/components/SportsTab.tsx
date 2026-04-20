@@ -262,18 +262,25 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
         <section className="space-y-6">
           <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">{t('tusDeportesActivos')}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {profile.sports.map((s, idx) => (
-              <Card key={idx} className="bg-surface border-none p-6 flex items-center justify-between group">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
-                    <Dumbbell className="text-primary" size={24} />
-                  </div>
-                  <div>
-                    <h4 className="font-headline font-bold text-lg uppercase">{s.sport}</h4>
-                    <p className="text-xs text-on-surface-variant">{s.daysPerWeek} {t('activos').toLowerCase()} • {s.goal} {s.subtype ? `(${s.subtype})` : ''}</p>
-                  </div>
-                </div>
-                <Button 
+                  {profile.sports.map((s, idx) => (
+                    <Card key={idx} className="bg-surface border-none p-6 flex items-center justify-between group">
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                          {(() => {
+                            const Icon = getIcon(s.sport); // Use helper or find in list
+                            return <Icon className="text-primary" size={24} />;
+                          })()}
+                        </div>
+                        <div>
+                          <h4 className="font-headline font-bold text-lg uppercase">{s.sport}</h4>
+                          <div className="flex gap-2 items-center">
+                            <p className="text-xs text-on-surface-variant font-black uppercase tracking-widest">{s.daysPerWeek} {t('activos').toLowerCase()}</p>
+                            <span className="w-1 h-1 bg-outline-variant rounded-full" />
+                            <p className="text-[10px] font-bold text-primary uppercase">{s.goal} {s.subtype ? `(${s.subtype})` : ''}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <Button 
                   variant="ghost" 
                   size="icon" 
                   onClick={() => removeSport(s.sport)}

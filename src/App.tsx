@@ -21,7 +21,7 @@ import { seedSports } from './services/sports';
 import { INITIAL_SPORTS } from './constants';
 import { chatService } from './services/chatService';
 import { Card } from '@/components/ui/card';
-import { RotateCcw } from 'lucide-react';
+import { RotateCcw, ShieldAlert } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 import { ErrorBoundary } from './components/ErrorBoundary';

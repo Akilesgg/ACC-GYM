@@ -250,17 +250,19 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
                   <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">Disciplinas Activas</h3>
                 </div>
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                  {profile.sports.map((sport, i) => (
-                    <Card key={i} className="bg-surface border-none p-4 flex items-center gap-4 group hover:bg-surface-variant/30 transition-all">
-                      <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary font-black uppercase text-xs">
-                        {sport.sport.charAt(0)}
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-sm uppercase opacity-80">{sport.sport}</h4>
-                        <p className="text-[10px] font-black text-secondary uppercase tracking-widest">{sport.daysPerWeek} DÍAS</p>
-                      </div>
-                    </Card>
-                  ))}
+                  {profile.sports.map((sport, i) => {
+                    return (
+                      <Card key={i} className="bg-surface border-none p-4 flex items-center gap-4 group hover:bg-surface-variant/30 transition-all">
+                        <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
+                          <Dumbbell size={20} />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-sm uppercase opacity-80">{sport.sport}</h4>
+                          <p className="text-[9px] font-black text-secondary uppercase tracking-widest">{sport.subtype || `${sport.daysPerWeek} DÍAS`}</p>
+                        </div>
+                      </Card>
+                    );
+                  })}
                 </div>
               </section>
             )}
@@ -291,7 +293,8 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
                           const engLabel = EnglishDays[idx];
                           const engFull = DayNamesFull[idx];
                           
-                          const workout = profile.plan?.table?.find(t => 
+                          // Buscar el workout en todos los planes activos (global y por deporte)
+                          const workout = activePlans.flatMap(p => p.table).find(t => 
                             t.day.toLowerCase().includes(dayLabel.toLowerCase()) || 
                             t.day.toLowerCase().includes(engLabel.toLowerCase()) ||
                             t.day.toLowerCase().includes(engFull.toLowerCase())
