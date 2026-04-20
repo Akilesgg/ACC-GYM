@@ -21,31 +21,19 @@ export const subscribeToSports = (callback: (sports: Sport[]) => void, onError?:
 export const seedSports = async (sports: Omit<Sport, 'id'>[]) => {
   try {
     const sportsRef = collection(db, 'sports');
-    const existing = await getSports();
-    console.log(`[SEED] Found ${existing.length} existing sports in DB.`);
-    const existingMap = new Map(existing.map(s => [s.name, s]));
-
-    const sportsToCreate = [];
-    const sportsToUpdate = [];
-
-    for (const sport of sports) {
-      const existingSport = existingMap.get(sport.name);
-      if (!existingSport) {
-        sportsToCreate.push(addDoc(sportsRef, sport));
-      } else if (!existingSport.imageUrl && sport.imageUrl) {
-        const sportDoc = doc(db, 'sports', existingSport.id);
-        sportsToUpdate.push(updateDoc(sportDoc, { imageUrl: sport.imageUrl }));
-      }
-    }
-
-    if (sportsToCreate.length > 0 || sportsToUpdate.length > 0) {
-      console.log(`[SEED] Executing ${sportsToCreate.length} creations and ${sportsToUpdate.length} updates...`);
-      await Promise.all([...sportsToCreate, ...sportsToUpdate]);
-    }
     
-    console.log(`[SEED] Seeding finished. Added: ${sportsToCreate.length}, Updated: ${sportsToUpdate.length}`);
+    // Usar setDoc con un ID predecible para evitar duplicados y asegurar escritura
+    const promises = sports.map(sport => {
+      const sportId = sport.name.toLowerCase().replace(/\s+/g, '_');
+      const docRef = doc(db, 'sports', sportId);
+      return setDoc(docRef, sport, { merge: true });
+    });
+
+    console.log(`[SEED] Lanzando ${promises.length} operaciones de escritura...`);
+    await Promise.all(promises);
+    console.log(`[SEED] Seeding completado con éxito.`);
   } catch (error) {
-    console.error("[SEED] Error during seeding:", error);
+    console.error("[SEED] Error crítico durante seeding:", error);
     throw error;
   }
 };

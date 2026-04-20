@@ -91,11 +91,19 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
     console.log("[SPORTS] Subscribing to sports...");
     const unsubscribe = subscribeToSports((data) => {
       console.log(`[SPORTS] Received ${data.length} sports from Firestore.`);
-      setSports(data);
-      if (data.length > 0) setLoadTimeout(false);
+      if (data.length > 0) {
+        setSports(data);
+        setLoadTimeout(false);
+      } else {
+        console.warn("[SPORTS] Firestore returned 0 sports. Falling back to local constants.");
+        const fallbackSports = INITIAL_SPORTS.map((s, i) => ({ id: `local-${i}`, ...s } as Sport));
+        setSports(fallbackSports);
+      }
     }, (error) => {
       console.error("[SPORTS] Failed to subscribe to sports:", error);
-      setError(`Error de suscripción a datos: ${error.message}`);
+      const fallbackSports = INITIAL_SPORTS.map((s, i) => ({ id: `local-${i}`, ...s } as Sport));
+      setSports(fallbackSports);
+      setError(`Error de datos: usando lista de emergencia.`);
     });
     return () => unsubscribe();
   }, []);

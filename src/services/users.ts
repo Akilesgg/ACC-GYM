@@ -35,30 +35,18 @@ export const updateUserProfile = async (uid: string, updates: Partial<UserProfil
   
   const docRef = doc(db, 'users', uid);
   try {
-    // Serializar a JSON para limpiar tipos no soportados (undefined, clases complejas)
-    const clean = JSON.parse(JSON.stringify(updates));
+    console.log(`[FIRESTORE] Guardando perfil en: users/${uid}`);
     
-    // Elminar campos que NUNCA deben sobreescribirse accidentalmente o que no existen en el modelo
-    delete clean.id; // Firestore usa el ID del documento
+    // No usamos JSON stringify/parse agresivo para no perder datos
+    const cleanUpdates = { ...updates };
     
-    console.log(`[FIRESTORE] setDoc (merge:true) -> database: ${db.app.options.projectId}, doc: users/${uid}`);
-    
-    // setDoc con merge:true es el método más robusto: Crea el doc si no existe o lo actualiza si existe
-    await setDoc(docRef, clean, { merge: true });
-    
-    console.log(`[FIRESTORE] Guardado exitoso para: ${uid}`);
+    // Asegurar que no enviamos campos prohibidos
+    if ('uid' in cleanUpdates) delete (cleanUpdates as any).id;
+
+    await setDoc(docRef, cleanUpdates, { merge: true });
+    console.log(`[FIRESTORE] ÉXITO: Perfil guardado para ${uid}`);
   } catch (error: any) {
-    console.error(`[FIRESTORE] FALLO en setDoc para: ${uid}`, error);
-    
-    if (error.code === 'permission-denied' || error.message?.includes('permission-denied')) {
-      throw new Error('PERMISSION_DENIED');
-    }
-    if (error.code === 'resource-exhausted' || error.message?.includes('quota exceeded')) {
-      throw new Error('QUOTA_EXCEEDED');
-    }
-    
-    // Usar el handler global para logging detallado
-    handleFirestoreError(error, OperationType.UPDATE, `users/${uid}`);
+    console.error(`[FIRESTORE] ERROR REAL AL GUARDAR:`, error);
     throw error;
   }
 };
