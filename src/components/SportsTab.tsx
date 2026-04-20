@@ -92,8 +92,10 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
     const unsubscribe = subscribeToSports((data) => {
       console.log(`[SPORTS] Received ${data.length} sports from Firestore.`);
       setSports(data);
+      if (data.length > 0) setLoadTimeout(false);
     }, (error) => {
       console.error("[SPORTS] Failed to subscribe to sports:", error);
+      setError(`Error de suscripción a datos: ${error.message}`);
     });
     return () => unsubscribe();
   }, []);

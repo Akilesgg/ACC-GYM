@@ -52,18 +52,20 @@ export default function App() {
     return () => window.removeEventListener('click', handleClick);
   }, []);
 
+  // Global Sports Seeding
   useEffect(() => {
     const init = async () => {
       try {
-        console.log(`[SEED] Starting sports seeding with ${INITIAL_SPORTS.length} sports...`);
+        console.log(`[SEED] Checking/Seeding sports...`);
         await seedSports(INITIAL_SPORTS);
-        console.log(`[SEED] Sports seeding completed.`);
-      } catch (error) {
-        console.error("Seeding error:", error);
+        console.log(`[SEED] Success.`);
+      } catch (error: any) {
+        console.error("[SEED] CRITICAL ERROR:", error.message);
+        setError(`Error de inicialización: ${error.message || 'Fallo en la base de datos'}`);
       }
     };
     init();
-  }, []);
+  }, [setError]);
 
   const activeScreenRef = useRef(activeScreen);
   useEffect(() => {
