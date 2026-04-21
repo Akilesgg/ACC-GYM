@@ -355,7 +355,19 @@ export default function SportsList({ sports, selectedSportNames, savedSportNames
                                     <div className="flex flex-col gap-2 w-full">
                                       <Button 
                                         disabled={savedSportNames.includes(sport.name)}
-                                        onClick={() => handleConfirm(false)}
+                                        onClick={() => {
+                                          if (onConfirm) {
+                                            const config: SportConfig = {
+                                              sport: sport.name,
+                                              goal: sportConfigs[sport.name]?.goal || 'Fuerza y Tonificación',
+                                              daysPerWeek: sportConfigs[sport.name]?.frequency || 3,
+                                              durationPerSession: sportConfigs[sport.name]?.duration || 60,
+                                              isCombined: sportConfigs[sport.name]?.isCombined ?? false,
+                                              subtype: sportConfigs[sport.name]?.subtype,
+                                            };
+                                            onConfirm([config], config.isCombined ?? false);
+                                          }
+                                        }}
                                         className={`text-[10px] font-black uppercase tracking-widest px-6 rounded-xl h-10 shadow-lg w-full transition-all ${
                                           savedSportNames.includes(sport.name)
                                             ? 'bg-secondary text-background shadow-secondary/20 cursor-default opacity-80'
