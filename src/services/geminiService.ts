@@ -31,6 +31,7 @@ const getDietImage = (query: string): string => {
     ['revuelto', 'photo-1482049016688-2d3e1b311543'],
     // Avena / Oats
     ['avena', 'photo-1495214783159-3503fd1b572d'],
+    ['oatmeal', 'photo-1495214783159-3503fd1b572d'],
     ['oat', 'photo-1495214783159-3503fd1b572d'],
     ['porridge', 'photo-1495214783159-3503fd1b572d'],
     ['cereales', 'photo-1495214783159-3503fd1b572d'],
@@ -62,6 +63,7 @@ const getDietImage = (query: string): string => {
     ['fruta', 'photo-1490474418585-ba9bad8fd0ea'],
     ['fruit', 'photo-1490474418585-ba9bad8fd0ea'],
     ['platano', 'photo-1490474418585-ba9bad8fd0ea'],
+    ['banana', 'photo-1490474418585-ba9bad8fd0ea'],
     ['manzana', 'photo-1490474418585-ba9bad8fd0ea'],
     ['fresa', 'photo-1490474418585-ba9bad8fd0ea'],
     ['arandano', 'photo-1490474418585-ba9bad8fd0ea'],
@@ -72,12 +74,14 @@ const getDietImage = (query: string): string => {
     ['vegetable', 'photo-1540420773420-3366772f4999'],
     ['esparragos', 'photo-1540420773420-3366772f4999'],
     ['esparrago', 'photo-1540420773420-3366772f4999'],
+    ['asparagus', 'photo-1540420773420-3366772f4999'],
     // Yogur
     ['yogur', 'photo-1488477181946-6428a0291777'],
     ['yogurt', 'photo-1488477181946-6428a0291777'],
     ['queso', 'photo-1488477181946-6428a0291777'],
     // Almendras / Frutos secos
     ['almendra', 'photo-1508061253366-f7da158b6d46'],
+    ['almond', 'photo-1508061253366-f7da158b6d46'],
     ['nuez', 'photo-1508061253366-f7da158b6d46'],
     ['fruto seco', 'photo-1508061253366-f7da158b6d46'],
     // Pan / Toast
@@ -279,7 +283,7 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
       return plans.map((plan: any) => {
         const updatedMeals = plan.meals.map((meal: any) => ({
           ...meal,
-          imageUrl: getDietImage(meal.imageSearchQuery || meal.ingredients?.join(' ') || meal.name)
+          imageUrl: getDietImage(meal.imageSearchQuery || [meal.name, ...(meal.ingredients||[])].join(' '))
         }));
         return {
           ...plan,
@@ -299,11 +303,12 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
         id: 'fallback_a',
         name: "Plan Equilibrado Vital",
         reasoning: "Plan equilibrado estándar basado en tus objetivos de salud.",
+        imageSearchQuery: "healthy balanced meal",
         meals: [
-          { id: 'm1', type: "Desayuno", name: "Avena con Frutas", ingredients: ["Avena", "Leche desnatada", "Plátano", "Nueces"], preparation: "Mezclar la avena con la leche caliente, añadir rodajas de plátano y nueces picadas.", macros: { p: 15, c: 45, f: 10, kcal: 350 } },
-          { id: 'm2', type: "Almuerzo", name: "Pollo con Arroz y Brócoli", ingredients: ["Pechuga de pollo", "Arroz integral", "Brócoli", "Aceite de oliva"], preparation: "Cocinar el arroz integral. Saltear el pollo con brócoli al vapor y un chorrito de aceite de oliva.", macros: { p: 35, c: 40, f: 12, kcal: 450 } },
-          { id: 'm3', type: "Merienda", name: "Yogur Griego con Almendras", ingredients: ["Yogur griego natural", "Almendras", "Miel"], preparation: "Servir el yogur en un bol, añadir las almendras y una cucharadita de miel.", macros: { p: 20, c: 15, f: 15, kcal: 280 } },
-          { id: 'm4', type: "Cena", name: "Salmón a la Plancha con Espárragos", ingredients: ["Salmón", "Espárragos", "Ensalada verde"], preparation: "Hacer el salmón a la plancha 4 min por lado. Acompañar con espárragos trigueros y ensalada.", macros: { p: 30, c: 10, f: 20, kcal: 400 } }
+          { id: 'm1', type: "Desayuno", name: "Avena con Frutas", imageSearchQuery: "oatmeal banana nuts", ingredients: ["Avena", "Leche desnatada", "Plátano", "Nueces"], preparation: "Mezclar la avena con la leche caliente, añadir rodajas de plátano y nueces picadas.", macros: { p: 15, c: 45, f: 10, kcal: 350 } },
+          { id: 'm2', type: "Almuerzo", name: "Pollo con Arroz y Brócoli", imageSearchQuery: "chicken rice broccoli", ingredients: ["Pechuga de pollo", "Arroz integral", "Brócoli", "Aceite de oliva"], preparation: "Cocinar el arroz integral. Saltear el pollo con brócoli al vapor y un chorrito de aceite de oliva.", macros: { p: 35, c: 40, f: 12, kcal: 450 } },
+          { id: 'm3', type: "Merienda", name: "Yogur Griego con Almendras", imageSearchQuery: "greek yogurt almonds honey", ingredients: ["Yogur griego natural", "Almendras", "Miel"], preparation: "Servir el yogur en un bol, añadir las almendras y una cucharadita de miel.", macros: { p: 20, c: 15, f: 15, kcal: 280 } },
+          { id: 'm4', type: "Cena", name: "Salmón a la Plancha con Espárragos", imageSearchQuery: "salmon asparagus grill", ingredients: ["Salmón", "Espárragos", "Ensalada verde"], preparation: "Hacer el salmón a la plancha 4 min por lado. Acompañar con espárragos trigueros y ensalada.", macros: { p: 30, c: 10, f: 20, kcal: 400 } }
         ],
         weeklySchedule: [
           { day: "Lunes", meals: ["Avena con Frutas", "Pollo con Arroz y Brócoli", "Yogur Griego con Almendras", "Salmón a la Plancha con Espárragos"] },
@@ -317,11 +322,17 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
       }
     ];
 
-    return fallbackPlans.map(plan => ({
-      ...plan,
-      meals: plan.meals.map(m => ({ ...m, imageUrl: getDietImage(m.name) })),
-      imageUrl: getDietImage(plan.meals[0].name)
-    }));
+    return fallbackPlans.map(plan => {
+      const updatedMeals = plan.meals.map((m: any) => ({ 
+        ...m, 
+        imageUrl: getDietImage(m.imageSearchQuery || [m.name, ...(m.ingredients||[])].join(' ')) 
+      }));
+      return {
+        ...plan,
+        meals: updatedMeals,
+        imageUrl: getDietImage(plan.imageSearchQuery || updatedMeals[0].name)
+      };
+    });
   }
 }
 

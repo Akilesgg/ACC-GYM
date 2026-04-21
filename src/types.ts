@@ -20,6 +20,12 @@ export interface SportConfig {
   plan?: TrainingPlan;
   isCombined?: boolean;
   subtype?: string;
+  schedule?: Record<string, {
+    time?: string;
+    location?: string;
+    notes?: string;
+    sport?: string;
+  }>;
 }
 
 export interface NutritionPlan {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { UserProfile, DailyProgress, TrainingPlan, Language, GalleryItem, WeightEntry } from '../types';
+import { UserProfile, DailyProgress, TrainingPlan, Language, GalleryItem, WeightEntry, SportConfig } from '../types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'motion/react';
@@ -12,6 +12,7 @@ import { getPhysicalAnalysis } from '@/src/services/geminiService';
 import TabBackground from './TabBackground';
 
 import WeeklyPlanVisual from './WeeklyPlanVisual';
+import WorkoutPlanView from './WorkoutPlanView';
 
 interface EvolutionProps {
   profile: UserProfile;
@@ -23,6 +24,7 @@ interface EvolutionProps {
 export default function Evolution({ profile, onUpdateProfile, onBack, language }: EvolutionProps) {
   const t = useTranslation(language);
   const [activeTab, setActiveTab] = useState<'tracking' | 'photos' | 'stats'>('tracking');
+  const [viewingSport, setViewingSport] = useState<SportConfig | null>(null);
   const today = startOfToday();
   const dateKey = format(today, 'yyyy-MM-dd');
   const locale = es; // Always Spanish as per request
@@ -134,6 +136,31 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
   return (
     <div className="space-y-12 pb-32">
       <TabBackground tab="evolution" />
+
+      {/* Workout Detail Overlay */}
+      <AnimatePresence>
+        {viewingSport && (
+          <motion.div
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 100 }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="fixed inset-0 z-[200] bg-[#0a0a0c] overflow-y-auto"
+          >
+            <WorkoutPlanView
+              sport={viewingSport}
+              allSports={profile.sports}
+              profile={profile}
+              progress={profile.progress || {}}
+              onToggleExercise={toggleExercise}
+              onUpdateProfile={onUpdateProfile}
+              onClose={() => setViewingSport(null)}
+              language={language}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <section>
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
           <div className="flex items-center gap-4">
@@ -267,7 +294,11 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   {profile.sports.map((sport, i) => {
                     return (
-                      <Card key={i} className="bg-surface border-none p-4 flex items-center gap-4 group hover:bg-surface-variant/30 transition-all">
+                      <Card 
+                        key={i} 
+                        onClick={() => setViewingSport(sport)}
+                        className="bg-surface border-none p-4 flex items-center gap-4 group hover:bg-surface-variant/30 transition-all cursor-pointer"
+                      >
                         <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
                           <Dumbbell size={20} />
                         </div>
