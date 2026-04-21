@@ -296,19 +296,26 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   {profile.sports.map((sport, i) => {
                     return (
-                      <Card 
-                        key={i} 
-                        onClick={() => setSelectedSportName(sport.sport)}
-                        className="bg-surface border-none p-4 flex items-center gap-4 group hover:bg-surface-variant/30 transition-all cursor-pointer"
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        whileInView={{ opacity: 1, scale: 1 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: i * 0.1 }}
                       >
-                        <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
-                          <Dumbbell size={20} />
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-sm uppercase opacity-80">{sport.sport}</h4>
-                          <p className="text-[9px] font-black text-secondary uppercase tracking-widest">{sport.subtype || `${sport.daysPerWeek} DÍAS`}</p>
-                        </div>
-                      </Card>
+                        <Card 
+                          onClick={() => setSelectedSportName(sport.sport)}
+                          className="bg-surface border-none p-4 flex items-center gap-4 group hover:bg-surface-variant/30 transition-all cursor-pointer h-full"
+                        >
+                          <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                            <Dumbbell size={20} />
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-sm uppercase opacity-80">{sport.sport}</h4>
+                            <p className="text-[9px] font-black text-secondary uppercase tracking-widest">{sport.subtype || `${sport.daysPerWeek} DÍAS`}</p>
+                          </div>
+                        </Card>
+                      </motion.div>
                     );
                   })}
                 </div>

@@ -124,9 +124,23 @@ export default function WorkoutPlanView({
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white p-6 md:p-12 space-y-8">
+    <div className="min-h-screen bg-[#0a0a0c] text-white p-6 md:p-12 space-y-8 relative overflow-hidden">
+      {/* Dynamic Visual Backdrop */}
+      <div className="absolute top-0 left-0 w-full h-[60vh] opacity-10 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0a0a0c]/80 to-[#0a0a0c] z-10" />
+        <motion.img 
+          initial={{ scale: 1.2, opacity: 0 }}
+          animate={{ scale: 1, opacity: 0.15 }}
+          transition={{ duration: 2 }}
+          src={`https://picsum.photos/seed/${sport.sport}/1920/1080`}
+          alt=""
+          referrerPolicy="no-referrer"
+          className="w-full h-full object-cover grayscale"
+        />
+      </div>
+
       {/* Header */}
-      <div className="flex items-center justify-between sticky top-0 bg-[#0a0a0c]/80 backdrop-blur-xl z-50 py-4 -mx-6 px-6">
+      <div className="flex items-center justify-between sticky top-0 bg-[#0a0a0c]/80 backdrop-blur-xl z-[100] py-4 -mx-6 px-6 -mt-6">
         <div className="flex items-center gap-4">
           <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
             <Dumbbell size={32} />
@@ -595,33 +609,115 @@ function ExerciseList({ date, exercises, progress, onToggle, language }: {
           return (
             <motion.div
               key={ex.id}
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.05 }}
+              initial={{ opacity: 0, scale: 0.95, y: 30 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ 
+                delay: i * 0.1,
+                type: "spring",
+                damping: 20,
+                stiffness: 100
+              }}
               onClick={() => onToggle(ex.id, dateKey)}
-              className={`group flex items-center gap-6 p-6 rounded-[2rem] border cursor-pointer transition-all ${
-                isDone ? 'bg-secondary/5 border-secondary/20 opacity-70' : 'bg-white/5 border-white/5 hover:border-white/10'
+              className={`group relative overflow-hidden rounded-[2.5rem] border-2 transition-all cursor-pointer ${
+                isDone 
+                  ? 'bg-secondary/10 border-secondary/40 opacity-80' 
+                  : 'bg-[#111318] border-white/5 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10'
               }`}
             >
-              <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black transition-all ${isDone ? 'bg-secondary text-background' : 'bg-background group-hover:bg-primary/20 group-hover:text-primary'}`}>
-                {i + 1}
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <h4 className={`text-xl font-headline font-bold truncate ${isDone ? 'line-through text-on-surface-variant' : 'text-white'}`}>{ex.name}</h4>
-                <div className="flex items-center gap-4 mt-1">
-                  <div className="flex items-center gap-1.5 text-xs font-black text-secondary uppercase"><Target size={14} />{ex.sets} s</div>
-                  <div className="flex items-center gap-1.5 text-xs font-black text-primary uppercase"><Zap size={14} />{ex.reps} r</div>
+              {/* Exercise Image Backdrop */}
+              {!isDone && (
+                <div className="absolute top-0 right-0 w-1/2 h-full opacity-10 pointer-events-none overflow-hidden">
+                  <img 
+                    src={`https://picsum.photos/seed/${ex.imageSearchQuery || ex.name}/400/600`}
+                    alt=""
+                    referrerPolicy="no-referrer"
+                    className="w-full h-full object-cover grayscale brightness-200"
+                  />
                 </div>
-                <p className="text-[10px] text-on-surface-variant italic mt-2 opacity-60 line-clamp-1 group-hover:line-clamp-none transition-all">{ex.notes}</p>
-              </div>
+              )}
 
-              <motion.div 
-                animate={isDone ? { scale: [1, 1.2, 1] } : {}}
-                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 shrink-0 ${isDone ? 'bg-secondary border-secondary text-background' : 'border-white/10 group-hover:border-primary/50'}`}
-              >
-                {isDone ? <CheckCircle2 size={24} /> : <Circle size={24} className="opacity-10" />}
-              </motion.div>
+              <div className="p-8 flex flex-col md:flex-row md:items-center gap-8 relative z-10">
+                {/* Exercise Progress / Icon */}
+                <div className="flex items-center justify-between md:flex-col md:justify-center md:gap-4 shrink-0">
+                  <motion.div 
+                    animate={isDone ? { scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] } : {}}
+                    className={`w-16 h-16 rounded-full flex items-center justify-center border-4 transition-all ${
+                      isDone 
+                        ? 'bg-secondary border-secondary text-background shadow-lg shadow-secondary/40' 
+                        : 'border-white/10 group-hover:border-primary/50 text-white/20'
+                    }`}
+                  >
+                    {isDone ? <CheckCircle2 size={32} /> : <Dumbbell size={32} className="opacity-40" />}
+                  </motion.div>
+                  <div className="text-center md:block hidden">
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">EJERCICIO</span>
+                    <p className="font-black text-xl leading-none">{i + 1}</p>
+                  </div>
+                  <div className="md:hidden">
+                     <span className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest ${isDone ? 'bg-secondary/20 text-secondary' : 'bg-primary/20 text-primary'}`}>
+                       {isDone ? 'LOGRADO' : 'PENDIENTE'}
+                     </span>
+                  </div>
+                </div>
+
+                <div className="flex-1 space-y-4">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-3">
+                      <h4 className={`text-3xl font-headline font-black uppercase italic tracking-tight leading-tight ${isDone ? 'line-through opacity-50' : ''}`}>
+                        {ex.name}
+                      </h4>
+                      {ex.muscleGroup && (
+                        <span className="px-3 py-1 bg-white/5 rounded-full text-[9px] font-black uppercase tracking-wider text-on-surface-variant shrink-0">
+                          {ex.muscleGroup}
+                        </span>
+                      )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-6 mt-2">
+                       <div className="flex items-center gap-2 text-secondary">
+                          <LayoutGrid size={16} />
+                          <span className="text-sm font-black uppercase tracking-widest">{ex.sets} <span className="opacity-40">Series</span></span>
+                       </div>
+                       <div className="flex items-center gap-2 text-primary">
+                          <Zap size={16} />
+                          <span className="text-sm font-black uppercase tracking-widest">{ex.reps} <span className="opacity-40">Reps</span></span>
+                       </div>
+                       {ex.equipment && (
+                         <div className="flex items-center gap-2 text-on-surface-variant opacity-60">
+                           <Icons.Settings size={14} />
+                           <span className="text-xs font-bold uppercase tracking-widest">{ex.equipment}</span>
+                         </div>
+                       )}
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-background/50 rounded-2xl border border-white/5 relative group-hover:border-primary/20 transition-all">
+                    <p className="text-sm font-medium leading-relaxed opacity-70 group-hover:opacity-100 italic">
+                      "{ex.notes}"
+                    </p>
+                    <Icons.Info size={14} className="absolute -top-2 -right-2 text-white/10" />
+                  </div>
+                </div>
+
+                {/* Animation / Video Trigger Placeholder */}
+                <div className="shrink-0 flex justify-end md:justify-center">
+                  <div className="w-40 h-28 rounded-2xl bg-white/5 border border-white/5 overflow-hidden relative group/video">
+                    <img 
+                      src={`https://picsum.photos/seed/${ex.imageSearchQuery || ex.name}/200/150`}
+                      alt={ex.name}
+                      referrerPolicy="no-referrer"
+                      className="w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-700 animate-pulse"
+                    />
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-on-primary">
+                        <Icons.Play size={20} fill="currentColor" />
+                      </div>
+                    </div>
+                    <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded-md">
+                      <span className="text-[8px] font-black uppercase tracking-widest text-white/80">Guía Visual</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </motion.div>
           );
         })}

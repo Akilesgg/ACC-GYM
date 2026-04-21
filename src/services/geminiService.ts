@@ -127,6 +127,7 @@ export async function generateCombinedTrainingPlan(profile: UserProfile, configs
         4. Proporciona un razonamiento científico detallado para esta combinación.
         5. El plan debe ser REALISTA y ejecutable.
         6. IMPORTANTE: Adapta estrictamente los ejercicios al EQUIPAMIENTO especificado para cada deporte. Si el equipamiento es limitado, busca alternativas creativas (calistenia, bandas, etc.).
+        7. Para cada ejercicio, rellena: 'muscleGroup' (grupo principal), 'equipment' (lo que se requiere) e 'imageSearchQuery' (2-3 palabras clave en inglés para visualizar el ejercicio).
         
         IMPORTANTE: Cada ejercicio DEBE tener un 'id' único (ej. 'ex_1', 'ex_2').`
       : `Generate a COMBINED and professional training plan for the following sports: ${sportsList}.
@@ -144,6 +145,7 @@ export async function generateCombinedTrainingPlan(profile: UserProfile, configs
         4. Provide a detailed scientific reasoning for this combination.
         5. The plan must be REALISTIC and executable.
         6. IMPORTANT: Strictly adapt exercises to the specified EQUIPMENT for each sport. If equipment is limited, find creative alternatives (calisthenics, bands, etc.).
+        7. For each exercise, fill: 'muscleGroup' (target muscle), 'equipment' (required item), and 'imageSearchQuery' (2-3 English keywords to visualize the exercise).
         
         IMPORTANT: Each exercise MUST have a unique 'id' (e.g., 'ex_1', 'ex_2').`;
 
@@ -175,9 +177,12 @@ export async function generateCombinedTrainingPlan(profile: UserProfile, configs
                           name: { type: Type.STRING },
                           sets: { type: Type.STRING },
                           reps: { type: Type.STRING },
-                          notes: { type: Type.STRING }
+                          notes: { type: Type.STRING },
+                          muscleGroup: { type: Type.STRING },
+                          equipment: { type: Type.STRING },
+                          imageSearchQuery: { type: Type.STRING }
                         },
-                        required: ["id", "name", "sets", "reps", "notes"]
+                        required: ["id", "name", "sets", "reps", "notes", "muscleGroup", "equipment", "imageSearchQuery"]
                       }
                     }
                   },
