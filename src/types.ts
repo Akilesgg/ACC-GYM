@@ -27,6 +27,7 @@ export interface SportConfig {
     sport?: string;
   }>;
   equipment?: string;
+  hasInstructor?: boolean;
 }
 
 export interface NutritionPlan {

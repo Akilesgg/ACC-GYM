@@ -5,11 +5,13 @@ import { es } from 'date-fns/locale';
 import { 
   CheckCircle2, Circle, Trophy, Dumbbell, X, Zap, Target, 
   Clock, Calendar, ClipboardList, MapPin, Save, Info, ChevronRight, 
-  Trash2, Plus, LayoutGrid
+  Trash2, Plus, LayoutGrid, UserCircle2, Settings2, Sparkles,
+  AlertCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
 import { TrainingPlan, SportConfig, DailyProgress, Language, UserProfile } from '../types';
 import * as Icons from 'lucide-react';
 import { useTranslation } from '../lib/i18n';
@@ -37,7 +39,7 @@ export default function WorkoutPlanView({
   language 
 }: WorkoutPlanViewProps) {
   const t = useTranslation(language);
-  const [activeTab, setActiveTab] = useState<'week' | 'today' | 'schedule' | 'resources'>('week');
+  const [activeTab, setActiveTab] = useState<'today' | 'week' | 'schedule' | 'resources'>('today');
   const [selectedDayDetail, setSelectedDayDetail] = useState<Date | null>(null);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const today = startOfToday();
@@ -45,19 +47,33 @@ export default function WorkoutPlanView({
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
   const dayNames = ['LUN', 'MAR', 'MIÉ', 'JUE', 'VIE', 'SAB', 'DOM'];
 
-  // Schedule State Local
+  // Local State
   const [localSchedule, setLocalSchedule] = useState(sport.schedule || {});
   const [localEquipment, setLocalEquipment] = useState(sport.equipment || '');
+  const [hasInstructor, setHasInstructor] = useState(sport.hasInstructor || false);
 
   useEffect(() => {
     setLocalSchedule(sport.schedule || {});
     setLocalEquipment(sport.equipment || '');
-  }, [sport.schedule, sport.equipment]);
+    setHasInstructor(sport.hasInstructor || false);
+  }, [sport.schedule, sport.equipment, sport.hasInstructor]);
 
   const getWorkoutForDay = (date: Date) => {
     const dayLabel = format(date, 'EEEE', { locale: es }).toLowerCase();
     const dNum = date.getDay() === 0 ? 7 : date.getDay();
     
+    // Si hay instructor, no devolvemos lista de ejercicios, sino una sesión genérica
+    if (hasInstructor) {
+      return [{
+        id: 'instructor_session',
+        name: `Sesión de ${sport.sport} con Instructor`,
+        sets: '1',
+        reps: 'Sesión',
+        notes: 'Sigue las instrucciones directas de tu profesor durante la clase.',
+        isInstructorLed: true
+      }];
+    }
+
     const workouts = (sport.plan?.table || []).filter(t => {
       const d = t.day.toLowerCase();
       return d.includes(dayLabel) || d.includes('hoy') || d.includes(`día ${dNum}`) || d.includes(`dia ${dNum}`);
@@ -66,9 +82,9 @@ export default function WorkoutPlanView({
     return workouts.length > 0 ? workouts[0].exercises : [];
   };
 
-  const handleSaveSchedule = () => {
+  const handleSaveSettings = () => {
     const updatedSports = profile.sports.map(s => 
-      s.sport === sport.sport ? { ...s, schedule: localSchedule, equipment: localEquipment } : s
+      s.sport === sport.sport ? { ...s, schedule: localSchedule, equipment: localEquipment, hasInstructor } : s
     );
     onUpdateProfile({ ...profile, sports: updatedSports });
   };
@@ -223,8 +239,54 @@ export default function WorkoutPlanView({
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="max-w-2xl mx-auto w-full"
+            className="max-w-2xl mx-auto w-full space-y-8"
           >
+            {/* Today Progress Overview */}
+            <div className="grid grid-cols-3 gap-4">
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center text-center">
+                <span className="text-[10px] font-black opacity-40 uppercase tracking-widest mb-2">Estado</span>
+                <Sparkles className="text-primary mb-2" size={16} />
+                <span className="text-xs font-black uppercase tracking-tight">Activo</span>
+              </div>
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center text-center">
+                <span className="text-[10px] font-black opacity-40 uppercase tracking-widest mb-2">Duración</span>
+                <Clock className="text-secondary mb-2" size={16} />
+                <span className="text-xs font-black uppercase tracking-tight">~{sport.durationPerSession || 60}m</span>
+              </div>
+              <div className="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center text-center">
+                <span className="text-[10px] font-black opacity-40 uppercase tracking-widest mb-2">Día</span>
+                <Calendar className="text-white mb-2" size={16} />
+                <span className="text-xs font-black uppercase tracking-tight">{format(today, 'EEEE', { locale: es }).split('-')[0]}</span>
+              </div>
+            </div>
+
+            {/* Instructor Quick Toggle Prompt */}
+            {!hasInstructor && (
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-6 bg-secondary/5 rounded-3xl border border-secondary/20 flex items-center justify-between gap-4"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-secondary/20 rounded-xl flex items-center justify-center text-secondary">
+                    <UserCircle2 size={20} />
+                  </div>
+                  <div className="flex-1">
+                    <h5 className="text-[10px] font-black uppercase tracking-widest text-secondary leading-none">¿Entrenas con profesor?</h5>
+                    <p className="text-[9px] font-medium opacity-60 mt-1 leading-tight">Si tienes instructor de {sport.sport}, no necesitas tabla de ejercicios.</p>
+                  </div>
+                </div>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => setActiveTab('resources')}
+                  className="h-8 text-[9px] font-black uppercase tracking-widest rounded-lg border-secondary/30 text-secondary hover:bg-secondary/10 shrink-0"
+                >
+                  Configurar
+                </Button>
+              </motion.div>
+            )}
+
             <ExerciseList 
               date={today} 
               exercises={getWorkoutForDay(today)} 
@@ -232,6 +294,8 @@ export default function WorkoutPlanView({
               onToggle={onToggleExercise}
               language={language}
             />
+
+            <div className="h-20" /> {/* Extra space to avoid cut-off */}
           </motion.div>
         )}
 
@@ -245,7 +309,7 @@ export default function WorkoutPlanView({
           >
             <div className="flex items-center justify-between">
               <h3 className="text-2xl font-headline font-black uppercase italic tracking-tight">Horario Semanal</h3>
-              <Button onClick={handleSaveSchedule} className="bg-secondary text-background hover:bg-secondary/90 font-black uppercase tracking-widest px-8 rounded-xl h-12 shadow-xl shadow-secondary/20">
+              <Button onClick={handleSaveSettings} className="bg-secondary text-background hover:bg-secondary/90 font-black uppercase tracking-widest px-8 rounded-xl h-12 shadow-xl shadow-secondary/20">
                 <Save size={18} className="mr-2" /> Guardar Horario
               </Button>
             </div>
@@ -310,15 +374,74 @@ export default function WorkoutPlanView({
               </Button>
             </div>
 
-            <Card className="bg-[#111318] border-none p-8 rounded-[2.5rem] space-y-6">
+            <Card className="bg-[#111318] border-none p-8 rounded-[2.5rem] space-y-8">
+              {/* Instructor Toggle */}
+              <div className="p-6 bg-white/5 rounded-3xl border border-white/5 space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-secondary/10 rounded-2xl flex items-center justify-center text-secondary">
+                      <UserCircle2 size={24} />
+                    </div>
+                    <div>
+                      <h4 className="font-headline font-bold text-lg uppercase leading-none">Entrenamiento con Instructor</h4>
+                      <p className="text-xs text-on-surface-variant mt-1">Marca esta opción si sigues las clases de un profesor.</p>
+                    </div>
+                  </div>
+                  <Switch 
+                    checked={hasInstructor}
+                    onCheckedChange={(val) => {
+                      setHasInstructor(val);
+                      // Auto-save instructor state to profile
+                      const updatedSports = profile.sports.map(s => 
+                        s.sport === sport.sport ? { ...s, hasInstructor: val } : s
+                      );
+                      onUpdateProfile({ ...profile, sports: updatedSports });
+                    }}
+                    className="data-[state=checked]:bg-secondary"
+                  />
+                </div>
+
+                {hasInstructor && (
+                  <motion.div 
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: 'auto' }}
+                    className="flex items-start gap-3 p-4 bg-secondary/5 rounded-xl border border-secondary/20"
+                  >
+                    <AlertCircle size={16} className="text-secondary shrink-0 mt-0.5" />
+                    <p className="text-[10px] text-secondary font-medium leading-relaxed">
+                      Al tener un instructor, el sistema dejará de generar tablas de ejercicios automáticas para este deporte, ya que tu profesor es quien dicta la rutina.
+                    </p>
+                  </motion.div>
+                )}
+              </div>
+
               <div className="space-y-4">
-                <label className="text-xs font-black uppercase tracking-[0.2em] text-secondary">Tu Equipamiento Actual</label>
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-black uppercase tracking-[0.2em] text-secondary">Tu Equipamiento Actual</label>
+                  {!hasInstructor && (
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={handleRegenerate} 
+                      disabled={isRegenerating}
+                      className="h-8 text-[9px] font-black uppercase tracking-widest text-primary hover:text-primary hover:bg-primary/10"
+                    >
+                      <Icons.Zap size={12} className="mr-1" /> Regenerar con este equipo
+                    </Button>
+                  )}
+                </div>
                 <textarea
                   value={localEquipment}
                   onChange={(e) => setLocalEquipment(e.target.value)}
                   placeholder="Ej: Solo tengo mancuernas de 5kg y una banda elástica. Mi gimnasio no tiene máquinas de pierna..."
-                  className="w-full bg-background/50 border border-white/5 rounded-3xl p-6 min-h-[200px] text-lg font-medium focus:border-primary/50 outline-none transition-all placeholder:opacity-20"
+                  className="w-full bg-background/50 border border-white/5 rounded-3xl p-6 min-h-[160px] text-lg font-medium focus:border-primary/50 outline-none transition-all placeholder:opacity-20"
                 />
+                <Button 
+                  onClick={handleSaveSettings}
+                  className="w-full bg-white/5 border border-white/5 hover:bg-white/10 h-14 rounded-2xl font-black uppercase tracking-widest"
+                >
+                  Guardar Recursos
+                </Button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -345,39 +468,48 @@ export default function WorkoutPlanView({
       {/* Exercise Detail Drawer */}
       <AnimatePresence>
         {selectedDayDetail && (
-          <div className="fixed inset-0 z-[300] flex items-end justify-center p-4">
+          <div className="fixed inset-0 z-[400] flex items-end justify-center sm:p-4">
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setSelectedDayDetail(null)}
-              className="absolute inset-0 bg-black/80 backdrop-blur-md"
+              className="absolute inset-0 bg-black/90 backdrop-blur-md"
             />
             <motion.div
               initial={{ y: "100%" }}
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="relative w-full max-w-2xl bg-[#0a0a0c] rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden"
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="relative w-full max-w-2xl bg-[#0a0a0c] sm:rounded-[3rem] border-t sm:border border-white/10 shadow-[0_-20px_50px_-12px_rgba(0,0,0,0.5)] overflow-hidden h-[92vh] sm:h-[88vh]"
             >
-              <div className="p-8 space-y-8 max-h-[85vh] overflow-y-auto custom-scrollbar">
-                <div className="flex items-center justify-between">
+              {/* Drawer Handle */}
+              <div className="absolute top-3 left-1/2 -translate-x-1/2 w-12 h-1.5 bg-white/10 rounded-full z-10" />
+
+              <div className="h-full flex flex-col pt-10">
+                <div className="px-8 pb-6 flex items-center justify-between shrink-0">
                   <div>
-                    <h3 className="text-3xl font-headline font-black uppercase italic leading-none">{format(selectedDayDetail, 'EEEE', { locale: es })}</h3>
-                    <p className="text-secondary font-black uppercase text-xs tracking-widest mt-1">{format(selectedDayDetail, 'd MMMM, yyyy', { locale: es })}</p>
+                    <h3 className="text-4xl font-headline font-black uppercase italic leading-none tracking-tight">
+                      {format(selectedDayDetail, 'EEEE', { locale: es })}
+                    </h3>
+                    <p className="text-secondary font-black uppercase text-xs tracking-widest mt-2 flex items-center gap-2">
+                      <Calendar size={14} /> {format(selectedDayDetail, 'd MMMM, yyyy', { locale: es })}
+                    </p>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => setSelectedDayDetail(null)} className="rounded-full bg-white/5 hover:bg-white/10">
+                  <Button variant="ghost" size="icon" onClick={() => setSelectedDayDetail(null)} className="rounded-full bg-white/5 hover:bg-white/10 w-12 h-12">
                     <X size={24} />
                   </Button>
                 </div>
 
-                <ExerciseList 
-                  date={selectedDayDetail} 
-                  exercises={getWorkoutForDay(selectedDayDetail)} 
-                  progress={progress} 
-                  onToggle={onToggleExercise}
-                  language={language}
-                />
+                <div className="flex-1 overflow-y-auto px-8 pb-12 custom-scrollbar">
+                  <ExerciseList 
+                    date={selectedDayDetail} 
+                    exercises={getWorkoutForDay(selectedDayDetail)} 
+                    progress={progress} 
+                    onToggle={onToggleExercise}
+                    language={language}
+                  />
+                </div>
               </div>
             </motion.div>
           </div>
@@ -426,9 +558,40 @@ function ExerciseList({ date, exercises, progress, onToggle, language }: {
         )}
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-4 pb-32">
         {exercises.map((ex, i) => {
           const isDone = completed.includes(ex.id);
+          const isInstructor = ex.isInstructorLed;
+
+          if (isInstructor) {
+            return (
+              <motion.div
+                key={ex.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                onClick={() => onToggle(ex.id, dateKey)}
+                className={`flex flex-col p-8 rounded-[2.5rem] border-2 transition-all cursor-pointer ${
+                  isDone ? 'bg-secondary/10 border-secondary/40' : 'bg-primary/5 border-primary/20 hover:border-primary/40'
+                }`}
+              >
+                <div className="flex items-center justify-between mb-4">
+                  <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-white">
+                    <UserCircle2 size={32} />
+                  </div>
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${isDone ? 'bg-secondary border-secondary text-background' : 'border-white/10'}`}>
+                    {isDone ? <CheckCircle2 size={24} /> : <Circle size={24} className="opacity-10" />}
+                  </div>
+                </div>
+                <h4 className="text-2xl font-headline font-black uppercase italic leading-none">{ex.name}</h4>
+                <p className="text-sm font-medium opacity-60 mt-2">{ex.notes}</p>
+                <div className="mt-6 pt-6 border-t border-white/5 flex items-center gap-4">
+                  <div className="px-4 py-2 bg-white/5 rounded-full text-[10px] font-black uppercase tracking-widest">Presencial</div>
+                  <div className="px-4 py-2 bg-white/5 rounded-full text-[10px] font-black uppercase tracking-widest text-secondary">Instructor Titular</div>
+                </div>
+              </motion.div>
+            );
+          }
+
           return (
             <motion.div
               key={ex.id}
