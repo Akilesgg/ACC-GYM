@@ -24,7 +24,9 @@ interface EvolutionProps {
 export default function Evolution({ profile, onUpdateProfile, onBack, language }: EvolutionProps) {
   const t = useTranslation(language);
   const [activeTab, setActiveTab] = useState<'tracking' | 'photos' | 'stats'>('tracking');
-  const [viewingSport, setViewingSport] = useState<SportConfig | null>(null);
+  const [selectedSportName, setSelectedSportName] = useState<string | null>(null);
+  const viewingSport = profile.sports.find(s => s.sport === selectedSportName) || null;
+  
   const today = startOfToday();
   const dateKey = format(today, 'yyyy-MM-dd');
   const locale = es; // Always Spanish as per request
@@ -154,7 +156,7 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
               progress={profile.progress || {}}
               onToggleExercise={toggleExercise}
               onUpdateProfile={onUpdateProfile}
-              onClose={() => setViewingSport(null)}
+              onClose={() => setSelectedSportName(null)}
               language={language}
             />
           </motion.div>
@@ -296,7 +298,7 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
                     return (
                       <Card 
                         key={i} 
-                        onClick={() => setViewingSport(sport)}
+                        onClick={() => setSelectedSportName(sport.sport)}
                         className="bg-surface border-none p-4 flex items-center gap-4 group hover:bg-surface-variant/30 transition-all cursor-pointer"
                       >
                         <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">

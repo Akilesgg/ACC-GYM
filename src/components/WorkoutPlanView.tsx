@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { format, startOfToday, isSameDay, startOfWeek, addDays, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input';
 import { TrainingPlan, SportConfig, DailyProgress, Language, UserProfile } from '../types';
 import * as Icons from 'lucide-react';
 import { useTranslation } from '../lib/i18n';
+import { generateCombinedTrainingPlan } from '@/src/services/geminiService';
 
 interface WorkoutPlanViewProps {
   sport: SportConfig;
@@ -36,8 +37,9 @@ export default function WorkoutPlanView({
   language 
 }: WorkoutPlanViewProps) {
   const t = useTranslation(language);
-  const [activeTab, setActiveTab] = useState<'week' | 'today' | 'schedule'>('week');
+  const [activeTab, setActiveTab] = useState<'week' | 'today' | 'schedule' | 'resources'>('week');
   const [selectedDayDetail, setSelectedDayDetail] = useState<Date | null>(null);
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const today = startOfToday();
   const weekStart = startOfWeek(today, { weekStartsOn: 1 });
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
@@ -45,6 +47,12 @@ export default function WorkoutPlanView({
 
   // Schedule State Local
   const [localSchedule, setLocalSchedule] = useState(sport.schedule || {});
+  const [localEquipment, setLocalEquipment] = useState(sport.equipment || '');
+
+  useEffect(() => {
+    setLocalSchedule(sport.schedule || {});
+    setLocalEquipment(sport.equipment || '');
+  }, [sport.schedule, sport.equipment]);
 
   const getWorkoutForDay = (date: Date) => {
     const dayLabel = format(date, 'EEEE', { locale: es }).toLowerCase();
@@ -60,9 +68,36 @@ export default function WorkoutPlanView({
 
   const handleSaveSchedule = () => {
     const updatedSports = profile.sports.map(s => 
-      s.sport === sport.sport ? { ...s, schedule: localSchedule } : s
+      s.sport === sport.sport ? { ...s, schedule: localSchedule, equipment: localEquipment } : s
     );
     onUpdateProfile({ ...profile, sports: updatedSports });
+  };
+
+  const handleRegenerate = async () => {
+    setIsRegenerating(true);
+    try {
+      // First save the equipment
+      const updatedSportConfig = { ...sport, equipment: localEquipment };
+      const updatedSports = profile.sports.map(s => 
+        s.sport === sport.sport ? updatedSportConfig : s
+      );
+
+      // We regenerate ONLY this sport's plan or all combined?
+      // User says "adecuandose a sus limitaciones de equipo"
+      // If we are in a single sport view, we regenerate the plan for that sport
+      const newPlan = await generateCombinedTrainingPlan(profile, [updatedSportConfig], language);
+      
+      const finaleSports = profile.sports.map(s => 
+        s.sport === sport.sport ? { ...s, equipment: localEquipment, plan: newPlan } : s
+      );
+      
+      onUpdateProfile({ ...profile, sports: finaleSports, plan: finaleSports.length === 1 ? newPlan : profile.plan });
+      // Logic: if it's the only sport, also update global plan. If not, only this sport's plan.
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsRegenerating(false);
+    }
   };
 
   const updateScheduleItem = (day: string, field: string, value: string) => {
@@ -91,22 +126,36 @@ export default function WorkoutPlanView({
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 p-1 bg-white/5 rounded-2xl border border-white/5 max-w-md mx-auto">
-        {(['week', 'today', 'schedule'] as const).map(tab => (
+      <div className="flex gap-2 p-1 bg-white/5 rounded-2xl border border-white/5 max-w-lg mx-auto">
+        {(['week', 'today', 'schedule', 'resources'] as const).map(tab => (
           <Button
             key={tab}
             variant={activeTab === tab ? 'default' : 'ghost'}
             onClick={() => setActiveTab(tab)}
             className="flex-1 rounded-xl text-[10px] font-black uppercase tracking-widest h-10 px-0"
           >
-            {tab === 'week' ? 'Semana' : tab === 'today' ? 'Hoy' : 'Horario'}
+            {tab === 'week' ? 'Semana' : tab === 'today' ? 'Hoy' : tab === 'schedule' ? 'Horario' : 'Recursos'}
           </Button>
         ))}
       </div>
 
       {/* Tab Content */}
       <AnimatePresence mode="wait">
-        {activeTab === 'week' && (
+        {isRegenerating ? (
+           <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex flex-col items-center justify-center py-24 gap-6"
+           >
+              <Icons.Loader2 className="animate-spin text-primary" size={64} />
+              <div className="text-center">
+                <h3 className="text-2xl font-headline font-black uppercase italic">Reajustando tu plan...</h3>
+                <p className="text-on-surface-variant font-medium mt-2">Personalizando ejercicios según tus recursos disponibles.</p>
+              </div>
+           </motion.div>
+        ) : (
+          <>
+            {activeTab === 'week' && (
           <motion.div
             key="week"
             initial={{ opacity: 0, x: 20 }}
@@ -238,6 +287,58 @@ export default function WorkoutPlanView({
               </div>
             </Card>
           </motion.div>
+        )}
+
+        {activeTab === 'resources' && (
+          <motion.div
+            key="resources"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="max-w-3xl mx-auto space-y-8"
+          >
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div>
+                <h3 className="text-3xl font-headline font-black uppercase italic tracking-tight">Recursos y Equipamiento</h3>
+                <p className="text-on-surface-variant font-medium mt-1">Dime qué equipo tienes para adaptar los ejercicios.</p>
+              </div>
+              <Button 
+                onClick={handleRegenerate} 
+                className="bg-primary text-on-primary hover:bg-primary/90 font-black uppercase tracking-widest px-8 rounded-2xl h-16 shadow-2xl shadow-primary/20 group"
+              >
+                <Icons.Zap size={20} className="mr-2 group-hover:scale-125 transition-transform" /> Regenerar Plan Adaptado
+              </Button>
+            </div>
+
+            <Card className="bg-[#111318] border-none p-8 rounded-[2.5rem] space-y-6">
+              <div className="space-y-4">
+                <label className="text-xs font-black uppercase tracking-[0.2em] text-secondary">Tu Equipamiento Actual</label>
+                <textarea
+                  value={localEquipment}
+                  onChange={(e) => setLocalEquipment(e.target.value)}
+                  placeholder="Ej: Solo tengo mancuernas de 5kg y una banda elástica. Mi gimnasio no tiene máquinas de pierna..."
+                  className="w-full bg-background/50 border border-white/5 rounded-3xl p-6 min-h-[200px] text-lg font-medium focus:border-primary/50 outline-none transition-all placeholder:opacity-20"
+                />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-6 bg-background/30 rounded-2xl border border-white/5 flex items-start gap-4">
+                  <div className="w-10 h-10 bg-secondary/10 rounded-xl flex items-center justify-center text-secondary shrink-0"><Icons.Info size={20} /></div>
+                  <p className="text-xs text-on-surface-variant leading-relaxed">
+                    Al regenerar el plan, la IA buscará alternativas biomecánicamente similares que puedas realizar con lo que tienes.
+                  </p>
+                </div>
+                <div className="p-6 bg-background/30 rounded-2xl border border-white/5 flex items-start gap-4">
+                  <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary shrink-0"><Icons.Target size={20} /></div>
+                  <p className="text-xs text-on-surface-variant leading-relaxed">
+                    Mantendremos el mismo objetivo (Fuerza, Hipertrofia...) pero cambiando las herramientas de ejecución.
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+        )}
+          </>
         )}
       </AnimatePresence>
 

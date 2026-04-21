@@ -106,7 +106,10 @@ export async function generateCombinedTrainingPlan(profile: UserProfile, configs
 
   try {
     const isSpanish = language === 'es';
-    const sportsList = configs.map(c => `${c.sport} (${c.daysPerWeek} ${isSpanish ? 'días' : 'days'}, ${c.durationPerSession || 60} min/sesión, ${c.goal})`).join(", ");
+    const sportsList = configs.map(c => {
+      const equipInfo = c.equipment ? ` (Equipamiento: ${c.equipment})` : '';
+      return `${c.sport}${equipInfo} (${c.daysPerWeek} ${isSpanish ? 'días' : 'days'}, ${c.durationPerSession || 60} min/sesión, ${c.goal})`;
+    }).join(", ");
     
     const prompt = isSpanish 
       ? `Genera un plan de entrenamiento COMBINADO y profesional para los siguientes deportes: ${sportsList}.
@@ -123,6 +126,7 @@ export async function generateCombinedTrainingPlan(profile: UserProfile, configs
         3. Asegura una recuperación óptima alternando intensidades.
         4. Proporciona un razonamiento científico detallado para esta combinación.
         5. El plan debe ser REALISTA y ejecutable.
+        6. IMPORTANTE: Adapta estrictamente los ejercicios al EQUIPAMIENTO especificado para cada deporte. Si el equipamiento es limitado, busca alternativas creativas (calistenia, bandas, etc.).
         
         IMPORTANTE: Cada ejercicio DEBE tener un 'id' único (ej. 'ex_1', 'ex_2').`
       : `Generate a COMBINED and professional training plan for the following sports: ${sportsList}.
@@ -139,6 +143,7 @@ export async function generateCombinedTrainingPlan(profile: UserProfile, configs
         3. Ensure optimal recovery by alternating intensities.
         4. Provide a detailed scientific reasoning for this combination.
         5. The plan must be REALISTIC and executable.
+        6. IMPORTANT: Strictly adapt exercises to the specified EQUIPMENT for each sport. If equipment is limited, find creative alternatives (calisthenics, bands, etc.).
         
         IMPORTANT: Each exercise MUST have a unique 'id' (e.g., 'ex_1', 'ex_2').`;
 

@@ -26,6 +26,7 @@ export interface SportConfig {
     notes?: string;
     sport?: string;
   }>;
+  equipment?: string;
 }
 
 export interface NutritionPlan {
