@@ -357,6 +357,9 @@ export default function SportsList({ sports, selectedSportNames, savedSportNames
                                         disabled={savedSportNames.includes(sport.name)}
                                         onClick={() => {
                                           if (onConfirm) {
+                                            if (!selectedSportNames.includes(sport.name)) {
+                                              onSelect(sport.name);
+                                            }
                                             const config: SportConfig = {
                                               sport: sport.name,
                                               goal: sportConfigs[sport.name]?.goal || 'Fuerza y Tonificación',
@@ -437,6 +440,9 @@ export default function SportsList({ sports, selectedSportNames, savedSportNames
                 variant="ghost" 
                 size="sm" 
                 onClick={() => {
+                  // Deseleccionar todos para cerrar el panel flotante
+                  selectedSportNames.forEach(name => onSelect(name));
+                  setConfiguringSport(null);
                   setSearch('');
                   setSelectedLetter(null);
                   window.scrollTo({ top: 0, behavior: 'smooth' });

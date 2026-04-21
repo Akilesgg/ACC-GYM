@@ -11,6 +11,8 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { getPhysicalAnalysis } from '@/src/services/geminiService';
 import TabBackground from './TabBackground';
 
+import WeeklyPlanVisual from './WeeklyPlanVisual';
+
 interface EvolutionProps {
   profile: UserProfile;
   onUpdateProfile: (profile: UserProfile) => void;
@@ -50,30 +52,6 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
     }
   };
 
-  // Tracking Logic
-  const currentProgress = profile.progress?.[dateKey] || {
-    date: dateKey,
-    completedExercises: [],
-  };
-
-  const toggleExercise = (exerciseId: string) => {
-    const completed = currentProgress.completedExercises.includes(exerciseId);
-    const newCompleted = completed
-      ? currentProgress.completedExercises.filter(id => id !== exerciseId)
-      : [...currentProgress.completedExercises, exerciseId];
-
-    const updatedProgress = {
-      ...profile.progress,
-      [dateKey]: {
-        ...currentProgress,
-        completedExercises: newCompleted,
-        completed: newCompleted.length > 0 && newCompleted.length === todaysExercises.length
-      },
-    };
-
-    onUpdateProfile({ ...profile, progress: updatedProgress });
-  };
-
   const activePlans = profile.sports
     .map(s => s.plan)
     .filter((p): p is TrainingPlan => !!p);
@@ -85,19 +63,56 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
   const dayOfWeek = today.getDay(); // 0 (Sun) to 6 (Sat)
   const normalizedDay = dayOfWeek === 0 ? 7 : dayOfWeek; // 1 (Mon) to 7 (Sun)
   
-  const allExercises = activePlans.flatMap(plan => {
-    const dayPlan = plan.table.find(day => {
-      const d = day.day.toLowerCase();
-      return d.includes(todayName) || 
-             d.includes('hoy') || 
-             d.includes(`día ${normalizedDay}`) ||
-             d.includes(`dia ${normalizedDay}`);
-    });
-    return dayPlan?.exercises || [];
-  });
+  const getExercisesForDay = (date: Date) => {
+    const dayLabel = format(date, 'EEEE', { locale: es }).toLowerCase();
+    const dNum = date.getDay() === 0 ? 7 : date.getDay();
 
-  // Unique exercises by ID to avoid duplicates in combined plans
-  const todaysExercises = Array.from(new Map(allExercises.map(ex => [ex.id, ex])).values());
+    const allEx = activePlans.flatMap(plan => {
+      const dayPlan = plan.table.find(day => {
+        const d = day.day.toLowerCase();
+        return d.includes(dayLabel) || 
+               d.includes('hoy') || 
+               d.includes(`día ${dNum}`) ||
+               d.includes(`dia ${dNum}`);
+      });
+      return dayPlan?.exercises || [];
+    });
+    return Array.from(new Map(allEx.map(ex => [ex.id, ex])).values());
+  };
+
+  const todaysExercises = getExercisesForDay(today);
+  const currentProgress = profile.progress?.[dateKey] || {
+    date: dateKey,
+    completedExercises: [],
+  };
+
+  // Tracking Logic
+  const toggleExercise = (exerciseId: string, customDateKey?: string) => {
+    const targetDateKey = customDateKey || dateKey;
+    const progressAtDate = profile.progress?.[targetDateKey] || {
+      date: targetDateKey,
+      completedExercises: [],
+    };
+
+    const completed = progressAtDate.completedExercises.includes(exerciseId);
+    const newCompleted = completed
+      ? progressAtDate.completedExercises.filter(id => id !== exerciseId)
+      : [...progressAtDate.completedExercises, exerciseId];
+
+    // Determine if fully completed for that specific day
+    const dayExercises = getExercisesForDay(parseISO(targetDateKey));
+    
+    const updatedProgress = {
+      ...profile.progress,
+      [targetDateKey]: {
+        ...progressAtDate,
+        completedExercises: newCompleted,
+        completed: dayExercises.length > 0 && newCompleted.length === dayExercises.length
+      },
+    };
+
+    onUpdateProfile({ ...profile, progress: updatedProgress });
+  };
 
   const completionRate = todaysExercises.length > 0 
     ? Math.round((currentProgress.completedExercises.length / todaysExercises.length) * 100)
@@ -271,63 +286,13 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
             {profile.sports.length > 0 && (
               <section className="space-y-6">
                 <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">Planificación Semanal</h3>
-                <Card className="bg-surface border-none p-2 overflow-hidden overflow-x-auto">
-                  <table className="w-full text-left border-collapse min-w-[600px]">
-                    <thead>
-                      <tr className="bg-background/50">
-                        {['LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO', 'DOMINGO'].map((dayName, dIdx) => (
-                          <th key={dayName} className={`px-4 py-3 text-[10px] font-black text-on-surface-variant tracking-widest text-center border-l border-outline-variant/10 first:border-l-0 ${dIdx === (new Date().getDay() + 6) % 7 ? 'text-primary' : ''}`}>
-                            {dayName}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        {[0, 1, 2, 3, 4, 5, 6].map(idx => {
-                          const SpanishDays = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
-                          const EnglishDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-                          const DayNamesFull = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-                          
-                          const dayLabel = SpanishDays[idx];
-                          const engLabel = EnglishDays[idx];
-                          const engFull = DayNamesFull[idx];
-                          
-                          // Buscar el workout en todos los planes activos (global y por deporte)
-                          const workout = activePlans.flatMap(p => p.table).find(t => 
-                            t.day.toLowerCase().includes(dayLabel.toLowerCase()) || 
-                            t.day.toLowerCase().includes(engLabel.toLowerCase()) ||
-                            t.day.toLowerCase().includes(engFull.toLowerCase())
-                          );
-                          
-                          return (
-                            <td key={idx} className="p-4 border-l border-outline-variant/10 first:border-l-0 align-top min-h-[140px]">
-                              {workout ? (
-                                <div className="space-y-3">
-                                  <p className="text-[10px] font-black text-primary uppercase leading-tight min-h-[20px]">{workout.exercises[0]?.name.split(' ')[0] || 'Entrenamiento'}</p>
-                                  <div className="space-y-2">
-                                    {workout.exercises.slice(0, 3).map((ex, i) => (
-                                      <p key={i} className="text-[9px] font-bold text-on-surface-variant leading-none flex items-start gap-1">
-                                        <span className="text-secondary mt-0.5">•</span> {ex.name}
-                                      </p>
-                                    ))}
-                                    {workout.exercises.length > 3 && (
-                                      <p className="text-[8px] font-black text-secondary/60 tracking-widest pt-1 border-t border-outline-variant/5">+{workout.exercises.length - 3} MÁS</p>
-                                    )}
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className="h-full py-8 flex items-center justify-center opacity-10">
-                                  <Clock size={20} />
-                                </div>
-                              )}
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    </tbody>
-                  </table>
-                </Card>
+                <WeeklyPlanVisual 
+                  sports={profile.sports}
+                  plan={profile.plan}
+                  progress={profile.progress}
+                  onToggleExercise={toggleExercise}
+                  language={language}
+                />
               </section>
             )}
 
