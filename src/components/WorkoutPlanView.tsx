@@ -26,6 +26,7 @@ interface WorkoutPlanViewProps {
   onUpdateProfile: (profile: UserProfile) => void;
   onClose: () => void;
   language: Language;
+  globalPlan?: TrainingPlan;
 }
 
 export default function WorkoutPlanView({ 
@@ -36,7 +37,8 @@ export default function WorkoutPlanView({
   onToggleExercise, 
   onUpdateProfile,
   onClose, 
-  language 
+  language,
+  globalPlan
 }: WorkoutPlanViewProps) {
   const t = useTranslation(language);
   const [activeTab, setActiveTab] = useState<'today' | 'week' | 'schedule' | 'resources'>('today');
@@ -58,6 +60,12 @@ export default function WorkoutPlanView({
     setHasInstructor(sport.hasInstructor || false);
   }, [sport.schedule, sport.equipment, sport.hasInstructor]);
 
+  useEffect(() => {
+    console.log('[WorkoutPlanView] sport.plan:', sport.plan?.table?.length, 'días');
+    console.log('[WorkoutPlanView] globalPlan:', globalPlan?.table?.length, 'días');
+    console.log('[WorkoutPlanView] activePlan usado:', (sport.plan || globalPlan)?.table?.length, 'días');
+  }, [sport, globalPlan]);
+
   const getWorkoutForDay = (date: Date) => {
     const dayLabel = format(date, 'EEEE', { locale: es }).toLowerCase();
     const dNum = date.getDay() === 0 ? 7 : date.getDay();
@@ -74,7 +82,8 @@ export default function WorkoutPlanView({
       }];
     }
 
-    const workouts = (sport.plan?.table || []).filter(t => {
+    const activePlan = sport.plan || globalPlan;
+    const workouts = (activePlan?.table || []).filter(t => {
       const d = t.day.toLowerCase();
       return d.includes(dayLabel) || d.includes('hoy') || d.includes(`día ${dNum}`) || d.includes(`dia ${dNum}`);
     });
@@ -101,15 +110,16 @@ export default function WorkoutPlanView({
     setIsRegenerating(true);
     try {
       // First save the equipment
-      const updatedSportConfig = { ...sport, equipment: localEquipment };
-      const updatedSports = profile.sports.map(s => 
-        s.sport === sport.sport ? updatedSportConfig : s
-      );
-
+      const updatedSportWithEquipment = { ...sport, equipment: localEquipment };
+      
       // We regenerate ONLY this sport's plan or all combined?
       // User says "adecuandose a sus limitaciones de equipo"
       // If we are in a single sport view, we regenerate the plan for that sport
-      const newPlan = await generateCombinedTrainingPlan(profile, [updatedSportConfig], language);
+      const newPlan = await generateCombinedTrainingPlan(
+        profile, 
+        [updatedSportWithEquipment], 
+        language
+      );
       
       const finaleSports = profile.sports.map(s => 
         s.sport === sport.sport ? { ...s, equipment: localEquipment, plan: newPlan } : s
@@ -130,6 +140,36 @@ export default function WorkoutPlanView({
       [day]: { ...prev[day], [field]: value }
     }));
   };
+
+  const activePlan = sport.plan || globalPlan;
+
+  // Si no hay plan, mostrar pantalla de generación automática
+  if (!activePlan && !isRegenerating) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0c] flex flex-col items-center justify-center gap-8 p-12">
+        <motion.div
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center"
+        >
+          <Dumbbell size={48} className="text-primary" />
+        </motion.div>
+        <div className="text-center space-y-2">
+          <h3 className="text-3xl font-headline font-black uppercase italic">{sport.sport}</h3>
+          <p className="text-on-surface-variant">No hay plan generado para este deporte todavía.</p>
+        </div>
+        <Button
+          onClick={handleRegenerate}
+          className="bg-primary text-on-primary font-black uppercase tracking-widest px-12 h-16 rounded-2xl shadow-2xl shadow-primary/20"
+        >
+          <Zap size={20} className="mr-2" /> Generar Plan de Entrenamiento
+        </Button>
+        <Button variant="ghost" onClick={onClose} className="text-on-surface-variant">
+          Volver
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0a0a0c] text-white p-6 md:p-12 space-y-8 relative">

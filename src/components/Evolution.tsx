@@ -174,6 +174,7 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
               onUpdateProfile={onUpdateProfile}
               onClose={() => setSelectedSportName(null)}
               language={language}
+              globalPlan={profile.plan}
             />
           </motion.div>
         )}
