@@ -137,6 +137,7 @@ export default function WorkoutPlanView({
   const [localSchedule, setLocalSchedule] = useState(sport.schedule || {});
   const [localEquipment, setLocalEquipment] = useState(sport.equipment || '');
   const [hasInstructor, setHasInstructor] = useState(sport.hasInstructor || false);
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
 
   useEffect(() => {
     setLocalSchedule(sport.schedule || {});
@@ -150,8 +151,13 @@ export default function WorkoutPlanView({
     console.log('[WorkoutPlanView] activePlan usado:', (sport.plan || globalPlan)?.table?.length, 'días');
   }, [sport, globalPlan]);
 
+  const normalizeText = (text: string) => {
+    return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  };
+
   const getWorkoutForDay = (date: Date) => {
     const dayLabel = format(date, 'EEEE', { locale: es }).toLowerCase();
+    const normalizedDayLabel = normalizeText(dayLabel);
     const dNum = date.getDay() === 0 ? 7 : date.getDay();
     
     // Si hay instructor, no devolvemos lista de ejercicios, sino una sesión genérica
@@ -167,19 +173,38 @@ export default function WorkoutPlanView({
     }
 
     const activePlan = sport.plan || globalPlan;
-    const workouts = (activePlan?.table || []).filter(t => {
-      const d = t.day.toLowerCase();
-      return d.includes(dayLabel) || d.includes('hoy') || d.includes(`día ${dNum}`) || d.includes(`dia ${dNum}`);
+    if (!activePlan?.table) return [];
+
+    const workouts = activePlan.table.filter(t => {
+      const d = normalizeText(t.day);
+      return d.includes(normalizedDayLabel) || 
+             d.includes('hoy') || 
+             d.includes(`dia ${dNum}`) || 
+             d.includes(`día ${dNum}`) ||
+             (normalizedDayLabel === 'lunes' && d.includes('lun')) ||
+             (normalizedDayLabel === 'martes' && d.includes('mar')) ||
+             (normalizedDayLabel === 'miercoles' && d.includes('mie')) ||
+             (normalizedDayLabel === 'jueves' && d.includes('jue')) ||
+             (normalizedDayLabel === 'viernes' && d.includes('vie')) ||
+             (normalizedDayLabel === 'sabado' && d.includes('sab')) ||
+             (normalizedDayLabel === 'domingo' && d.includes('dom'));
     });
 
     if (workouts.length === 0) return [];
     
-    // Filter exercises by current sport or if the exercise matches the sport name
     const allExercises = workouts.reduce((acc, curr) => [...acc, ...curr.exercises], [] as any[]);
+    
+    // If it's the sport's OWN plan, we don't filter by name as it's specifically for this sport
+    if (sport.plan) {
+      return allExercises;
+    }
+
+    // Otherwise (globalPlan), filter by current sport name
+    const sName = normalizeText(sport.sport);
     return allExercises.filter(ex => 
       !ex.sport || 
-      ex.sport.toLowerCase().includes(sport.sport.toLowerCase()) ||
-      sport.sport.toLowerCase().includes(ex.sport.toLowerCase())
+      normalizeText(ex.sport).includes(sName) ||
+      sName.includes(normalizeText(ex.sport))
     );
   };
 
@@ -449,6 +474,31 @@ export default function WorkoutPlanView({
             )}
 
             {/* Today Progress Overview */}
+            <div className="flex items-center justify-between">
+              <div className="flex gap-2 p-1 bg-white/5 rounded-xl border border-white/5">
+                <Button 
+                  variant={viewMode === 'cards' ? 'secondary' : 'ghost'} 
+                  size="sm" 
+                  onClick={() => setViewMode('cards')}
+                  className="rounded-lg text-[10px] uppercase font-black px-4 h-8"
+                >
+                  <Icons.Layout size={14} className="mr-2" /> Fichas
+                </Button>
+                <Button 
+                  variant={viewMode === 'table' ? 'secondary' : 'ghost'} 
+                  size="sm" 
+                  onClick={() => setViewMode('table')}
+                  className="rounded-lg text-[10px] uppercase font-black px-4 h-8"
+                >
+                  <Icons.Table size={14} className="mr-2" /> Tabla
+                </Button>
+              </div>
+              <div className="text-right">
+                <span className="text-[10px] font-black uppercase opacity-40 block">Progreso Diario</span>
+                <span className="text-sm font-black text-primary italic uppercase">En Acción</span>
+              </div>
+            </div>
+
             <div className="grid grid-cols-3 gap-4">
               <div className="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center text-center">
                 <span className="text-[10px] font-black opacity-40 uppercase tracking-widest mb-2">Estado</span>
@@ -500,6 +550,7 @@ export default function WorkoutPlanView({
               progress={progress} 
               onToggle={onToggleExercise}
               language={language}
+              viewMode={viewMode}
             />
 
             <div className="h-20" /> {/* Extra space to avoid cut-off */}
@@ -715,6 +766,7 @@ export default function WorkoutPlanView({
                     progress={progress} 
                     onToggle={onToggleExercise}
                     language={language}
+                    viewMode={viewMode}
                   />
                 </div>
               </div>
@@ -726,12 +778,13 @@ export default function WorkoutPlanView({
   );
 }
 
-function ExerciseList({ date, exercises, progress, onToggle, language }: { 
+function ExerciseList({ date, exercises, progress, onToggle, language, viewMode = 'cards' }: { 
   date: Date, 
   exercises: any[], 
   progress: Record<string, DailyProgress>, 
   onToggle: (id: string, d: string) => void,
-  language: Language
+  language: Language,
+  viewMode?: 'cards' | 'table'
 }) {
   const dateKey = format(date, 'yyyy-MM-dd');
   const dayProgress = progress[dateKey];
@@ -746,6 +799,84 @@ function ExerciseList({ date, exercises, progress, onToggle, language }: {
           <h4 className="text-2xl font-headline font-black uppercase italic">Día de Recuperación</h4>
           <p className="font-medium mt-2">Cuerpo y mente necesitan descanso para crecer.</p>
         </div>
+      </div>
+    );
+  }
+
+  if (viewMode === 'table') {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between mb-2">
+           <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary"><Icons.Table size={20} /></div>
+            <span className="font-black uppercase text-sm tracking-widest">Vista de Tabla Dinámica</span>
+          </div>
+        </div>
+        
+        <Card className="bg-[#111318] border border-white/5 rounded-[2rem] overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="border-b border-white/5 bg-white/5">
+                  <th className="p-4 text-[10px] font-black uppercase tracking-widest opacity-40">Estado</th>
+                  <th className="p-4 text-[10px] font-black uppercase tracking-widest opacity-40">Ejercicio</th>
+                  <th className="p-4 text-[10px] font-black uppercase tracking-widest opacity-40">Secuencia</th>
+                  <th className="p-4 text-[10px] font-black uppercase tracking-widest opacity-40">Grupo</th>
+                  <th className="p-4 text-[10px] font-black uppercase tracking-widest opacity-40">Notas</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {exercises.map((ex, i) => {
+                  const isDone = completed.includes(ex.id);
+                  return (
+                    <motion.tr 
+                      key={ex.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      onClick={() => onToggle(ex.id, dateKey)}
+                      className={`cursor-pointer hover:bg-white/[0.02] transition-colors ${isDone ? 'opacity-40' : ''}`}
+                    >
+                      <td className="p-4">
+                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${isDone ? 'bg-secondary border-secondary' : 'border-white/10'}`}>
+                          {isDone && <CheckCircle2 size={12} className="text-background" />}
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          <ExerciseAnimation type={ex.name} isDone={isDone} />
+                          <div>
+                            <span className="text-sm font-black uppercase italic block">{ex.name}</span>
+                            <span className="text-[10px] opacity-40 font-bold">{ex.equipment || 'Sin material'}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="flex flex-col">
+                           <span className="text-xs font-black text-secondary">{ex.sets} <span className="text-[8px] opacity-40">SETS</span></span>
+                           <span className="text-xs font-black text-primary">{ex.reps} <span className="text-[8px] opacity-40">REPS</span></span>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <span className="px-2 py-1 bg-white/5 rounded-md text-[8px] font-black uppercase whitespace-nowrap">{ex.muscleGroup}</span>
+                      </td>
+                      <td className="p-4 max-w-xs">
+                        <p className="text-[10px] font-medium opacity-60 line-clamp-2 italic">"{ex.notes}"</p>
+                      </td>
+                    </motion.tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </Card>
+        
+        {isFinished && (
+           <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="p-6 bg-secondary/10 border border-secondary/20 rounded-3xl text-center">
+              <Trophy size={32} className="mx-auto text-secondary mb-2" />
+              <h5 className="font-headline font-black uppercase italic text-secondary">¡Entrenamiento de hoy Finalizado!</h5>
+           </motion.div>
+        )}
       </div>
     );
   }
