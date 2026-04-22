@@ -2,11 +2,13 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { format, startOfToday, isSameDay, startOfWeek, addDays, parseISO } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { CheckCircle2, Circle, Trophy, Dumbbell, X, Zap, Target, Clock, ClipboardList } from 'lucide-react';
+import { CheckCircle2, Circle, Trophy, Dumbbell, X, Target, Clock, ClipboardList } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { TrainingPlan, SportConfig, DailyProgress, Language } from '../types';
 import * as Icons from 'lucide-react';
+import { ExerciseAnimation } from './ExerciseAnimation';
+import { Zap, Layers } from 'lucide-react';
 
 interface WeeklyPlanVisualProps {
   sports: SportConfig[];
@@ -221,36 +223,32 @@ export default function WeeklyPlanVisual({ sports, plan, progress, onToggleExerc
                               animate={{ opacity: 1, x: 0 }}
                               transition={{ delay: idx * 0.05 }}
                               onClick={() => onToggleExercise(ex.id, dateKey)}
-                              className={`group relative flex items-center gap-6 p-6 rounded-3xl cursor-pointer border transition-all ${
+                              className={`group relative flex flex-col md:flex-row items-center gap-6 p-6 rounded-[2rem] cursor-pointer border-2 transition-all ${
                                 isDone 
                                   ? 'bg-secondary/5 border-secondary/20 opacity-80' 
-                                  : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/20'
+                                  : 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-primary/40'
                               }`}
                             >
-                              {/* Order number */}
-                              <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black text-sm shrink-0 transition-all ${
-                                isDone ? 'bg-secondary text-background' : 'bg-background group-hover:bg-primary/20 group-hover:text-primary'
-                              }`}>
-                                {idx + 1}
-                              </div>
+                              {/* Animation Guide */}
+                              <ExerciseAnimation type={ex.name} isDone={isDone} size="sm" />
 
                               {/* Info */}
-                              <div className="flex-1 min-w-0">
-                                <h4 className={`text-xl font-headline font-bold truncate transition-all ${isDone ? 'line-through text-on-surface-variant' : 'text-white'}`}>
+                              <div className="flex-1 min-w-0 w-full">
+                                <h4 className={`text-xl font-headline font-black uppercase italic truncate transition-all ${isDone ? 'line-through text-on-surface-variant' : 'text-white'}`}>
                                   {ex.name}
                                 </h4>
                                 <div className="flex items-center gap-4 mt-1">
-                                  <div className="flex items-center gap-1.5 text-xs font-medium text-secondary">
-                                    <Target size={14} />
+                                  <div className="flex items-center gap-1.5 text-[10px] font-black text-secondary uppercase tracking-widest">
+                                    <Layers size={12} />
                                     <span>{ex.sets} SERIES</span>
                                   </div>
-                                  <div className="flex items-center gap-1.5 text-xs font-medium text-primary">
-                                    <Zap size={14} />
+                                  <div className="flex items-center gap-1.5 text-[10px] font-black text-primary uppercase tracking-widest">
+                                    <Zap size={12} />
                                     <span>{ex.reps} REPS</span>
                                   </div>
                                 </div>
-                                <p className="text-[11px] text-on-surface-variant italic mt-2 opacity-60 group-hover:opacity-100 transition-opacity">
-                                  {ex.notes}
+                                <p className="text-[11px] text-on-surface-variant italic mt-2 opacity-60 group-hover:opacity-100 transition-opacity line-clamp-2">
+                                  "{ex.notes}"
                                 </p>
                               </div>
 
@@ -258,13 +256,22 @@ export default function WeeklyPlanVisual({ sports, plan, progress, onToggleExerc
                               <motion.div 
                                 className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 border-2 transition-all ${
                                   isDone 
-                                    ? 'bg-secondary border-secondary text-background' 
+                                    ? 'bg-secondary border-secondary text-background shadow-lg shadow-secondary/40' 
                                     : 'border-white/10 group-hover:border-primary/50'
                                 }`}
                                 animate={isDone ? { scale: [1, 1.2, 1] } : {}}
                               >
                                 {isDone ? <CheckCircle2 size={24} strokeWidth={3} /> : <Circle size={24} className="opacity-20" />}
                               </motion.div>
+
+                              {/* Performance Wave Animation */}
+                              {isDone && (
+                                <motion.div 
+                                  initial={{ width: 0 }}
+                                  animate={{ width: '100%' }}
+                                  className="absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-primary to-secondary"
+                                />
+                              )}
                             </motion.div>
                           );
                         })}

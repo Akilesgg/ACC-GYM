@@ -10,6 +10,8 @@ import { useTranslation } from '../lib/i18n';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { getPhysicalAnalysis } from '@/src/services/geminiService';
 import TabBackground from './TabBackground';
+import { ExerciseAnimation } from './ExerciseAnimation';
+import { Zap, Layers } from 'lucide-react';
 
 import WeeklyPlanVisual from './WeeklyPlanVisual';
 import WorkoutPlanView from './WorkoutPlanView';
@@ -71,7 +73,10 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
     const dayLabel = format(date, 'EEEE', { locale: es }).toLowerCase();
     const dNum = date.getDay() === 0 ? 7 : date.getDay();
 
-    const allEx = activePlans.flatMap(plan => {
+    const allEx = profile.sports.flatMap(sport => {
+      const plan = sport.plan || (profile.plan?.id ? profile.plan : null);
+      if (!plan) return [];
+      
       const dayPlan = plan.table.find(day => {
         const d = day.day.toLowerCase();
         return d.includes(dayLabel) || 
@@ -79,8 +84,23 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
                d.includes(`día ${dNum}`) ||
                d.includes(`dia ${dNum}`);
       });
-      return dayPlan?.exercises || [];
+      
+      return (dayPlan?.exercises || []).map(ex => ({ ...ex, sportName: sport.sport }));
     });
+    
+    // Si hay plan combinado global, añadirlo también si no está ya
+    if (profile.plan && !profile.sports.some(s => s.plan?.id === profile.plan?.id)) {
+      const globalDayPlan = profile.plan.table.find(day => {
+        const d = day.day.toLowerCase();
+        return d.includes(dayLabel) || 
+               d.includes('hoy') || 
+               d.includes(`día ${dNum}`) ||
+               d.includes(`dia ${dNum}`);
+      });
+      const globalExercises = (globalDayPlan?.exercises || []).map(ex => ({ ...ex, sportName: 'Plan Combinado' }));
+      allEx.push(...globalExercises);
+    }
+
     return Array.from(new Map(allEx.map(ex => [ex.id, ex])).values());
   };
 
@@ -264,31 +284,74 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
 
               <div className="space-y-4">
                 {todaysExercises.length > 0 ? (
-                  todaysExercises.map((ex, idx) => {
+                  todaysExercises.map((ex: any, idx) => {
                     const isCompleted = currentProgress.completedExercises.includes(ex.id);
                     return (
                       <Card 
-                        key={idx} 
+                        key={ex.id || idx} 
                         onClick={() => toggleExercise(ex.id)}
-                        className={`p-6 border-none cursor-pointer transition-all ${isCompleted ? 'bg-primary/10 opacity-60' : 'bg-surface hover:bg-surface-variant/50'}`}
+                        className={`relative overflow-hidden group cursor-pointer transition-all border-2 rounded-[2rem] ${
+                          isCompleted 
+                            ? 'bg-primary/5 border-primary/20 opacity-80' 
+                            : 'bg-surface border-white/5 hover:border-primary/40'
+                        }`}
                       >
-                        <div className="flex items-center gap-4">
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${isCompleted ? 'bg-primary text-on-primary' : 'bg-background text-outline-variant'}`}>
-                            {isCompleted ? <CheckCircle2 size={20} /> : <Circle size={20} />}
+                        <div className="p-6 md:p-8 flex flex-col md:flex-row items-center gap-8 relative z-10">
+                          {/* Animation Guide */}
+                          <ExerciseAnimation type={ex.name} isDone={isCompleted} size="md" />
+
+                          <div className="flex-1 w-full space-y-4">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="space-y-1">
+                                <span className="text-[10px] font-black uppercase tracking-widest text-primary italic">
+                                  {ex.sportName}
+                                </span>
+                                <h4 className={`text-2xl md:text-3xl font-headline font-black uppercase italic leading-tight ${isCompleted ? 'line-through opacity-40' : ''}`}>
+                                  {ex.name}
+                                </h4>
+                              </div>
+
+                              <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all shrink-0 ${
+                                isCompleted 
+                                  ? 'bg-primary border-primary text-on-primary shadow-lg shadow-primary/40' 
+                                  : 'border-white/10 group-hover:border-primary/50 text-white/10'
+                              }`}>
+                                {isCompleted ? <CheckCircle2 size={24} /> : <Circle size={24} />}
+                              </div>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-6">
+                              <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-2xl">
+                                <Layers size={14} className="text-secondary" />
+                                <span className="text-xs font-black uppercase tracking-widest">{ex.sets} <span className="opacity-40">Series</span></span>
+                              </div>
+                              <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-2xl">
+                                <Zap size={14} className="text-primary" />
+                                <span className="text-xs font-black uppercase tracking-widest">{ex.reps} <span className="opacity-40">Reps</span></span>
+                              </div>
+                            </div>
                           </div>
-                          <div className="flex-1">
-                            <h4 className={`font-bold text-lg ${isCompleted ? 'line-through text-on-surface-variant' : 'text-on-surface'}`}>{ex.name}</h4>
-                            <p className="text-xs text-on-surface-variant font-medium uppercase tracking-wider">{ex.sets} x {ex.reps}</p>
-                          </div>
-                          <div className="text-right hidden md:block">
-                            <p className="text-[10px] text-on-surface-variant italic max-w-[200px]">{ex.notes}</p>
+
+                          <div className="hidden lg:block max-w-[250px]">
+                            <p className="text-xs font-medium text-on-surface-variant italic leading-relaxed">
+                              "{ex.notes}"
+                            </p>
                           </div>
                         </div>
+
+                        {/* Performance Wave Animation */}
+                        {isCompleted && (
+                          <motion.div 
+                            initial={{ width: 0 }}
+                            animate={{ width: '100%' }}
+                            className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-primary to-secondary"
+                          />
+                        )}
                       </Card>
                     );
                   })
                 ) : (
-                  <Card className="p-12 text-center bg-surface border-none flex flex-col items-center justify-center gap-4">
+                  <Card className="p-12 text-center bg-surface border-none flex flex-col items-center justify-center gap-4 rounded-[3rem]">
                     <div className="w-16 h-16 bg-background rounded-full flex items-center justify-center text-on-surface-variant/20">
                       <Clock size={32} />
                     </div>
