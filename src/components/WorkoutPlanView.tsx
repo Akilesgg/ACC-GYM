@@ -17,6 +17,90 @@ import * as Icons from 'lucide-react';
 import { useTranslation } from '../lib/i18n';
 import { generateCombinedTrainingPlan } from '@/src/services/geminiService';
 
+const ExerciseAnimation = ({ type, isDone }: { type: string, isDone: boolean }) => {
+  const isBoxing = type.toLowerCase().includes('box') || type.toLowerCase().includes('jab') || type.toLowerCase().includes('hook');
+  const isLifting = type.toLowerCase().includes('press') || type.toLowerCase().includes('pesa') || type.toLowerCase().includes('mancuerna') || type.toLowerCase().includes('sentadilla') || type.toLowerCase().includes('squat');
+  const isRunning = type.toLowerCase().includes('run') || type.toLowerCase().includes('correr') || type.toLowerCase().includes('rodaje') || type.toLowerCase().includes('sprint');
+  
+  return (
+    <div className={`relative w-24 h-24 rounded-2xl overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center shrink-0 ${isDone ? 'opacity-30 grayscale' : ''}`}>
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10" />
+      
+      {isBoxing && (
+        <div className="relative">
+          <motion.div
+            animate={{ 
+              x: [0, 40, 0],
+              scale: [1, 1.2, 1],
+              rotate: [0, -10, 0]
+            }}
+            transition={{ duration: 0.8, repeat: Infinity, ease: "circOut" }}
+            className="text-primary"
+          >
+            <Icons.Zap size={32} />
+          </motion.div>
+          <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-primary/20 animate-ping" />
+        </div>
+      )}
+
+      {isLifting && (
+        <div className="flex flex-col items-center">
+          <motion.div
+            animate={{ 
+              y: [10, -10, 10],
+              scaleY: [0.9, 1.1, 0.9]
+            }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            className="text-secondary"
+          >
+            <Dumbbell size={32} />
+          </motion.div>
+          <motion.div 
+            animate={{ width: [20, 40, 20], opacity: [0.2, 0.5, 0.2] }}
+            transition={{ duration: 1.5, repeat: Infinity }}
+            className="h-1 bg-secondary/30 rounded-full mt-2" 
+          />
+        </div>
+      )}
+
+      {isRunning && (
+        <div className="flex gap-2">
+          {[0, 1, 2].map(i => (
+            <motion.div
+              key={i}
+              animate={{ 
+                y: [0, -15, 0],
+                opacity: [0.3, 1, 0.3]
+              }}
+              transition={{ 
+                duration: 0.6, 
+                repeat: Infinity, 
+                delay: i * 0.2,
+                ease: "easeInOut" 
+              }}
+              className="w-2 h-8 bg-primary rounded-full"
+            />
+          ))}
+        </div>
+      )}
+
+      {!isBoxing && !isLifting && !isRunning && (
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+          className="text-white/20"
+        >
+          <Icons.Activity size={32} />
+        </motion.div>
+      )}
+      
+      <div className="absolute bottom-1 right-2">
+        <span className="text-[6px] font-black uppercase tracking-widest opacity-40">Guía Visual</span>
+      </div>
+    </div>
+  );
+};
+
 interface WorkoutPlanViewProps {
   sport: SportConfig;
   allSports: SportConfig[];
@@ -733,122 +817,84 @@ function ExerciseList({ date, exercises, progress, onToggle, language }: {
                   : 'bg-[#111318] border-white/5 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10'
               }`}
             >
-              {/* Exercise Image Backdrop */}
-              {!isDone && (
-                <div className="absolute top-0 right-0 w-1/2 h-full opacity-10 pointer-events-none overflow-hidden">
-                  <img 
-                    src={`https://picsum.photos/seed/${ex.imageSearchQuery || ex.name}/400/600`}
-                    alt=""
-                    referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover grayscale brightness-200"
-                  />
-                </div>
-              )}
+              <div className="p-8 flex flex-col lg:flex-row lg:items-center gap-8 relative z-10">
+                {/* Exercise Animation / Visual Guide */}
+                <ExerciseAnimation type={ex.name} isDone={isDone} />
 
-              <div className="p-8 flex flex-col md:flex-row md:items-center gap-8 relative z-10">
-                {/* Exercise Progress / Icon */}
-                <div className="flex items-center justify-between md:flex-col md:justify-center md:gap-4 shrink-0">
-                  <motion.div 
-                    animate={isDone ? { scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] } : {}}
-                    className={`w-16 h-16 rounded-full flex items-center justify-center border-4 transition-all ${
+                {/* Exercise Progress / Icon (Desktop simple) */}
+                <div className="hidden lg:flex flex-col items-center justify-center gap-2 shrink-0 px-4 border-r border-white/5">
+                   <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">ORDEN</span>
+                   <p className="font-headline font-black text-4xl italic text-primary">{i + 1}</p>
+                </div>
+
+                <div className="flex-1 space-y-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <h4 className={`text-4xl font-headline font-black uppercase italic tracking-tight leading-none ${isDone ? 'line-through opacity-50' : ''}`}>
+                          {ex.name}
+                        </h4>
+                        {ex.muscleGroup && (
+                          <span className="px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-xl text-[10px] font-black uppercase tracking-wider text-primary shrink-0">
+                            {ex.muscleGroup}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-6 mt-4">
+                         <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-2xl border border-white/5">
+                            <Icons.Layers size={16} className="text-secondary" />
+                            <div className="flex flex-col">
+                              <span className="text-[8px] font-black opacity-40 uppercase leading-none">Series</span>
+                              <span className="text-lg font-headline font-black italic leading-none">{ex.sets}</span>
+                            </div>
+                         </div>
+                         <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-2xl border border-white/5">
+                            <Zap size={16} className="text-primary" />
+                            <div className="flex flex-col">
+                              <span className="text-[8px] font-black opacity-40 uppercase leading-none">Reps</span>
+                              <span className="text-lg font-headline font-black italic leading-none">{ex.reps}</span>
+                            </div>
+                         </div>
+                         {ex.equipment && (
+                           <div className="flex items-center gap-2 opacity-60">
+                             <Icons.Box size={14} />
+                             <span className="text-[10px] font-black uppercase tracking-widest">{ex.equipment}</span>
+                           </div>
+                         )}
+                      </div>
+                    </div>
+
+                    <div className={`w-16 h-16 rounded-full flex items-center justify-center border-4 transition-all shrink-0 ${
                       isDone 
                         ? 'bg-secondary border-secondary text-background shadow-lg shadow-secondary/40' 
                         : 'border-white/10 group-hover:border-primary/50 text-white/20'
-                    }`}
-                  >
-                    {isDone ? <CheckCircle2 size={32} /> : <Dumbbell size={32} className="opacity-40" />}
-                  </motion.div>
-                  <div className="text-center md:block hidden">
-                    <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">EJERCICIO</span>
-                    <p className="font-black text-xl leading-none">{i + 1}</p>
-                  </div>
-                  <div className="md:hidden">
-                     <span className={`px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest ${isDone ? 'bg-secondary/20 text-secondary' : 'bg-primary/20 text-primary'}`}>
-                       {isDone ? 'LOGRADO' : 'PENDIENTE'}
-                     </span>
-                  </div>
-                </div>
-
-                <div className="flex-1 space-y-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-3">
-                      <h4 className={`text-3xl font-headline font-black uppercase italic tracking-tight leading-tight ${isDone ? 'line-through opacity-50' : ''}`}>
-                        {ex.name}
-                      </h4>
-                      {ex.muscleGroup && (
-                        <span className="px-3 py-1 bg-white/5 rounded-full text-[9px] font-black uppercase tracking-wider text-on-surface-variant shrink-0 text-white/60">
-                          {ex.muscleGroup}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex flex-wrap items-center gap-6 mt-2">
-                       <div className="flex items-center gap-2 text-secondary">
-                          <LayoutGrid size={16} />
-                          <span className="text-sm font-black uppercase tracking-widest">{ex.sets} <span className="opacity-40">Series</span></span>
-                       </div>
-                       <div className="flex items-center gap-2 text-primary">
-                          <Zap size={16} />
-                          <span className="text-sm font-black uppercase tracking-widest">{ex.reps} <span className="opacity-40">Reps</span></span>
-                       </div>
-                       {ex.equipment && (
-                         <div className="flex items-center gap-2 text-on-surface-variant opacity-60">
-                           <Icons.Settings size={14} />
-                           <span className="text-xs font-bold uppercase tracking-widest">{ex.equipment}</span>
-                         </div>
-                       )}
+                    }`}>
+                      {isDone ? <CheckCircle2 size={32} /> : <Dumbbell size={32} className="opacity-40" />}
                     </div>
                   </div>
 
-                  <div className="space-y-3">
-                    <div className="p-4 bg-background/50 rounded-2xl border border-white/5 relative group-hover:border-primary/20 transition-all">
-                      <p className="text-sm font-medium leading-relaxed opacity-70 group-hover:opacity-100 italic">
-                        "{ex.notes}"
-                      </p>
-                      <Icons.Info size={14} className="absolute -top-2 -right-2 text-white/10" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="p-5 bg-background/50 rounded-3xl border border-white/5 relative group-hover:border-primary/20 transition-all flex items-start gap-4 h-full">
+                      <Icons.Text size={18} className="text-primary/40 shrink-0 mt-1" />
+                      <div>
+                        <span className="text-[9px] font-black uppercase tracking-widest opacity-40 block mb-1">Ejecución</span>
+                        <p className="text-sm font-medium leading-relaxed opacity-80 group-hover:opacity-100 italic">
+                          "{ex.notes}"
+                        </p>
+                      </div>
                     </div>
 
                     {ex.executionTip && (
-                      <motion.div 
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        className="p-4 bg-primary/10 rounded-2xl border border-primary/20 flex gap-3"
-                      >
-                        <Icons.Lightbulb size={18} className="text-primary shrink-0" />
-                        <p className="text-xs font-black text-primary leading-relaxed uppercase tracking-tighter italic">
-                          "{ex.executionTip}"
-                        </p>
-                      </motion.div>
-                    )}
-
-                    {ex.alternatives && ex.alternatives.length > 0 && (
-                      <div className="flex flex-wrap gap-2 pt-1">
-                        {ex.alternatives.map((alt: string, idx: number) => (
-                          <span key={idx} className="text-[8px] font-black uppercase bg-white/5 border border-white/5 text-white/40 px-2 py-0.5 rounded-lg">
-                            Alt: {alt}
-                          </span>
-                        ))}
+                      <div className="p-5 bg-secondary/5 rounded-3xl border border-secondary/20 relative transition-all flex items-start gap-4 h-full">
+                        <Sparkles size={18} className="text-secondary shrink-0 mt-1" />
+                        <div>
+                          <span className="text-[9px] font-black uppercase tracking-widest text-secondary block mb-1">Tip de Instructor</span>
+                          <p className="text-sm font-black italic leading-relaxed text-secondary/80">
+                            {ex.executionTip || ex.notes}
+                          </p>
+                        </div>
                       </div>
                     )}
-                  </div>
-                </div>
-
-                {/* Animation / Video Trigger Placeholder */}
-                <div className="shrink-0 flex justify-end md:justify-center">
-                  <div className="w-40 h-28 rounded-2xl bg-white/5 border border-white/5 overflow-hidden relative group/video">
-                    <img 
-                      src={`https://picsum.photos/seed/${ex.imageSearchQuery || ex.name}/200/150`}
-                      alt={ex.name}
-                      referrerPolicy="no-referrer"
-                      className="w-full h-full object-cover opacity-60 group-hover:scale-110 transition-transform duration-700 animate-pulse"
-                    />
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center text-on-primary">
-                        <Icons.Play size={20} fill="currentColor" />
-                      </div>
-                    </div>
-                    <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/60 backdrop-blur-md rounded-md">
-                      <span className="text-[8px] font-black uppercase tracking-widest text-white/80">Guía Visual</span>
-                    </div>
                   </div>
                 </div>
               </div>
