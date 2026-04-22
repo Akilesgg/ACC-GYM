@@ -27,7 +27,9 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     experienceLevel: 'activo',
     injuries: '',
     daysPerWeek: 3,
-    sports: []
+    sports: [],
+    points: 0,
+    rank: 'Novato'
   });
 
   useEffect(() => {

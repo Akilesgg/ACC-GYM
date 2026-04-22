@@ -79,7 +79,15 @@ export default function WorkoutPlanView({
       return d.includes(dayLabel) || d.includes('hoy') || d.includes(`día ${dNum}`) || d.includes(`dia ${dNum}`);
     });
 
-    return workouts.length > 0 ? workouts[0].exercises : [];
+    if (workouts.length === 0) return [];
+    
+    // Filter exercises by current sport or if the exercise matches the sport name
+    const allExercises = workouts.reduce((acc, curr) => [...acc, ...curr.exercises], [] as any[]);
+    return allExercises.filter(ex => 
+      !ex.sport || 
+      ex.sport.toLowerCase().includes(sport.sport.toLowerCase()) ||
+      sport.sport.toLowerCase().includes(ex.sport.toLowerCase())
+    );
   };
 
   const handleSaveSettings = () => {
@@ -124,7 +132,7 @@ export default function WorkoutPlanView({
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0c] text-white p-6 md:p-12 space-y-8 relative overflow-hidden">
+    <div className="min-h-screen bg-[#0a0a0c] text-white p-6 md:p-12 space-y-8 relative">
       {/* Dynamic Visual Backdrop */}
       <div className="absolute top-0 left-0 w-full h-[60vh] opacity-10 pointer-events-none">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0a0a0c]/80 to-[#0a0a0c] z-10" />
@@ -667,7 +675,7 @@ function ExerciseList({ date, exercises, progress, onToggle, language }: {
                         {ex.name}
                       </h4>
                       {ex.muscleGroup && (
-                        <span className="px-3 py-1 bg-white/5 rounded-full text-[9px] font-black uppercase tracking-wider text-on-surface-variant shrink-0">
+                        <span className="px-3 py-1 bg-white/5 rounded-full text-[9px] font-black uppercase tracking-wider text-on-surface-variant shrink-0 text-white/60">
                           {ex.muscleGroup}
                         </span>
                       )}
@@ -690,11 +698,36 @@ function ExerciseList({ date, exercises, progress, onToggle, language }: {
                     </div>
                   </div>
 
-                  <div className="p-4 bg-background/50 rounded-2xl border border-white/5 relative group-hover:border-primary/20 transition-all">
-                    <p className="text-sm font-medium leading-relaxed opacity-70 group-hover:opacity-100 italic">
-                      "{ex.notes}"
-                    </p>
-                    <Icons.Info size={14} className="absolute -top-2 -right-2 text-white/10" />
+                  <div className="space-y-3">
+                    <div className="p-4 bg-background/50 rounded-2xl border border-white/5 relative group-hover:border-primary/20 transition-all">
+                      <p className="text-sm font-medium leading-relaxed opacity-70 group-hover:opacity-100 italic">
+                        "{ex.notes}"
+                      </p>
+                      <Icons.Info size={14} className="absolute -top-2 -right-2 text-white/10" />
+                    </div>
+
+                    {ex.executionTip && (
+                      <motion.div 
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className="p-4 bg-primary/10 rounded-2xl border border-primary/20 flex gap-3"
+                      >
+                        <Icons.Lightbulb size={18} className="text-primary shrink-0" />
+                        <p className="text-xs font-black text-primary leading-relaxed uppercase tracking-tighter italic">
+                          "{ex.executionTip}"
+                        </p>
+                      </motion.div>
+                    )}
+
+                    {ex.alternatives && ex.alternatives.length > 0 && (
+                      <div className="flex flex-wrap gap-2 pt-1">
+                        {ex.alternatives.map((alt: string, idx: number) => (
+                          <span key={idx} className="text-[8px] font-black uppercase bg-white/5 border border-white/5 text-white/40 px-2 py-0.5 rounded-lg">
+                            Alt: {alt}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </div>
 

@@ -20,13 +20,26 @@ export interface SportConfig {
   plan?: TrainingPlan;
   isCombined?: boolean;
   subtype?: string;
-  schedule?: Record<string, {
-    time?: string;
-    location?: string;
-    notes?: string;
-    sport?: string;
-  }>;
-  equipment?: string;
+  equipment?: {
+    hasGym?: boolean;
+    hasBarbell?: boolean;
+    hasDumbbells?: boolean;
+    hasPullupBar?: boolean;
+    hasBands?: boolean;
+    hasBike?: boolean;
+    hasPool?: boolean;
+    hasRoller?: boolean;
+    customEquipment?: string;
+    limitations?: string;
+  };
+  schedule?: {
+    [day: string]: {
+      time?: string;
+      location?: string;
+      notes?: string;
+    }
+  };
+  trainingMode?: 'libre' | 'guiado';
   hasInstructor?: boolean;
 }
 
@@ -94,6 +107,8 @@ export interface UserProfile {
   progress?: Record<string, DailyProgress>; // Key is YYYY-MM-DD
   streak?: number;
   status?: 'online' | 'offline' | 'invisible';
+  points?: number;
+  rank?: string;
   lastSeen?: string;
   // Plan
   plan?: TrainingPlan;
@@ -111,6 +126,7 @@ export interface TrainingPlan {
   id: string;
   createdAt: string;
   reasoning: string;
+  executionNotes?: string;
   table: {
     day: string;
     exercises: {
@@ -119,6 +135,14 @@ export interface TrainingPlan {
       sets: string;
       reps: string;
       notes: string;
+      muscleGroup?: string;
+      equipment?: string;
+      imageSearchQuery?: string;
+      executionTip?: string;
+      videoKeyword?: string;
+      alternatives?: string[];
+      sport?: string;
+      isInstructorLed?: boolean;
       completed?: boolean;
     }[];
   }[];

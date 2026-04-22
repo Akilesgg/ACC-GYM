@@ -215,6 +215,19 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
     addSport(configs, isCombined);
   };
 
+  const [showModeModal, setShowModeModal] = useState<SportConfig | null>(null);
+
+  const handleUpdateMode = async (mode: 'libre' | 'guiado') => {
+    if (!showModeModal) return;
+    
+    const updatedSports = profile.sports.map(s => 
+      s.sport === showModeModal.sport ? { ...s, trainingMode: mode } : s
+    );
+    
+    await onUpdateProfile({ ...profile, sports: updatedSports });
+    setShowModeModal(null);
+  };
+
   const removeSport = (sportName: string) => {
     const updatedSports = profile.sports.filter(s => s.sport !== sportName);
     onUpdateProfile({ ...profile, sports: updatedSports });
@@ -328,7 +341,10 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
           <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">{t('tusDeportesActivos')}</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {profile.sports.map((s, idx) => (
-                    <Card key={idx} className="bg-surface border-none p-6 flex items-center justify-between group">
+                    <Card key={idx} 
+                      onClick={() => setShowModeModal(s)}
+                      className="bg-surface border border-white/5 p-6 flex items-center justify-between group cursor-pointer hover:bg-surface-variant/20 transition-all"
+                    >
                       <div className="flex items-center gap-4">
                         <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
                           {(() => {
@@ -337,7 +353,14 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
                           })()}
                         </div>
                         <div>
-                          <h4 className="font-headline font-bold text-lg uppercase">{s.sport}</h4>
+                          <div className="flex items-center gap-2">
+                            <h4 className="font-headline font-bold text-lg uppercase">{s.sport}</h4>
+                            {s.trainingMode && (
+                              <span className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-tighter ${s.trainingMode === 'guiado' ? 'bg-primary text-on-primary' : 'bg-secondary/20 text-secondary'}`}>
+                                {s.trainingMode}
+                              </span>
+                            )}
+                          </div>
                           <div className="flex gap-2 items-center">
                             <p className="text-xs text-on-surface-variant font-black uppercase tracking-widest">{s.daysPerWeek} {t('activos').toLowerCase()}</p>
                             <span className="w-1 h-1 bg-outline-variant rounded-full" />
@@ -345,19 +368,83 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
                           </div>
                         </div>
                       </div>
-                      <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => removeSport(s.sport)}
-                  className="text-on-surface-variant hover:text-destructive hover:bg-destructive/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <Trash2 size={18} />
-                </Button>
-              </Card>
-            ))}
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeSport(s.sport);
+                          }}
+                          className="text-on-surface-variant hover:text-destructive hover:bg-destructive/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <Trash2 size={18} />
+                        </Button>
+                        <ChevronRight className="text-on-surface-variant/20 group-hover:text-primary transition-colors" />
+                      </div>
+                    </Card>
+                  ))}
           </div>
         </section>
       )}
+
+      {/* Mode Selection Modal */}
+      <AnimatePresence>
+        {showModeModal && (
+          <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+            <motion.div 
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-[#111318] p-8 rounded-[2.5rem] border border-white/10 shadow-[0_32px_64px_rgba(0,0,0,0.8)] max-w-md w-full space-y-8 relative overflow-hidden"
+            >
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-secondary to-primary" />
+              
+              <div className="text-center space-y-2">
+                <h3 className="font-headline text-2xl font-black uppercase tracking-tight text-white">MODO DE ENTRENAMIENTO</h3>
+                <p className="text-sm text-on-surface-variant uppercase tracking-widest font-bold">Configurando {showModeModal.sport}</p>
+              </div>
+              
+              <div className="grid grid-cols-1 gap-4">
+                <Button 
+                  onClick={() => handleUpdateMode('libre')}
+                  className={`h-28 border-2 transition-all rounded-3xl flex flex-col items-center justify-center gap-1 group relative overflow-hidden ${
+                    showModeModal.trainingMode === 'libre' ? 'border-secondary bg-secondary/5' : 'border-white/5 bg-white/5 hover:border-secondary/30'
+                  }`}
+                >
+                  <Zap size={28} className="text-secondary group-hover:scale-110 transition-transform mb-1" />
+                  <span className="font-black text-sm uppercase tracking-widest text-white">Entrenamiento Libre</span>
+                  <span className="text-[10px] opacity-40 uppercase font-bold">Tú marcas el camino</span>
+                  {showModeModal.trainingMode === 'libre' && (
+                    <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-secondary" />
+                  )}
+                </Button>
+                
+                <Button 
+                  onClick={() => handleUpdateMode('guiado')}
+                  className={`h-28 border-2 transition-all rounded-3xl flex flex-col items-center justify-center gap-1 group relative overflow-hidden ${
+                    showModeModal.trainingMode === 'guiado' ? 'border-primary bg-primary/10' : 'bg-primary text-on-primary shadow-xl shadow-primary/20 hover:scale-[1.02]'
+                  }`}
+                >
+                  <Target size={28} className="mb-1" />
+                  <span className="font-black text-sm uppercase tracking-widest">Plan Guiado (IA)</span>
+                  <span className="text-[10px] opacity-70 uppercase font-bold">Optimizado por ciencia deportiva</span>
+                  {showModeModal.trainingMode === 'guiado' && (
+                    <div className="absolute top-2 right-2 w-2 h-2 rounded-full bg-white animate-pulse" />
+                  )}
+                </Button>
+              </div>
+              
+              <button 
+                onClick={() => setShowModeModal(null)} 
+                className="w-full text-[11px] font-black uppercase tracking-[0.3em] text-on-surface-variant/40 hover:text-white transition-colors pt-2"
+              >
+                Cerrar ajustes
+              </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       <AnimatePresence mode="wait">
         {loading ? (

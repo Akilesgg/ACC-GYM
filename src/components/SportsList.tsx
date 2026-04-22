@@ -25,12 +25,43 @@ interface CategoryGroup {
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 
+const equipmentOptions: Record<string, {key: string, label: string, icon: string}[]> = {
+  'Fuerza': [
+    { key: 'hasGym', label: 'Gimnasio completo', icon: '🏋️' },
+    { key: 'hasBarbell', label: 'Barra + discos', icon: '🔩' },
+    { key: 'hasDumbbells', label: 'Mancuernas', icon: '💪' },
+    { key: 'hasPullupBar', label: 'Barra dominadas', icon: '🔗' },
+    { key: 'hasBands', label: 'Bandas elásticas', icon: '🪢' },
+  ],
+  'Cardio': [
+    { key: 'hasBike', label: 'Bicicleta', icon: '🚴' },
+    { key: 'hasPool', label: 'Piscina', icon: '🏊' },
+    { key: 'hasRoller', label: 'Rodillo indoor', icon: '⚙️' },
+    { key: 'hasBands', label: 'Bandas elásticas', icon: '🪢' },
+  ],
+  'Contacto': [
+    { key: 'hasGym', label: 'Gimnasio/Dojo', icon: '🥋' },
+    { key: 'hasBands', label: 'Saco de boxeo', icon: '🥊' },
+    { key: 'hasDumbbells', label: 'Pesas', icon: '💪' },
+  ],
+  'Combate': [
+    { key: 'hasGym', label: 'Gimnasio/Dojo', icon: '🥋' },
+    { key: 'hasBands', label: 'Saco de boxeo', icon: '🥊' },
+    { key: 'hasDumbbells', label: 'Pesas', icon: '💪' },
+  ],
+};
+
+const defaultEquipmentOptions = [
+  { key: 'hasGym', label: 'Gimnasio/Instalación', icon: '🏢' },
+  { key: 'hasBands', label: 'Bandas/Material básico', icon: '🪢' },
+];
+
 export default function SportsList({ sports, selectedSportNames, savedSportNames = [], onSelect, onConfirm, language }: SportsListProps) {
   const t = useTranslation(language);
   const [search, setSearch] = useState('');
   const [openCategories, setOpenCategories] = useState<string[]>([]);
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
-  const [sportConfigs, setSportConfigs] = useState<Record<string, { goal: string, frequency: number, duration: number, isCombined: boolean }>>({});
+  const [sportConfigs, setSportConfigs] = useState<Record<string, { goal: string, frequency: number, duration: number, isCombined: boolean, subtype?: string, equipment?: any }>>({});
   const [configuringSport, setConfiguringSport] = useState<string | null>(null);
 
   const toggleSport = (sportName: string) => {
@@ -50,7 +81,7 @@ export default function SportsList({ sports, selectedSportNames, savedSportNames
     }
   };
 
-  const updateSportConfig = (sportName: string, updates: Partial<{ goal: string, frequency: number, duration: number, isCombined: boolean, subtype: string }>) => {
+  const updateSportConfig = (sportName: string, updates: Partial<{ goal: string, frequency: number, duration: number, isCombined: boolean, subtype: string, equipment: any }>) => {
     setSportConfigs(prev => ({
       ...prev,
       [sportName]: { ...prev[sportName], ...updates }
@@ -65,7 +96,9 @@ export default function SportsList({ sports, selectedSportNames, savedSportNames
         daysPerWeek: sportConfigs[name]?.frequency || 3,
         durationPerSession: sportConfigs[name]?.duration || 60,
         isCombined: isCombined,
-        subtype: sportConfigs[name]?.subtype
+        subtype: sportConfigs[name]?.subtype,
+        equipment: sportConfigs[name]?.equipment || {},
+        hasInstructor: !!sportConfigs[name]?.equipment?.hasInstructor
       }));
       onConfirm(configs, isCombined);
     }
@@ -342,6 +375,59 @@ export default function SportsList({ sports, selectedSportNames, savedSportNames
                                     </div>
                                   </div>
 
+                                  <div className="space-y-3 pt-3 border-t border-white/10">
+                                    <div className="flex items-center justify-between p-4 bg-background/30 rounded-2xl border border-white/5 mb-4 group/inst">
+                                      <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-secondary/10 rounded-xl flex items-center justify-center text-secondary group-hover/inst:scale-110 transition-transform">
+                                          <Icons.GraduationCap size={20} />
+                                        </div>
+                                        <div>
+                                          <p className="text-[10px] font-black uppercase tracking-widest text-white">¿Tienes un profesor?</p>
+                                          <p className="text-[9px] font-medium opacity-40 uppercase">Para clases guiadas o entrenamiento personal</p>
+                                        </div>
+                                      </div>
+                                      <button
+                                        onClick={() => updateSportConfig(sport.name, {
+                                          equipment: { ...sportConfigs[sport.name]?.equipment, hasInstructor: !sportConfigs[sport.name]?.equipment?.hasInstructor }
+                                        })}
+                                        className={`w-12 h-6 rounded-full transition-all relative ${sportConfigs[sport.name]?.equipment?.hasInstructor ? 'bg-secondary' : 'bg-surface-variant'}`}
+                                      >
+                                        <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${sportConfigs[sport.name]?.equipment?.hasInstructor ? 'right-1' : 'left-1'}`} />
+                                      </button>
+                                    </div>
+
+                                    <p className="text-[10px] font-black uppercase tracking-widest text-secondary">
+                                      ¿Con qué recursos cuentas?
+                                    </p>
+                                    
+                                    <div className="grid grid-cols-2 gap-2">
+                                      {(equipmentOptions[sport.category] || defaultEquipmentOptions).map(opt => (
+                                        <button
+                                          key={opt.key}
+                                          onClick={() => updateSportConfig(sport.name, {
+                                            equipment: { ...sportConfigs[sport.name]?.equipment, [opt.key]: !sportConfigs[sport.name]?.equipment?.[opt.key] }
+                                          })}
+                                          className={`flex items-center gap-2 p-2 rounded-xl text-[10px] font-bold border transition-all ${
+                                            sportConfigs[sport.name]?.equipment?.[opt.key]
+                                              ? 'border-primary bg-primary/10 text-primary'
+                                              : 'border-white/10 text-on-surface-variant'
+                                          }`}
+                                        >
+                                          <span>{opt.icon}</span> {opt.label}
+                                        </button>
+                                      ))}
+                                    </div>
+                                    
+                                    <textarea
+                                      placeholder="Otras limitaciones o equipo disponible..."
+                                      className="w-full bg-background/50 border border-white/10 rounded-xl p-3 text-xs text-on-surface resize-none h-16"
+                                      value={sportConfigs[sport.name]?.equipment?.limitations || ''}
+                                      onChange={(e) => updateSportConfig(sport.name, {
+                                        equipment: { ...sportConfigs[sport.name]?.equipment, limitations: e.target.value }
+                                      })}
+                                    />
+                                  </div>
+
                                   <div className="flex items-center justify-between pt-2 border-t border-outline-variant/10">
                                     <div className="flex items-center gap-2">
                                       <button
@@ -367,6 +453,8 @@ export default function SportsList({ sports, selectedSportNames, savedSportNames
                                               durationPerSession: sportConfigs[sport.name]?.duration || 60,
                                               isCombined: sportConfigs[sport.name]?.isCombined ?? false,
                                               subtype: sportConfigs[sport.name]?.subtype,
+                                              equipment: sportConfigs[sport.name]?.equipment || {},
+                                              hasInstructor: !!sportConfigs[sport.name]?.equipment?.hasInstructor
                                             };
                                             onConfirm([config], config.isCombined ?? false);
                                           }

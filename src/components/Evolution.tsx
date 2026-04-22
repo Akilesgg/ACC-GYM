@@ -115,7 +115,23 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
       },
     };
 
-    onUpdateProfile({ ...profile, progress: updatedProgress });
+    // Award Points
+    const pointsAwarded = !completed ? 10 : -10;
+    const newPoints = Math.max(0, (profile.points || 0) + pointsAwarded);
+    
+    // Rank Logic
+    let newRank = profile.rank || 'Novato';
+    if (newPoints > 500) newRank = 'Atleta Elite';
+    else if (newPoints > 200) newRank = 'Veterano';
+    else if (newPoints > 100) newRank = 'Avanzado';
+    else if (newPoints > 50) newRank = 'Iniciado';
+
+    onUpdateProfile({ 
+      ...profile, 
+      progress: updatedProgress,
+      points: newPoints,
+      rank: newRank
+    });
   };
 
   const completionRate = todaysExercises.length > 0 

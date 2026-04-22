@@ -115,6 +115,7 @@ const translations = {
     online: "En línea",
     offline: "Desconectado",
     invisible: "Modo Invisible",
+    ligaVirtual: "Liga Virtual",
     verTodos: "Ver todos",
     escribeMensaje: "Escribe un mensaje...",
     noMensajes: "No hay mensajes aún. ¡Di hola!",

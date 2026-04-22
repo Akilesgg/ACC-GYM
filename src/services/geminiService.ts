@@ -13,7 +13,7 @@ const getDietImage = (query: string): string => {
     ['pollo', 'photo-1598103442097-8b74394b95c3'],
     ['chicken', 'photo-1598103442097-8b74394b95c3'],
     ['pechuga', 'photo-1598103442097-8b74394b95c3'],
-    // Salmon
+    // Pescado / Fish
     ['salmon', 'photo-1467003909585-2f8a72700288'],
     ['pescado', 'photo-1467003909585-2f8a72700288'],
     ['fish', 'photo-1467003909585-2f8a72700288'],
@@ -24,74 +24,39 @@ const getDietImage = (query: string): string => {
     ['beef', 'photo-1546833999-b9f581a1996d'],
     ['carne', 'photo-1546833999-b9f581a1996d'],
     ['cerdo', 'photo-1546833999-b9f581a1996d'],
+    ['steak', 'photo-1546833999-b9f581a1996d'],
     // Huevos / Eggs
     ['huevo', 'photo-1482049016688-2d3e1b311543'],
     ['egg', 'photo-1482049016688-2d3e1b311543'],
     ['tortilla', 'photo-1482049016688-2d3e1b311543'],
-    ['revuelto', 'photo-1482049016688-2d3e1b311543'],
-    // Avena / Oats
-    ['avena', 'photo-1495214783159-3503fd1b572d'],
-    ['oatmeal', 'photo-1495214783159-3503fd1b572d'],
-    ['oat', 'photo-1495214783159-3503fd1b572d'],
-    ['porridge', 'photo-1495214783159-3503fd1b572d'],
-    ['cereales', 'photo-1495214783159-3503fd1b572d'],
-    // Pasta
-    ['pasta', 'photo-1473093295043-cdd812d0e601'],
-    ['espagueti', 'photo-1473093295043-cdd812d0e601'],
-    ['macarron', 'photo-1473093295043-cdd812d0e601'],
-    // Arroz / Rice
-    ['arroz', 'photo-1536304929831-ee1ca9d44906'],
-    ['rice', 'photo-1536304929831-ee1ca9d44906'],
-    // Ensalada / Salad
+    ['omni', 'photo-1482049016688-2d3e1b311543'],
+    // Desayuno / Breakfast / Avena
+    ['avena', 'photo-1494859814609-3fbd77c95bc1'],
+    ['oatmeal', 'photo-1494859814609-3fbd77c95bc1'],
+    ['breakfast', 'photo-1494859814609-3fbd77c95bc1'],
+    ['pancake', 'photo-1494859814609-3fbd77c95bc1'],
+    ['tostada', 'photo-1525351484163-7529414344d8'],
+    ['toast', 'photo-1525351484163-7529414344d8'],
+    // Ensaladas / Verduras
     ['ensalada', 'photo-1512621776951-a57141f2eefd'],
     ['salad', 'photo-1512621776951-a57141f2eefd'],
-    ['lechuga', 'photo-1512621776951-a57141f2eefd'],
-    // Sopa
-    ['sopa', 'photo-1547592166-23ac45744acd'],
-    ['soup', 'photo-1547592166-23ac45744acd'],
-    ['caldo', 'photo-1547592166-23ac45744acd'],
-    ['crema', 'photo-1547592166-23ac45744acd'],
-    // Batido / Smoothie
-    ['batido', 'photo-1502741224143-90386d7f8c82'],
-    ['smoothie', 'photo-1502741224143-90386d7f8c82'],
-    ['proteina', 'photo-1502741224143-90386d7f8c82'],
-    ['shake', 'photo-1502741224143-90386d7f8c82'],
-    // Aguacate / Avocado
-    ['aguacate', 'photo-1523049673857-eb18f1d7b578'],
-    ['avocado', 'photo-1523049673857-eb18f1d7b578'],
-    // Fruta / Fruit
+    ['verdura', 'photo-1540420773420-3366772f4999'],
+    ['vegetable', 'photo-1540420773420-3366772f4999'],
+    ['quinoa', 'photo-1512621776951-a57141f2eefd'],
+    // Frutas
     ['fruta', 'photo-1490474418585-ba9bad8fd0ea'],
     ['fruit', 'photo-1490474418585-ba9bad8fd0ea'],
-    ['platano', 'photo-1490474418585-ba9bad8fd0ea'],
-    ['banana', 'photo-1490474418585-ba9bad8fd0ea'],
-    ['manzana', 'photo-1490474418585-ba9bad8fd0ea'],
-    ['fresa', 'photo-1490474418585-ba9bad8fd0ea'],
-    ['arandano', 'photo-1490474418585-ba9bad8fd0ea'],
-    // Verdura / Vegetable
-    ['verdura', 'photo-1540420773420-3366772f4999'],
-    ['brocoli', 'photo-1540420773420-3366772f4999'],
-    ['espinaca', 'photo-1540420773420-3366772f4999'],
-    ['vegetable', 'photo-1540420773420-3366772f4999'],
-    ['esparragos', 'photo-1540420773420-3366772f4999'],
-    ['esparrago', 'photo-1540420773420-3366772f4999'],
-    ['asparagus', 'photo-1540420773420-3366772f4999'],
-    // Yogur
-    ['yogur', 'photo-1488477181946-6428a0291777'],
-    ['yogurt', 'photo-1488477181946-6428a0291777'],
-    ['queso', 'photo-1488477181946-6428a0291777'],
-    // Almendras / Frutos secos
-    ['almendra', 'photo-1508061253366-f7da158b6d46'],
-    ['almond', 'photo-1508061253366-f7da158b6d46'],
-    ['nuez', 'photo-1508061253366-f7da158b6d46'],
-    ['fruto seco', 'photo-1508061253366-f7da158b6d46'],
-    // Pan / Toast
-    ['pan', 'photo-1509440159596-0249088772ff'],
-    ['tostada', 'photo-1509440159596-0249088772ff'],
-    ['toast', 'photo-1509440159596-0249088772ff'],
+    ['smoothie', 'photo-1502741224143-90386d7f8c82'],
+    ['batido', 'photo-1502741224143-90386d7f8c82'],
+    // Pasta / Arroz
+    ['pasta', 'photo-1473093295043-cdd812d0e601'],
+    ['espagueti', 'photo-1473093295043-cdd812d0e601'],
+    ['arroz', 'photo-1536304929831-ee1ca9d44906'],
+    ['rice', 'photo-1536304929831-ee1ca9d44906'],
   ];
 
   const match = map.find(([k]) => q.includes(k));
-  const photoId = match ? match[1] : 'photo-1512621776951-a57141f2eefd';
+  const photoId = match ? match[1] : 'photo-1546069901-ba9599a7e63c';
   return `https://images.unsplash.com/${photoId}?w=800&auto=format&fit=crop&q=80`;
 };
 
@@ -107,47 +72,32 @@ export async function generateCombinedTrainingPlan(profile: UserProfile, configs
   try {
     const isSpanish = language === 'es';
     const sportsList = configs.map(c => {
-      const equipInfo = c.equipment ? ` (Equipamiento: ${c.equipment})` : '';
-      return `${c.sport}${equipInfo} (${c.daysPerWeek} ${isSpanish ? 'días' : 'days'}, ${c.durationPerSession || 60} min/sesión, ${c.goal})`;
+      const equipInfo = c.equipment ? ` (Recursos: ${JSON.stringify(c.equipment)})` : '';
+      const subtypeInfo = c.subtype ? ` [Subtipo: ${c.subtype}]` : '';
+      return `${c.sport}${subtypeInfo}${equipInfo} (${c.daysPerWeek} ${isSpanish ? 'días' : 'days'}, ${c.durationPerSession || 60} min/sesión, ${c.goal})`;
     }).join(", ");
     
     const prompt = isSpanish 
-      ? `Genera un plan de entrenamiento COMBINADO y profesional para los siguientes deportes: ${sportsList}.
-        Perfil del Usuario: 
-        - Nombre: ${profile.username}
-        - Peso: ${profile.weight}kg
-        - Altura: ${profile.height}cm
-        - Nivel de Experiencia: ${profile.experienceLevel}
-        - Lesiones: ${profile.injuries || 'Ninguna'}
+      ? `Genera un plan de entrenamiento COMBINADO, profesional y EDUCATIVO para: ${sportsList}.
+        Perfil: ${profile.username}, ${profile.weight}kg, ${profile.height}cm. Objetivo: ${profile.nutritionGoal || 'Mejora general'}. Nivel: ${profile.experienceLevel}. Lesiones: ${profile.injuries || 'Ninguna'}.
         
         Instrucciones:
-        1. Integra todos estos deportes en un único horario semanal cohesivo de 7 días.
-        2. Distribuye los días de entrenamiento de forma inteligente para evitar el sobreentrenamiento.
-        3. Asegura una recuperación óptima alternando intensidades.
-        4. Proporciona un razonamiento científico detallado para esta combinación.
-        5. El plan debe ser REALISTA y ejecutable.
-        6. IMPORTANTE: Adapta estrictamente los ejercicios al EQUIPAMIENTO especificado para cada deporte. Si el equipamiento es limitado, busca alternativas creativas (calistenia, bandas, etc.).
-        7. Para cada ejercicio, rellena: 'muscleGroup' (grupo principal), 'equipment' (lo que se requiere) e 'imageSearchQuery' (2-3 palabras clave en inglés para visualizar el ejercicio).
-        
-        IMPORTANTE: Cada ejercicio DEBE tener un 'id' único (ej. 'ex_1', 'ex_2').`
-      : `Generate a COMBINED and professional training plan for the following sports: ${sportsList}.
-        User Profile: 
-        - Name: ${profile.username}
-        - Weight: ${profile.weight}kg
-        - Height: ${profile.height}cm
-        - Experience Level: ${profile.experienceLevel}
-        - Injuries: ${profile.injuries || 'None'}
+        1. Horario semanal de 7 días.
+        2. Por cada deporte/día: 5-7 EJERCICIOS con progresión técnica (Técnica -> Potencia -> Resistencia).
+        3. Identifica cada ejercicio con su 'sport'.
+        4. ADAPTA AL EQUIPAMIENTO REAL: ${JSON.stringify(configs.map(c => c.equipment))}. Si no hay material específico, usa 'alternatives'.
+        5. Rellena: 'muscleGroup', 'equipment' necesario, 'executionTip' (consejo pro), 'videoKeyword' (ej: "propioception drills football") y 'alternatives' (sin material).
+        6. 'executionNotes': Explicación de la mentalidad semanal.`
+      : `Generate a COMBINED EDUCATIONAL training plan for: ${sportsList}.
+        Profile: ${profile.username}, ${profile.weight}kg, ${profile.height}cm. Goal: ${profile.nutritionGoal || 'General improvement'}. Level: ${profile.experienceLevel}. Injuries: ${profile.injuries || 'None'}.
         
         Instructions:
-        1. Integrate all these sports into a single cohesive 7-day weekly schedule.
-        2. Distribute training days intelligently to avoid overtraining.
-        3. Ensure optimal recovery by alternating intensities.
-        4. Provide a detailed scientific reasoning for this combination.
-        5. The plan must be REALISTIC and executable.
-        6. IMPORTANT: Strictly adapt exercises to the specified EQUIPMENT for each sport. If equipment is limited, find creative alternatives (calisthenics, bands, etc.).
-        7. For each exercise, fill: 'muscleGroup' (target muscle), 'equipment' (required item), and 'imageSearchQuery' (2-3 English keywords to visualize the exercise).
-        
-        IMPORTANT: Each exercise MUST have a unique 'id' (e.g., 'ex_1', 'ex_2').`;
+        1. 7-day weekly schedule.
+        2. Per sport/day: 5-7 EXERCISES with technical progression.
+        3. Label each exercise with its 'sport'.
+        4. ADAPT TO EQUIPMENT: ${JSON.stringify(configs.map(c => c.equipment))}. Use 'alternatives' if equipment is missing.
+        5. Fill: 'muscleGroup', 'equipment', 'executionTip' (pro tip), 'videoKeyword' (e.g., "boxing footwork drills") and 'alternatives' (no equipment).
+        6. 'executionNotes': Weekly mindset explanation.`;
 
     const generatePromise = async () => {
       const response = await ai.models.generateContent({
@@ -162,6 +112,7 @@ export async function generateCombinedTrainingPlan(profile: UserProfile, configs
             type: Type.OBJECT,
             properties: {
               reasoning: { type: Type.STRING },
+              executionNotes: { type: Type.STRING },
               table: {
                 type: Type.ARRAY,
                 items: {
@@ -180,9 +131,13 @@ export async function generateCombinedTrainingPlan(profile: UserProfile, configs
                           notes: { type: Type.STRING },
                           muscleGroup: { type: Type.STRING },
                           equipment: { type: Type.STRING },
-                          imageSearchQuery: { type: Type.STRING }
+                          imageSearchQuery: { type: Type.STRING },
+                          executionTip: { type: Type.STRING },
+                          videoKeyword: { type: Type.STRING },
+                          alternatives: { type: Type.ARRAY, items: { type: Type.STRING } },
+                          sport: { type: Type.STRING }
                         },
-                        required: ["id", "name", "sets", "reps", "notes", "muscleGroup", "equipment", "imageSearchQuery"]
+                        required: ["id", "name", "sets", "reps", "notes", "muscleGroup", "equipment", "imageSearchQuery", "executionTip", "videoKeyword", "alternatives", "sport"]
                       }
                     }
                   },
@@ -190,7 +145,7 @@ export async function generateCombinedTrainingPlan(profile: UserProfile, configs
                 }
               }
             },
-            required: ["reasoning", "table"]
+            required: ["reasoning", "executionNotes", "table"]
           }
         }
       });
