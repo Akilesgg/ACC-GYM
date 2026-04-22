@@ -142,6 +142,17 @@ export default function WorkoutPlanView({
   };
 
   const activePlan = sport.plan || globalPlan;
+  const isFallbackPlan = (activePlan as any)?.isFallback === true ||
+    activePlan?.reasoning?.includes('[Plan local') ||
+    (activePlan?.table?.every(d => d.exercises.length <= 1) && activePlan?.table?.some(d => d.exercises.length > 0));
+
+  useEffect(() => {
+    if (isFallbackPlan && !isRegenerating) {
+      // Pequeño delay para que el usuario vea la interfaz primero
+      const timer = setTimeout(() => handleRegenerate(), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, []); // Solo al montar
 
   // Si no hay plan, mostrar pantalla de generación automática
   if (!activePlan && !isRegenerating) {
@@ -239,9 +250,34 @@ export default function WorkoutPlanView({
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -20 }}
-            className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4"
+            className="space-y-6"
           >
-            {weekDays.map((date, i) => {
+            {isFallbackPlan && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center justify-between p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl max-w-4xl mx-auto w-full"
+              >
+                <div className="flex items-center gap-3">
+                  <AlertCircle size={18} className="text-amber-400 shrink-0" />
+                  <p className="text-xs text-amber-400 font-bold">
+                    Plan básico activo. Genera el plan personalizado con IA para ejercicios adaptados a tu objetivo.
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={handleRegenerate}
+                  disabled={isRegenerating}
+                  className="shrink-0 bg-amber-500 text-black font-black text-xs uppercase px-4 h-8 rounded-xl ml-4"
+                >
+                  {isRegenerating ? <Icons.Loader2 size={12} className="animate-spin" /> : <Zap size={12} className="mr-1" />}
+                  Mejorar
+                </Button>
+              </motion.div>
+            )}
+
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+              {weekDays.map((date, i) => {
               const exercises = getWorkoutForDay(date);
               const isToday = isSameDay(date, today);
               const dateKey = format(date, 'yyyy-MM-dd');
@@ -292,8 +328,9 @@ export default function WorkoutPlanView({
                 </motion.div>
               );
             })}
-          </motion.div>
-        )}
+          </div>
+        </motion.div>
+      )}
 
         {activeTab === 'today' && (
           <motion.div
@@ -303,6 +340,30 @@ export default function WorkoutPlanView({
             exit={{ opacity: 0, x: -20 }}
             className="max-w-2xl mx-auto w-full space-y-8"
           >
+            {isFallbackPlan && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="flex items-center justify-between p-4 bg-amber-500/10 border border-amber-500/30 rounded-2xl"
+              >
+                <div className="flex items-center gap-3">
+                  <AlertCircle size={18} className="text-amber-400 shrink-0" />
+                  <p className="text-xs text-amber-400 font-bold">
+                    Plan básico activo. Genera el plan personalizado con IA para ejercicios adaptados a tu objetivo.
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={handleRegenerate}
+                  disabled={isRegenerating}
+                  className="shrink-0 bg-amber-500 text-black font-black text-xs uppercase px-4 h-8 rounded-xl ml-4"
+                >
+                  {isRegenerating ? <Icons.Loader2 size={12} className="animate-spin" /> : <Zap size={12} className="mr-1" />}
+                  Mejorar
+                </Button>
+              </motion.div>
+            )}
+
             {/* Today Progress Overview */}
             <div className="grid grid-cols-3 gap-4">
               <div className="p-4 bg-white/5 rounded-2xl border border-white/5 flex flex-col items-center justify-center text-center">

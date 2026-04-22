@@ -127,6 +127,7 @@ export interface TrainingPlan {
   createdAt: string;
   reasoning: string;
   executionNotes?: string;
+  isFallback?: boolean;
   table: {
     day: string;
     exercises: {

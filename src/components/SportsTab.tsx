@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { UserProfile, SportConfig, TrainingPlan, Language, Sport } from '../types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { generateTrainingPlan, generateCombinedTrainingPlan } from '../services/geminiService';
+import { generateTrainingPlan, generateCombinedTrainingPlan, getRichFallbackPlan } from '../services/geminiService';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Dumbbell, Target, Loader2, Search, ChevronRight, Info, 
@@ -177,7 +177,7 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
         try {
           globalPlan = await generateCombinedTrainingPlan(profile, currentSports, language);
         } catch {
-          globalPlan = generatePlan(currentSports);
+          globalPlan = getRichFallbackPlan(currentSports[0]); // para combinado usa el primero
         }
         currentSports = currentSports.map(s => ({ ...s, plan: globalPlan, isCombined: true }));
       } else {
@@ -186,7 +186,7 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
           globalPlan = await generateTrainingPlan(profile, config, language);
         } catch (planErr) {
           console.warn("[SPORTS] AI Plan generation failed for single sport, using template.", planErr);
-          globalPlan = generatePlan([config]);
+          globalPlan = getRichFallbackPlan(config);           // para individual
         }
         currentSports = currentSports.map(s =>
           s.sport === config.sport ? { ...s, plan: globalPlan, isCombined: false } : s
