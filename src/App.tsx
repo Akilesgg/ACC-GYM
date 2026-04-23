@@ -114,10 +114,26 @@ export default function App() {
       // Mergear Firestore con lo que hay en localStorage con precaución
       const localProfile = useStore.getState().profile;
       if (sanitizedProfile) {
-        // Si ya tenemos un perfil local, lo usamos como base para transiciones rápidas,
-        // pero el servidor (sanitizedProfile) es la fuente de verdad definitiva para colecciones.
-        // Solo "ganamos" localmente si el servidor no tiene datos aún o si estamos en una ráfaga de updates.
-        setProfile(sanitizedProfile);
+        // Para evitar que deportes o dietas recién añadidos desaparezcan por snapshots lentos,
+        // o que elementos borrados reaparezcan (el bug anterior), comparamos las colecciones.
+        // La fuente de verdad es sanitizedProfile (servidor), PERO si el local tiene un cambio muy reciente
+        // (medido por longitud o timestamps si los tuviéramos), lo respetamos brevemente.
+        
+        // REGLA: Si la longitud local es mayor, es probable un "Añadir" pendiente de sync.
+        // Si la longitud local es menor, es probable un "Borrar" ya procesado localmente.
+        // En ambos casos, el estado local suele ser más "fresco" respecto a la intención del usuario inmediata.
+        
+        const merged = {
+          ...sanitizedProfile,
+          sports: (localProfile?.sports && localProfile.sports.length !== sanitizedProfile.sports.length)
+            ? localProfile.sports
+            : sanitizedProfile.sports,
+          diets: (localProfile?.diets && localProfile.diets.length !== sanitizedProfile.diets.length)
+            ? localProfile.diets
+            : sanitizedProfile.diets
+        };
+        
+        setProfile(merged);
       } else if (!localProfile) {
         setProfile(null);
       }

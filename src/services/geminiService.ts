@@ -10,68 +10,57 @@ const getDietImage = (query: string): string => {
 
   const map: [string, string][] = [
     // Pollo / Chicken
-    ['pechuga pollo arroz brócoli', 'photo-1598515214211-89d3c73ae83b'],
+    ['pechuga pollo arroz brocoli', 'photo-1598515214211-89d3c73ae83b'],
     ['chicken rice broccoli', 'photo-1598515214211-89d3c73ae83b'],
-    ['pollo asado patatas', 'photo-1532550907401-a500c9a57435'],
-    ['pechuga pollo ensalada', 'photo-1512621776951-a57141f2eefd'],
-    ['chicken salad', 'photo-1512621776951-a57141f2eefd'],
-    ['pavo quinoa espinacas', 'photo-1512621776951-a57141f2eefd'],
-    ['turkey quinoa spinach', 'photo-1512621776951-a57141f2eefd'],
-    ['pollo curry arroz', 'photo-1588166524941-3bf61a9c41db'],
-    ['chicken curry rice', 'photo-1588166524941-3bf61a9c41db'],
+    ['pollo asado patatas ensalada', 'photo-1532550907401-a500c9a57435'],
+    ['chicken potatoes salad', 'photo-1532550907401-a500c9a57435'],
+    ['pollo curry arroz coco', 'photo-1588166524941-3bf61a9c41db'],
+    ['pavo quinoa espinacas tomate', 'photo-1512621776951-a57141f2eefd'],
     ['pollo', 'photo-1598103442097-8b74394b95c3'],
-    ['chicken', 'photo-1598103442097-8b74394b95c3'],
     // Pescado / Fish
-    ['salmon esparragos', 'photo-1467003909585-2f8a72700288'],
-    ['salmon asparagus', 'photo-1467003909585-2f8a72700288'],
-    ['atun aguacate', 'photo-1523049673857-eb18f1d7b578'],
-    ['tuna avocado', 'photo-1523049673857-eb18f1d7b578'],
-    ['bacalao verduras', 'photo-1519708227418-c8fd9a32b7a2'],
-    ['merluza patatas', 'photo-1519708227418-c8fd9a32b7a2'],
+    ['salmon esparragos limon patatas', 'photo-1467003909585-2f8a72700288'],
+    ['salmon asparagus lemon', 'photo-1467003909585-2f8a72700288'],
+    ['atun aguacate huevo tomate', 'photo-1523049673857-eb18f1d7b578'],
+    ['merluza patatas judias verdes', 'photo-1519708227418-c8fd9a32b7a2'],
     ['pescado blanco', 'photo-1519708227418-c8fd9a32b7a2'],
-    ['white fish', 'photo-1519708227418-c8fd9a32b7a2'],
-    ['sushi sashimi', 'photo-1553621042-f6e147245754'],
+    ['sushi sashimi pescado crudo', 'photo-1553621042-f6e147245754'],
+    ['atun aguacate', 'photo-1523049673857-eb18f1d7b578'],
     ['pescado', 'photo-1467003909585-2f8a72700288'],
-    ['fish', 'photo-1467003909585-2f8a72700288'],
     // Carne / Beef
-    ['filete ternera patatas', 'photo-1546833999-b9f581a1996d'],
-    ['steak potatoes', 'photo-1546833999-b9f581a1996d'],
-    ['ternera brócoli', 'photo-1504674900247-0877df9cc836'],
-    ['beef broccoli', 'photo-1504674900247-0877df9cc836'],
-    ['hamburguesa casera', 'photo-1568901346375-23c9450c58cd'],
-    ['entrecot verduras', 'photo-1546833999-b9f581a1996d'],
+    ['filete ternera patatas pimientos', 'photo-1546833999-b9f581a1996d'],
+    ['steak potatoes peppers', 'photo-1546833999-b9f581a1996d'],
+    ['ternera brocoli arroz integral', 'photo-1504674900247-0877df9cc836'],
+    ['hamburguesa casera lechuga tomate', 'photo-1568901346375-23c9450c58cd'],
+    ['entrecot verduras parrilla', 'photo-1546833999-b9f581a1996d'],
     ['ternera', 'photo-1546833999-b9f581a1996d'],
-    ['beef', 'photo-1546833999-b9f581a1996d'],
     // Huevos / Eggs
-    ['huevos revueltos', 'photo-1525351484163-7529414344d8'],
-    ['scrambled eggs', 'photo-1525351484163-7529414344d8'],
-    ['tortilla espinacas', 'photo-1482049016688-2d3e1b311543'],
-    ['huevos cocidos', 'photo-1516100882582-96c3a05fe590'],
-    ['boiled eggs', 'photo-1516100882582-96c3a05fe590'],
-    ['huevo', 'photo-1482049016688-2d3e1b311543'],
+    ['huevos revueltos aguacate tostada', 'photo-1525351484163-7529414344d8'],
+    ['scrambled eggs avocado toast', 'photo-1525351484163-7529414344d8'],
+    ['tortilla espinacas queso champiñones', 'photo-1482049016688-2d3e1b311543'],
+    ['huevos cocidos esparragos cherry', 'photo-1516100882582-96c3a05fe590'],
+    ['huevos', 'photo-1525351484163-7529414344d8'],
     // Desayuno
-    ['avena arandanos', 'photo-1494859814609-3fbd77c95bc1'],
-    ['oatmeal berries', 'photo-1494859814609-3fbd77c95bc1'],
-    ['yogur griego nueces', 'photo-1511690656952-34342bb7c2f2'],
-    ['greek yogurt nuts', 'photo-1511690656952-34342bb7c2f2'],
-    ['tostada aguacate', 'photo-1525351484163-7529414344d8'],
-    ['avocado toast', 'photo-1525351484163-7529414344d8'],
-    ['fruta variada', 'photo-1490474418585-ba9bad8fd0ea'],
-    ['pancakes fitness', 'photo-1528207776546-365bb710ee93'],
+    ['avena arandanos platano nueces', 'photo-1494859814609-3fbd77c95bc1'],
+    ['oatmeal berries banana nuts', 'photo-1494859814609-3fbd77c95bc1'],
+    ['yogur griego nueces miel chia', 'photo-1511690656952-34342bb7c2f2'],
+    ['greek yogurt nuts honey', 'photo-1511690656952-34342bb7c2f2'],
+    ['tostada aguacate salmon huevo', 'photo-1525351484163-7529414344d8'],
+    ['panqueques avena platano arandanos', 'photo-1528207776546-365bb710ee93'],
+    ['fruta variada piña sandia', 'photo-1490474418585-ba9bad8fd0ea'],
+    ['batido proteinas fresa platano', 'photo-1502741224143-90386d7f8c82'],
     ['avena', 'photo-1494859814609-3fbd77c95bc1'],
     // Pasta / Arroz
-    ['espaguetis boloñesa', 'photo-1551183053-bf91a1d81141'],
-    ['arroz integral verduras', 'photo-1512621776951-a57141f2eefd'],
-    ['brown rice veg', 'photo-1512621776951-a57141f2eefd'],
-    ['pasta integral', 'photo-1473093295043-cdd812d0e601'],
+    ['espaguetis bolonera ternera tomate', 'photo-1551183053-bf91a1d81141'],
+    ['pasta integral verduras atun', 'photo-1473093295043-cdd812d0e601'],
+    ['arroz integral verduras tofu', 'photo-1512621776951-a57141f2eefd'],
+    ['lasaña verduras calabacin berenjena', 'photo-1574894709066-1102214a6680'],
     ['arroz blanco', 'photo-1536304929831-ee1ca9d44906'],
-    ['lasaña verduras', 'photo-1574894709066-1102214a6680'],
-    // Veg/Legumbres
-    ['tofu verduras', 'photo-1546069901-ba9599a7e63c'],
-    ['quinoa ensalada', 'photo-1490645935967-10de6ba17051'],
-    ['lentejas estofadas', 'photo-1514327605112-b887c0e61c0a'],
-    ['garbanzos espinacas', 'photo-1514327605112-b887c0e61c0a'],
-    ['ensalada mixta', 'photo-1512621776951-a57141f2eefd'],
+    // Legumbres / Ensaladas
+    ['lentejas arroz verduras zanahoria', 'photo-1514327605112-b887c0e61c0a'],
+    ['garbanzos espinacas huevo duro', 'photo-1514327605112-b887c0e61c0a'],
+    ['ensalada mixta atun huevo', 'photo-1512621776951-a57141f2eefd'],
+    ['quinoa pollo pimientos pepino', 'photo-1490645935967-10de6ba17051'],
+    ['tofu verduras soja sesamo', 'photo-1546069901-ba9599a7e63c'],
     // Suplementos / Batidos
     ['batido proteinas', 'photo-1502741224143-90386d7f8c82'],
     ['protein shake', 'photo-1502741224143-90386d7f8c82'],
@@ -374,11 +363,11 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
         - Nivel de Actividad: ${profile.experienceLevel}
         
         Each plan must include:
-        1. Detailed scientific reasoning.
-        2. A catalog of meals (between 4 and 6 different meals per plan).
-        3. For each meal: name, ingredients with exact amounts, STEP-BY-STEP AND DETAILED PREPARATION FORMULA, and macros (p, c, f, kcal).
-        4. A WEEKLY CALENDAR (Monday to Sunday) indicating which meals from the catalog to take each day (3 to 5 daily meals according to the plan).
-        5. For each meal AND for the plan itself, include an 'imageSearchQuery' field with 4-5 English keywords describing EVERYTHING: the main protein, the sides, and the key ingredients (e.g., "grilled chicken breast with brown rice and steamed broccoli", "oatmeal with blueberries banana and walnuts", "baked salmon fillet with asparagus and lemon").
+        1. Detailed scientific reasoning based on the user's metabolism.
+        2. A catalog of meals (at least 6 different options).
+        3. For each meal: a catchy name, ALL main ingredients (minimum 9 key components when possible for richness), exact preparation steps (chef-level detail), and macros.
+        4. A WEEKLY CALENDAR.
+        5. For each meal, an 'imageSearchQuery' that combines the three most visual ingredients (e.g., "grilled salmon with avocado and asparagus").
         
         IMPORTANT: Return an array of NutritionPlan objects.`,
         config: {
@@ -461,10 +450,42 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
         reasoning: "Plan equilibrado estándar basado en tus objetivos de salud.",
         imageSearchQuery: "healthy balanced meal",
         meals: [
-          { id: 'm1', type: "Desayuno", name: "Avena con Frutas", imageSearchQuery: "oatmeal banana nuts", ingredients: ["Avena", "Leche desnatada", "Plátano", "Nueces"], preparation: "Mezclar la avena con la leche caliente, añadir rodajas de plátano y nueces picadas.", macros: { p: 15, c: 45, f: 10, kcal: 350 } },
-          { id: 'm2', type: "Almuerzo", name: "Pollo con Arroz y Brócoli", imageSearchQuery: "chicken rice broccoli", ingredients: ["Pechuga de pollo", "Arroz integral", "Brócoli", "Aceite de oliva"], preparation: "Cocinar el arroz integral. Saltear el pollo con brócoli al vapor y un chorrito de aceite de oliva.", macros: { p: 35, c: 40, f: 12, kcal: 450 } },
-          { id: 'm3', type: "Merienda", name: "Yogur Griego con Almendras", imageSearchQuery: "greek yogurt almonds honey", ingredients: ["Yogur griego natural", "Almendras", "Miel"], preparation: "Servir el yogur en un bol, añadir las almendras y una cucharadita de miel.", macros: { p: 20, c: 15, f: 15, kcal: 280 } },
-          { id: 'm4', type: "Cena", name: "Salmón a la Plancha con Espárragos", imageSearchQuery: "salmon asparagus grill", ingredients: ["Salmón", "Espárragos", "Ensalada verde"], preparation: "Hacer el salmón a la plancha 4 min por lado. Acompañar con espárragos trigueros y ensalada.", macros: { p: 30, c: 10, f: 20, kcal: 400 } }
+          { 
+            id: 'm1', 
+            type: "Desayuno", 
+            name: "Bowl Energético de Avena y Superalimentos", 
+            imageSearchQuery: "oatmeal berries banana nuts chia honey", 
+            ingredients: ["Avena integral", "Leche de almendras", "Arándanos frescos", "Medio plátano", "Nueces pecanas", "Semillas de chía", "Canela en polvo", "Miel orgánica", "Frambuesas"], 
+            preparation: "1. Cocinar la avena con la leche. 2. Añadir canela. 3. Cubrir con frutas y semillas. 4. Endulzar con miel.", 
+            macros: { p: 18, c: 55, f: 12, kcal: 420 } 
+          },
+          { 
+            id: 'm2', 
+            type: "Almuerzo", 
+            name: "Pechuga de Pollo al Limón con Cuscús y Vegetales", 
+            imageSearchQuery: "grilled chicken lemon couscous vegetables", 
+            ingredients: ["Pechuga de pollo", "Cuscús integral", "Cebolla roja", "Pimiento rojo", "Calabacín", "Zumo de limón", "Aceite de oliva virgen extra", "Pimienta negra", "Perejil fresco"], 
+            preparation: "1. Marinar pollo en limón. 2. Saltear vegetales. 3. Preparar cuscús. 4. Combinar y servir.", 
+            macros: { p: 42, c: 45, f: 14, kcal: 510 } 
+          },
+          { 
+            id: 'm3', 
+            type: "Merienda", 
+            name: "Yogur de Probióticos con Mix de Frutos Secos", 
+            imageSearchQuery: "greek yogurt nuts berries", 
+            ingredients: ["Yogur griego 0%", "Almendras", "Avellanas", "Anacardos", "Semillas de calabaza", "Arándanos secos", "Sésamo", "Fofos de coco", "Hojas de menta"], 
+            preparation: "Mezclar el yogur con todos los ingredientes secos en un bol.", 
+            macros: { p: 22, c: 18, f: 18, kcal: 320 } 
+          },
+          { 
+            id: 'm4', 
+            type: "Cena", 
+            name: "Lomo de Salmón con Espárragos y Batata", 
+            imageSearchQuery: "salmon asparagus sweet potato avocado", 
+            ingredients: ["Salmón noruego", "Espárragos trigueros", "Batata asada", "Aguacate", "Tomates cherry", "Rúcula", "Vinagre balsámico", "Ajo", "Sal rosa del Himalaya"], 
+            preparation: "1. Hornear salmón y batata a 200°C. 2. Hacer espárragos a la plancha con ajo. 3. Servir con aguacate fresco.", 
+            macros: { p: 35, c: 25, f: 22, kcal: 480 } 
+          }
         ],
         weeklySchedule: [
           { day: "Lunes", meals: ["Avena con Frutas", "Pollo con Arroz y Brócoli", "Yogur Griego con Almendras", "Salmón a la Plancha con Espárragos"] },

@@ -1,4 +1,5 @@
-import { Sparkles, PlusCircle, ArrowLeft, Target, Clock, ShieldAlert, Loader2, Utensils, Info, Calendar, Trash2, Edit2, AlertTriangle } from 'lucide-react';
+import { Search, Sparkles, PlusCircle, ArrowLeft, Target, Clock, ShieldAlert, Loader2, Utensils, Info, Calendar, Trash2, Edit2, AlertTriangle } from 'lucide-react';
+import * as Icons from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -231,22 +232,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
     <div className="space-y-12 pb-32">
       <TabBackground tab="nutrition" />
       
-      <AnimatePresence>
-        {isDeleting && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[500] bg-background/80 backdrop-blur-md flex flex-col items-center justify-center gap-4"
-          >
-            <div className="relative">
-              <Loader2 className="w-16 h-16 text-primary animate-spin" />
-              <Trash2 className="absolute inset-0 m-auto w-6 h-6 text-primary" />
-            </div>
-            <p className="font-headline text-xl font-black uppercase tracking-widest animate-pulse">Eliminando planes...</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Deletion Dialog */}
 
       <section>
         <div className="flex items-center gap-4 mb-2">
@@ -568,11 +554,14 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
                     </div>
                   </div>
                   <div className="p-6 space-y-4">
+                    {/* Ingredients Section */}
                     <div className="space-y-2">
-                      <h5 className="text-[10px] font-black uppercase tracking-widest text-primary">Ingredientes</h5>
-                      <div className="flex flex-wrap gap-2">
+                       <h5 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary flex items-center gap-1.5">
+                        <Icons.Search size={10} /> Ingredientes
+                      </h5>
+                      <div className="flex flex-wrap gap-1.5">
                         {meal.ingredients.map((ing, i) => (
-                          <span key={i} className="text-xs bg-background px-3 py-1 rounded-full text-on-surface-variant font-medium">
+                          <span key={i} className="text-[10px] bg-background border border-white/5 px-2.5 py-1 rounded-md text-on-surface-variant font-black leading-none hover:bg-primary/10 hover:border-primary/20 transition-all uppercase tracking-tight">
                             {ing}
                           </span>
                         ))}

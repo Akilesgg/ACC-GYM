@@ -3,6 +3,7 @@ import { UserProfile, DailyProgress, TrainingPlan, Language, GalleryItem, Weight
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'motion/react';
+import * as Icons from 'lucide-react';
 import { CheckCircle2, Circle, Calendar as CalendarIcon, Trophy, Flame, TrendingUp, ArrowLeft, Brain, Loader2, Scale, Camera, BarChart3, Dumbbell, Clock } from 'lucide-react';
 import { format, startOfToday, isSameDay, parseISO, eachDayOfInterval, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -347,6 +348,19 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
                 </div>
               </section>
             )}
+
+            {/* Disciplinas Archivadas */}
+             <section className="space-y-6 opacity-40">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-surface rounded-xl flex items-center justify-center text-on-surface-variant/40">
+                    <Icons.ZapOff size={18} />
+                  </div>
+                  <h3 className="font-headline text-lg font-black uppercase italic tracking-tight">Archivo de Evolución</h3>
+                </div>
+                <div className="p-12 border-2 border-dashed border-white/5 rounded-[2rem] text-center">
+                  <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Toda tu evolución histórica se guarda aquí de forma segura</p>
+                </div>
+              </section>
 
             {/* Weekly Training Table */}
             {profile.sports.length > 0 && (

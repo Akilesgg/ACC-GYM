@@ -786,12 +786,15 @@ function ExerciseList({ date, exercises, progress, onToggle, language, sportName
                         </div>
                       </td>
                       <td className="p-4">
-                        <div className="flex items-center gap-3">
-                          <ExerciseAnimation type={ex.name} isDone={isDone} size="sm" />
+                        <div className="flex items-center gap-4 py-2">
+                          <ExerciseAnimation type={ex.name} isDone={isDone} size="md" className="shadow-lg shadow-primary/20 border-primary/30" />
                           <div className="text-left">
-                            <span className="text-[8px] font-black uppercase text-primary tracking-widest block mb-0.5">{sportName}</span>
-                            <span className="text-sm font-black uppercase italic block whitespace-nowrap">{ex.name}</span>
-                            <span className="text-[10px] opacity-40 font-bold">{ex.equipment || 'Sin material'}</span>
+                            <span className="text-[9px] font-black uppercase text-primary tracking-[0.3em] block mb-1 italic leading-none">{sportName}</span>
+                            <span className="text-xl font-headline font-black uppercase italic block tracking-tight leading-none mb-2">{ex.name}</span>
+                            <div className="flex items-center gap-2">
+                              <span className="bg-white/5 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border border-white/5">{ex.equipment || 'Sin material'}</span>
+                              <span className="bg-primary/10 text-primary text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border border-primary/20">{ex.muscleGroup}</span>
+                            </div>
                           </div>
                         </div>
                       </td>

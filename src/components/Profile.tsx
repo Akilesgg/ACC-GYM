@@ -2,6 +2,7 @@ import { UserProfile, Language } from '../types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { motion } from 'motion/react';
+import * as Icons from 'lucide-react';
 import { User, Mail, Shield, Scale, Ruler, Calendar, ArrowLeft, LogOut, Watch, Dumbbell, TrendingUp, ChevronRight, Brain } from 'lucide-react';
 import { useTranslation } from '../lib/i18n';
 import { logout } from '../services/auth';
@@ -218,6 +219,19 @@ export default function Profile({ profile, onBack, language }: ProfileProps) {
               <p className="text-sm italic text-on-surface-variant">"{t('analisis')}: Basado en tus fotos y peso actual, se observa una mejora en la composición corporal."</p>
             </Card>
           </div>
+        </section>
+
+        {/* History / Archived Sports */}
+        <section className="mt-12 space-y-6 opacity-60">
+           <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-surface rounded-2xl flex items-center justify-center text-on-surface-variant/40">
+                <Icons.History size={24} />
+              </div>
+              <h3 className="font-headline text-xl font-black uppercase italic tracking-tight text-on-surface-variant/60">Historial de Disciplinas Archivadas</h3>
+            </div>
+            <Card className="bg-surface/30 border-dashed border border-white/5 p-8 text-center">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-40">No hay disciplinas archivadas recientemente</p>
+            </Card>
         </section>
       </section>
     </div>

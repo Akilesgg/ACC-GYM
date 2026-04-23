@@ -1,4 +1,5 @@
 import { motion } from 'motion/react';
+import { useEffect } from 'react';
 import * as Icons from 'lucide-react';
 import { Dumbbell } from 'lucide-react';
 
@@ -14,22 +15,55 @@ export const ExerciseAnimation = ({ type, isDone, className = '', size = 'md' }:
   
   // Mapping muscle groups or types to specific "anatomical" looking images
   // These are Unsplash IDs that have a more technical / clinical or muscle focus feel
-  const muscleMap: Record<string, string> = {
-    'pecho': 'photo-1534438327276-14e5300c3a48', // heavy lift/chest focus
-    'hombros': 'photo-1541534741688-6078c65b12de', // workout/focus
-    'brazos': 'photo-1581009146145-b5ef050c2e1e', // arms
-    'triceps': 'photo-1583454110551-21f2fa2adfcd',
-    'biceps': 'photo-1581009146145-b5ef050c2e1e',
-    'espalda': 'photo-1434682772747-f16d3ea162c3', // back focus
-    'piernas': 'photo-1434608519344-49d77a699e1d', // legs
-    'core': 'photo-1517836357463-d25dfeac3438', // abs/core
-    'cardio': 'photo-1538805060514-97d9cc17730c', // running
-    'full body': 'photo-1571019623452-c697c22c067e',
+const muscleMap: Record<string, string> = {
+    'pecho': 'photo-1544367567-0f2fcb009e0b', // anatomy
+    'chest': 'photo-1544367567-0f2fcb009e0b',
+    'hombros': 'photo-1534438327276-14e5300c3a48', // detail
+    'shoulder': 'photo-1534438327276-14e5300c3a48',
+    'brazos': 'photo-1583454110551-21f2fa2adfcd',
+    'arms': 'photo-1583454110551-21f2fa2adfcd',
+    'piernas': 'photo-1434608519344-49d77a699e1d',
+    'legs': 'photo-1434608519344-49d77a699e1d',
+    'espalda': 'photo-1541534741688-6078c65b12de',
+    'back': 'photo-1541534741688-6078c65b12de',
+    'core': 'photo-1571019623452-c697c22c067e',
+    'abdominal': 'photo-1571019623452-c697c22c067e',
+    'cardio': 'photo-1538805060514-97d9cc17730c',
+    'full body': 'photo-1576086213369-97a306d36557', // anatomical diagram
   };
 
   const currentMuscle = Object.keys(muscleMap).find(m => t.includes(m)) || 'full body';
   const imageId = muscleMap[currentMuscle];
   const imageUrl = `https://images.unsplash.com/${imageId}?w=400&auto=format&fit=crop&q=80`;
+
+  // Subtle medical biosensor sound effect on pulse
+  useEffect(() => {
+    if (!isDone) {
+      const playPulse = () => {
+        try {
+          const audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+          const oscillator = audioCtx.createOscillator();
+          const gainNode = audioCtx.createGain();
+          oscillator.connect(gainNode);
+          gainNode.connect(audioCtx.destination);
+          
+          oscillator.type = 'sine';
+          oscillator.frequency.setValueAtTime(120, audioCtx.currentTime);
+          gainNode.gain.setValueAtTime(0.005, audioCtx.currentTime);
+          gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.1);
+          
+          oscillator.start();
+          oscillator.stop(audioCtx.currentTime + 0.1);
+          setTimeout(() => audioCtx.close(), 200);
+        } catch (e) {
+          // Ignore audio errors if blocked by browser policy
+        }
+      };
+
+      const interval = setInterval(playPulse, 2000);
+      return () => clearInterval(interval);
+    }
+  }, [isDone]);
 
   const sizeClasses = {
     sm: 'w-12 h-12',
