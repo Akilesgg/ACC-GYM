@@ -17,6 +17,8 @@ import * as Icons from 'lucide-react';
 import { useTranslation } from '../lib/i18n';
 import { generateCombinedTrainingPlan } from '@/src/services/geminiService';
 import { ExerciseAnimation } from './ExerciseAnimation';
+import { ExerciseCard } from './ExerciseCard';
+import { Table as TableIcon } from 'lucide-react';
 
 interface WorkoutPlanViewProps {
   sport: SportConfig;
@@ -130,6 +132,22 @@ export default function WorkoutPlanView({
       s.sport === sport.sport ? { ...s, schedule: localSchedule, equipment: localEquipment, hasInstructor } : s
     );
     onUpdateProfile({ ...profile, sports: updatedSports });
+  };
+
+  const handleEditExercise = (exerciseId: string, field: string, value: string) => {
+    const activePlan = sport.plan || globalPlan;
+    if (!activePlan) return;
+    const updatedTable = activePlan.table.map(day => ({
+      ...day,
+      exercises: day.exercises.map(ex =>
+        ex.id === exerciseId ? { ...ex, [field]: value } : ex
+      )
+    }));
+    const updatedPlan = { ...activePlan, table: updatedTable };
+    const updatedSports = profile.sports.map(s =>
+      s.sport === sport.sport ? { ...s, plan: updatedPlan } : s
+    );
+    onUpdateProfile({ ...profile, sports: updatedSports, plan: updatedPlan });
   };
 
   const handleRegenerate = async () => {
@@ -468,6 +486,8 @@ export default function WorkoutPlanView({
               onToggle={onToggleExercise}
               language={language}
               viewMode={viewMode}
+              sportName={sport.sport}
+              onEditExercise={handleEditExercise}
             />
 
             <div className="h-20" /> {/* Extra space to avoid cut-off */}
@@ -684,6 +704,8 @@ export default function WorkoutPlanView({
                     onToggle={onToggleExercise}
                     language={language}
                     viewMode={viewMode}
+                    sportName={sport.sport}
+                    onEditExercise={handleEditExercise}
                   />
                 </div>
               </div>
@@ -695,12 +717,14 @@ export default function WorkoutPlanView({
   );
 }
 
-function ExerciseList({ date, exercises, progress, onToggle, language, viewMode = 'cards' }: { 
+function ExerciseList({ date, exercises, progress, onToggle, language, sportName, onEditExercise, viewMode = 'cards' }: { 
   date: Date, 
   exercises: any[], 
   progress: Record<string, DailyProgress>, 
   onToggle: (id: string, d: string) => void,
   language: Language,
+  sportName: string,
+  onEditExercise?: (id: string, field: string, value: string) => void,
   viewMode?: 'cards' | 'table'
 }) {
   const dateKey = format(date, 'yyyy-MM-dd');
@@ -761,9 +785,10 @@ function ExerciseList({ date, exercises, progress, onToggle, language, viewMode 
                       </td>
                       <td className="p-4">
                         <div className="flex items-center gap-3">
-                          <ExerciseAnimation type={ex.name} isDone={isDone} />
-                          <div>
-                            <span className="text-sm font-black uppercase italic block">{ex.name}</span>
+                          <ExerciseAnimation type={ex.name} isDone={isDone} size="sm" />
+                          <div className="text-left">
+                            <span className="text-[8px] font-black uppercase text-primary tracking-widest block mb-0.5">{sportName}</span>
+                            <span className="text-sm font-black uppercase italic block whitespace-nowrap">{ex.name}</span>
                             <span className="text-[10px] opacity-40 font-bold">{ex.equipment || 'Sin material'}</span>
                           </div>
                         </div>
@@ -875,13 +900,16 @@ function ExerciseList({ date, exercises, progress, onToggle, language, viewMode 
                    <p className="font-headline font-black text-4xl italic text-primary">{i + 1}</p>
                 </div>
 
-                <div className="flex-1 space-y-6">
+                <div className="flex-1 space-y-6 text-left">
                   <div className="flex items-start justify-between gap-4">
                     <div className="space-y-1">
                       <div className="flex flex-wrap items-center gap-3">
-                        <h4 className={`text-4xl font-headline font-black uppercase italic tracking-tight leading-none ${isDone ? 'line-through opacity-50' : ''}`}>
-                          {ex.name}
-                        </h4>
+                        <div className="flex flex-col">
+                          <span className="text-[10px] font-black uppercase text-primary tracking-[0.2em] mb-1 italic">{sportName}</span>
+                          <h4 className={`text-4xl font-headline font-black uppercase italic tracking-tight leading-none ${isDone ? 'line-through opacity-50' : ''}`}>
+                            {ex.name}
+                          </h4>
+                        </div>
                         {ex.muscleGroup && (
                           <span className="px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-xl text-[10px] font-black uppercase tracking-wider text-primary shrink-0">
                             {ex.muscleGroup}

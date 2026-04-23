@@ -3,8 +3,13 @@ import { UserProfile, TrainingPlan, Language } from '../types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'motion/react';
-import { Dumbbell, Info, CheckCircle2, Trash2, Plus, RotateCcw, Activity, ChevronRight, Newspaper, Zap, TrendingUp, Share2, PlayCircle } from 'lucide-react';
+import { Dumbbell, Info, CheckCircle2, Trash2, Plus, RotateCcw, Activity, ChevronRight, Newspaper, Zap, TrendingUp, Share2, PlayCircle, Layers, Circle } from 'lucide-react';
 import { useTranslation } from '../lib/i18n';
+import { ExerciseAnimation } from './ExerciseAnimation';
+import { format, startOfToday } from 'date-fns';
+import { es } from 'date-fns/locale';
+
+import { ExerciseCard } from './ExerciseCard';
 
 interface DashboardProps {
   profile: UserProfile;
@@ -20,10 +25,50 @@ interface DashboardProps {
 export default function Dashboard({ profile, onUpdateProfile, onAddSport, onGoToTracking, onGoToProfile, onGoToNews, onGoToMovies, language }: DashboardProps) {
   const t = useTranslation(language);
   const [selectedSportIndex, setSelectedSportIndex] = useState(0);
+  
+  const today = startOfToday();
+  const dateKey = format(today, 'yyyy-MM-dd');
+  const locale = es;
+
+  const currentProgress = profile.progress?.[dateKey] || {
+    date: dateKey,
+    completedExercises: [],
+  };
+
+  const toggleExercise = (exerciseId: string) => {
+    const completed = currentProgress.completedExercises.includes(exerciseId);
+    const newCompleted = completed
+      ? currentProgress.completedExercises.filter(id => id !== exerciseId)
+      : [...currentProgress.completedExercises, exerciseId];
+
+    const updatedProgress = {
+      ...profile.progress,
+      [dateKey]: {
+        ...currentProgress,
+        completedExercises: newCompleted,
+      },
+    };
+
+    onUpdateProfile({ 
+      ...profile, 
+      progress: updatedProgress,
+      points: Math.max(0, (profile.points || 0) + (completed ? -10 : 10))
+    });
+  };
 
   // Use the global plan if available (combined plan), otherwise use the first sport's plan
   const plan = profile.plan || profile.sports[selectedSportIndex]?.plan;
   const currentSportName = profile.plan ? t('planCombinado') : profile.sports[selectedSportIndex]?.sport;
+
+  const todayName = format(today, 'EEEE', { locale }).toLowerCase();
+  
+  const todaysExercises = profile.sports.flatMap(sport => {
+    const p = sport.plan || (profile.plan?.id ? profile.plan : null);
+    if (!p) return [];
+    const dayData = p.table.find(day => day.day.toLowerCase().includes(todayName) || day.day.toLowerCase().includes('hoy'));
+    if (!dayData) return [];
+    return dayData.exercises.map(ex => ({ ...ex, sportName: sport.sport }));
+  });
 
   const resetSports = () => {
     onUpdateProfile({ ...profile, sports: [], plan: undefined });
@@ -113,7 +158,32 @@ export default function Dashboard({ profile, onUpdateProfile, onAddSport, onGoTo
               <ChevronRight className="text-primary group-hover:translate-x-1 transition-transform" />
             </Card>
 
-            {/* Plan Display */}
+            {/* Today's Routine if sports active */}
+            {todaysExercises.length > 0 && (
+              <section className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-headline text-3xl font-black uppercase italic tracking-tight italic">
+                    {t('rutinaHoy')}
+                  </h3>
+                  <div className="px-4 py-1 bg-primary/10 rounded-full">
+                    <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{format(today, 'PPP', { locale })}</span>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 gap-4">
+                  {todaysExercises.map((ex: any, idx) => (
+                    <ExerciseCard 
+                      key={ex.id || idx} 
+                      exercise={ex} 
+                      isCompleted={currentProgress.completedExercises.includes(ex.id)}
+                      onToggle={() => toggleExercise(ex.id)}
+                    />
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Full Plan Display */}
             {plan ? (
               <div className="space-y-8">
                 <div className="flex items-center justify-between">

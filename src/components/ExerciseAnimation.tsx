@@ -10,9 +10,9 @@ interface ExerciseAnimationProps {
 }
 
 export const ExerciseAnimation = ({ type, isDone, className = '', size = 'md' }: ExerciseAnimationProps) => {
-  const isBoxing = type.toLowerCase().includes('box') || type.toLowerCase().includes('jab') || type.toLowerCase().includes('hook');
-  const isLifting = type.toLowerCase().includes('press') || type.toLowerCase().includes('pesa') || type.toLowerCase().includes('mancuerna') || type.toLowerCase().includes('sentadilla') || type.toLowerCase().includes('squat') || type.toLowerCase().includes('deadlift');
-  const isRunning = type.toLowerCase().includes('run') || type.toLowerCase().includes('correr') || type.toLowerCase().includes('rodaje') || type.toLowerCase().includes('sprint') || type.toLowerCase().includes('atletismo');
+  const isBoxing = type.toLowerCase().includes('box') || type.toLowerCase().includes('jab') || type.toLowerCase().includes('hook') || type.toLowerCase().includes('uppercut') || type.toLowerCase().includes('punch') || type.toLowerCase().includes('saco') || type.toLowerCase().includes('pera') || type.toLowerCase().includes('sombra');
+  const isLifting = type.toLowerCase().includes('press') || type.toLowerCase().includes('pesa') || type.toLowerCase().includes('mancuerna') || type.toLowerCase().includes('sentadilla') || type.toLowerCase().includes('squat') || type.toLowerCase().includes('deadlift') || type.toLowerCase().includes('flexion') || type.toLowerCase().includes('pushup') || type.toLowerCase().includes('abdomen') || type.toLowerCase().includes('abs');
+  const isRunning = type.toLowerCase().includes('run') || type.toLowerCase().includes('correr') || type.toLowerCase().includes('rodaje') || type.toLowerCase().includes('sprint') || type.toLowerCase().includes('atletismo') || type.toLowerCase().includes('comba') || type.toLowerCase().includes('salto') || type.toLowerCase().includes('cardio');
   
   const sizeClasses = {
     sm: 'w-12 h-12',
@@ -27,8 +27,29 @@ export const ExerciseAnimation = ({ type, isDone, className = '', size = 'md' }:
   };
 
   return (
-    <div className={`relative ${sizeClasses[size]} rounded-2xl overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center shrink-0 ${isDone ? 'opacity-30 grayscale' : ''} ${className}`}>
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-secondary/10" />
+    <div className={`relative ${sizeClasses[size]} rounded-[2rem] overflow-hidden bg-black/40 border border-white/5 flex items-center justify-center shrink-0 shadow-2xl ${isDone ? 'opacity-40 scale-95' : ''} ${className}`}>
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-secondary/20" />
+      
+      {/* Moving background lines to simulate activity */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {[...Array(3)].map((_, i) => (
+          <motion.div
+            key={i}
+            animate={{ 
+              x: [-100, 200],
+              opacity: [0, 0.1, 0]
+            }}
+            transition={{ 
+              duration: 2, 
+              repeat: Infinity, 
+              delay: i * 0.7,
+              ease: "linear"
+            }}
+            className="absolute h-[1px] w-full bg-primary top-1/2 -translate-y-1/2 rotate-45"
+            style={{ top: `${20 + i * 30}%` }}
+          />
+        ))}
+      </div>
       
       {isBoxing && (
         <div className="relative">

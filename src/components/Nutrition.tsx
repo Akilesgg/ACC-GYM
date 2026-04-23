@@ -447,7 +447,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
                     >
                       <div className="h-24 overflow-hidden relative">
                         <img 
-                          src={diet.imageUrl || getFallbackImage(diet.name || '')} 
+                          src={diet.imageUrl || getFallbackImage([diet.name, ...(diet.meals?.flatMap(m => m.ingredients) || [])].join(' '))} 
                           alt={diet.name} 
                           onError={(e) => { (e.target as HTMLImageElement).src = getFallbackImage('ensalada'); }}
                           className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all text-[0]"
@@ -553,7 +553,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
                 <Card key={idx} className="bg-surface border-none overflow-hidden flex flex-col group hover:bg-surface-variant/30 transition-all duration-500">
                   <div className="h-48 overflow-hidden relative">
                     <img 
-                      src={meal.imageUrl || getFallbackImage(meal.name || '')} 
+                      src={meal.imageUrl || getFallbackImage([meal.name, ...(meal.ingredients || [])].join(' '))} 
                       alt={meal.name} 
                       onError={(e) => { (e.target as HTMLImageElement).src = getFallbackImage('ensalada'); }}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 text-[0]"
