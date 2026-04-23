@@ -1,4 +1,4 @@
-import { Sparkles, PlusCircle, ArrowLeft, Target, Clock, ShieldAlert, Loader2, Utensils, Info, Calendar, Trash2, Edit2 } from 'lucide-react';
+import { Sparkles, PlusCircle, ArrowLeft, Target, Clock, ShieldAlert, Loader2, Utensils, Info, Calendar, Trash2, Edit2, AlertTriangle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +10,7 @@ import { useTranslation } from '../lib/i18n';
 import TabBackground from './TabBackground';
 import { useStore } from '../store/useStore';
 import { clearUserDiets } from '../services/users';
+import { db, doc, updateDoc, deleteField } from '../lib/firebase';
 
 interface NutritionProps {
   profile: UserProfile;
@@ -163,7 +164,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
 
   const resetDiets = async () => {
     if (!profile?.uid) return;
-    setIsDeleting(true);
+    // No more blocking setIsDeleting(true) for perceived speed
     try {
       // Optimistic: limpiar estado local inmediatamente
       const cleared: UserProfile = {
@@ -175,17 +176,16 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
         allergies: '',
         nutritionAutoGenerate: false,
       };
-      setProfile(cleared);  // setProfile del store (ya importado)
+      setProfile(cleared);  
       setStep('intro');
       setAutoGenerate(false);
       setIsResetting(false);
 
-      // Firestore: usar deleteField para nutritionPlan (no merge)
+      // Firestore en segundo plano
       await clearUserDiets(profile.uid);
     } catch (error) {
       console.error("[Nutrition] Error resetting diets:", error);
-    } finally {
-      setIsDeleting(false);
+      // Opcionalmente podrías revertir el estado aquí si falla críticamente
     }
   };
 
@@ -201,13 +201,11 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
     setDietToDelete(null);
     
     try {
-      // setDoc sin merge para que el array se sobreescriba
-      const { doc, setDoc, getDoc } = await import('firebase/firestore');
-      const { db } = await import('../lib/firebase');
       const ref = doc(db, 'users', profile.uid);
-      const snap = await getDoc(ref);
-      const current = snap.exists() ? snap.data() : {};
-      await setDoc(ref, { ...current, diets: updatedDiets, nutritionPlan: updatedPlan || null });
+      await updateDoc(ref, { 
+        diets: updatedDiets, 
+        nutritionPlan: updatedPlan || deleteField() 
+      });
     } catch (error) {
       console.error("[Nutrition] Error deleting diet:", error);
     }

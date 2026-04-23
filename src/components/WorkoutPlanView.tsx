@@ -186,17 +186,19 @@ export default function WorkoutPlanView({
   };
 
   const activePlan = sport.plan || globalPlan;
-  const isFallbackPlan = (activePlan as any)?.isFallback === true ||
-    activePlan?.reasoning?.includes('[Plan local') ||
-    (activePlan?.table?.every(d => d.exercises.length <= 1) && activePlan?.table?.some(d => d.exercises.length > 0));
+  const isFallbackPlan = useMemo(() => {
+    return (activePlan as any)?.isFallback === true ||
+      activePlan?.reasoning?.includes('[Plan local') ||
+      (activePlan?.table?.every(d => d.exercises.length <= 1) && activePlan?.table?.some(d => d.exercises.length > 0));
+  }, [activePlan]);
 
   useEffect(() => {
     if (isFallbackPlan && !isRegenerating) {
-      // Pequeño delay para que el usuario vea la interfaz primero
-      const timer = setTimeout(() => handleRegenerate(), 1500);
-      return () => clearTimeout(timer);
+      // Trigger regeneration immediately if it's a fallback plan
+      console.log("[WorkoutPlanView] Detected fallback plan, triggering AI generation...");
+      handleRegenerate();
     }
-  }, []); // Solo al montar
+  }, [isFallbackPlan]); // Trigger if plan changes to fallback
 
   // Si no hay plan, mostrar pantalla de generación automática
   if (!activePlan && !isRegenerating) {

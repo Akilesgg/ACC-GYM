@@ -10,27 +10,37 @@ const getDietImage = (query: string): string => {
 
   const map: [string, string][] = [
     // Pollo / Chicken
+    ['pechuga pollo arroz', 'photo-1598515214211-89d3c73ae83b'],
+    ['chicken rice', 'photo-1598515214211-89d3c73ae83b'],
     ['pollo', 'photo-1598103442097-8b74394b95c3'],
     ['chicken', 'photo-1598103442097-8b74394b95c3'],
     ['pechuga', 'photo-1598103442097-8b74394b95c3'],
     // Pescado / Fish
+    ['salmon asparagus', 'photo-1467003909585-2f8a72700288'],
     ['salmon', 'photo-1467003909585-2f8a72700288'],
     ['pescado', 'photo-1467003909585-2f8a72700288'],
     ['fish', 'photo-1467003909585-2f8a72700288'],
     ['atun', 'photo-1467003909585-2f8a72700288'],
     ['merluza', 'photo-1467003909585-2f8a72700288'],
+    ['bacalao', 'photo-1467003909585-2f8a72700288'],
     // Carne / Beef
+    ['steak potatoes', 'photo-1546833999-b9f581a1996d'],
     ['ternera', 'photo-1546833999-b9f581a1996d'],
     ['beef', 'photo-1546833999-b9f581a1996d'],
     ['carne', 'photo-1546833999-b9f581a1996d'],
     ['cerdo', 'photo-1546833999-b9f581a1996d'],
     ['steak', 'photo-1546833999-b9f581a1996d'],
+    ['solomillo', 'photo-1546833999-b9f581a1996d'],
     // Huevos / Eggs
+    ['huevo aguacate', 'photo-1482049016688-2d3e1b311543'],
+    ['eggs avocado', 'photo-1525351484163-7529414344d8'],
     ['huevo', 'photo-1482049016688-2d3e1b311543'],
     ['egg', 'photo-1482049016688-2d3e1b311543'],
     ['tortilla', 'photo-1482049016688-2d3e1b311543'],
     ['omni', 'photo-1482049016688-2d3e1b311543'],
     // Desayuno / Breakfast / Avena
+    ['avena fruit', 'photo-1494859814609-3fbd77c95bc1'],
+    ['oatmeal berries', 'photo-1494859814609-3fbd77c95bc1'],
     ['avena', 'photo-1494859814609-3fbd77c95bc1'],
     ['oatmeal', 'photo-1494859814609-3fbd77c95bc1'],
     ['breakfast', 'photo-1494859814609-3fbd77c95bc1'],
@@ -38,24 +48,50 @@ const getDietImage = (query: string): string => {
     ['tostada', 'photo-1525351484163-7529414344d8'],
     ['toast', 'photo-1525351484163-7529414344d8'],
     // Ensaladas / Verduras
+    ['ensalada pepino', 'photo-1512621776951-a57141f2eefd'],
+    ['green salad', 'photo-1512621776951-a57141f2eefd'],
     ['ensalada', 'photo-1512621776951-a57141f2eefd'],
     ['salad', 'photo-1512621776951-a57141f2eefd'],
     ['verdura', 'photo-1540420773420-3366772f4999'],
     ['vegetable', 'photo-1540420773420-3366772f4999'],
     ['quinoa', 'photo-1512621776951-a57141f2eefd'],
+    ['espinaca', 'photo-1512621776951-a57141f2eefd'],
+    ['brocoli', 'photo-1512621776951-a57141f2eefd'],
     // Frutas
+    ['smoothie bowl', 'photo-1502741224143-90386d7f8c82'],
     ['fruta', 'photo-1490474418585-ba9bad8fd0ea'],
     ['fruit', 'photo-1490474418585-ba9bad8fd0ea'],
     ['smoothie', 'photo-1502741224143-90386d7f8c82'],
-    ['batido', 'photo-1502741224143-90386d7f8c82'],
-    // Pasta / Arroz
+    ['platano', 'photo-1490474418585-ba9bad8fd0ea'],
+    ['apple', 'photo-1490474418585-ba9bad8fd0ea'],
+    // Pasta / Arroz / Legumbres
+    ['pasta bowl', 'photo-1473093295043-cdd812d0e601'],
+    ['lentejas', 'photo-1514327605112-b887c0e61c0a'],
+    ['garbanzos', 'photo-1514327605112-b887c0e61c0a'],
+    ['lentils', 'photo-1514327605112-b887c0e61c0a'],
     ['pasta', 'photo-1473093295043-cdd812d0e601'],
     ['espagueti', 'photo-1473093295043-cdd812d0e601'],
     ['arroz', 'photo-1536304929831-ee1ca9d44906'],
     ['rice', 'photo-1536304929831-ee1ca9d44906'],
+    // Postres / Yogur
+    ['yogur nueces', 'photo-1511690656952-34342bb7c2f2'],
+    ['yogur', 'photo-1494314671902-399b18174975'],
+    ['yogurt', 'photo-1494314671902-399b18174975'],
+    ['postre', 'photo-1494314671902-399b18174975'],
+    ['dessert', 'photo-1494314671902-399b18174975'],
+    // Frutos secos
+    ['almendras', 'photo-1508061263366-9e90957f864e'],
+    ['nueces', 'photo-1508061263366-9e90957f864e'],
+    ['nuts', 'photo-1508061263366-9e90957f864e'],
+    // Mexican / Mix
+    ['taco', 'photo-1565299585-3309a4a7b0ae'],
+    ['burrito', 'photo-1565299585-3309a4a7b0ae'],
+    ['fajita', 'photo-1565299585-3309a4a7b0ae'],
   ];
 
-  const match = map.find(([k]) => q.includes(k));
+  // Try to find the best match (multi-word matches first)
+  const sortedMap = [...map].sort((a, b) => b[0].length - a[0].length);
+  const match = sortedMap.find(([k]) => q.includes(k));
   const photoId = match ? match[1] : 'photo-1546069901-ba9599a7e63c';
   return `https://images.unsplash.com/${photoId}?w=800&auto=format&fit=crop&q=80`;
 };
@@ -65,7 +101,14 @@ export function getRichFallbackPlan(config: SportConfig): TrainingPlan {
   const goal = (config.goal || '').toLowerCase();
   const days = config.daysPerWeek || 3;
 
-  // Banco de ejercicios por deporte y objetivo
+  const plan: TrainingPlan = {
+    id: `fallback_${sport}_${Date.now()}`,
+    name: `Plan de ${config.sport}`,
+    reasoning: `[Plan local] Diseño base para ${config.goal}. Optimiza tu rendimiento con esta estructura estándar.`,
+    isFallback: true,
+    table: [],
+    createdAt: new Date().toISOString()
+  };
   const exerciseBank: Record<string, Record<string, {name:string,sets:string,reps:string,notes:string,muscleGroup:string}[]>> = {
     boxeo: {
       fuerza: [
@@ -331,7 +374,7 @@ export async function generateNutritionPlan(profile: UserProfile): Promise<Nutri
         2. A catalog of meals (between 4 and 6 different meals per plan).
         3. For each meal: name, ingredients with exact amounts, STEP-BY-STEP AND DETAILED PREPARATION FORMULA, and macros (p, c, f, kcal).
         4. A WEEKLY CALENDAR (Monday to Sunday) indicating which meals from the catalog to take each day (3 to 5 daily meals according to the plan).
-        5. For each meal AND for the plan itself, include an 'imageSearchQuery' field with 2-3 English keywords of the main ingredients (e.g., "chicken rice broccoli", "oatmeal blueberries nuts", "salmon asparagus salad").
+        5. For each meal AND for the plan itself, include an 'imageSearchQuery' field with 4-5 English keywords describing EVERYTHING: the main protein, the sides, and the key ingredients (e.g., "grilled chicken breast with brown rice and steamed broccoli", "oatmeal with blueberries banana and walnuts", "baked salmon fillet with asparagus and lemon").
         
         IMPORTANT: Return an array of NutritionPlan objects.`,
         config: {

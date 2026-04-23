@@ -9,7 +9,7 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword
 } from 'firebase/auth';
-import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, updateDoc, getDocs, addDoc, query, where } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection, updateDoc, getDocs, addDoc, query, where, deleteField } from 'firebase/firestore';
 import firebaseConfig from '../../firebase-applet-config.json';
 
 const app = initializeApp(firebaseConfig);
@@ -83,6 +83,7 @@ export {
   getDocs,
   addDoc,
   query,
-  where
+  where,
+  deleteField
 };
 export type { User };

@@ -124,6 +124,7 @@ export interface UserProfile {
 
 export interface TrainingPlan {
   id: string;
+  name?: string;
   createdAt: string;
   reasoning: string;
   executionNotes?: string;
