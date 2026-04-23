@@ -111,27 +111,14 @@ export default function App() {
         nutritionPlan: fetchedProfile.nutritionPlan || null
       } : null;
       
-      // Mergear Firestore con lo que hay en localStorage (localStorage gana en sports/diets)
+      // Mergear Firestore con lo que hay en localStorage con precaución
       const localProfile = useStore.getState().profile;
       if (sanitizedProfile) {
-        if (localProfile) {
-          const merged = {
-            ...sanitizedProfile,
-            // Campos que el usuario puede haber actualizado localmente y Firestore puede no tener aún:
-            sports: localProfile.sports?.length > (sanitizedProfile.sports?.length || 0)
-              ? localProfile.sports
-              : (sanitizedProfile.sports || []),
-            diets: localProfile.diets?.length > (sanitizedProfile.diets?.length || 0)
-              ? localProfile.diets
-              : (sanitizedProfile.diets || []),
-            plan: localProfile.plan || sanitizedProfile.plan,
-          };
-          setProfile(merged);
-        } else {
-          setProfile(sanitizedProfile);
-        }
+        // Si ya tenemos un perfil local, lo usamos como base para transiciones rápidas,
+        // pero el servidor (sanitizedProfile) es la fuente de verdad definitiva para colecciones.
+        // Solo "ganamos" localmente si el servidor no tiene datos aún o si estamos en una ráfaga de updates.
+        setProfile(sanitizedProfile);
       } else if (!localProfile) {
-        // Solo si no hay datos remotos ni locales, ponemos null
         setProfile(null);
       }
       

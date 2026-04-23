@@ -183,6 +183,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
 
       // Firestore en segundo plano
       await clearUserDiets(profile.uid);
+      onUpdateProfile(cleared);
     } catch (error) {
       console.error("[Nutrition] Error resetting diets:", error);
       // Opcionalmente podrías revertir el estado aquí si falla críticamente
@@ -206,6 +207,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
         diets: updatedDiets, 
         nutritionPlan: updatedPlan || deleteField() 
       });
+      onUpdateProfile(updated);
     } catch (error) {
       console.error("[Nutrition] Error deleting diet:", error);
     }

@@ -10,90 +10,94 @@ const getDietImage = (query: string): string => {
 
   const map: [string, string][] = [
     // Pollo / Chicken
-    ['pechuga pollo arroz', 'photo-1598515214211-89d3c73ae83b'],
-    ['chicken rice', 'photo-1598515214211-89d3c73ae83b'],
+    ['pechuga pollo arroz brócoli', 'photo-1598515214211-89d3c73ae83b'],
+    ['chicken rice broccoli', 'photo-1598515214211-89d3c73ae83b'],
+    ['pollo asado patatas', 'photo-1532550907401-a500c9a57435'],
+    ['pechuga pollo ensalada', 'photo-1512621776951-a57141f2eefd'],
+    ['chicken salad', 'photo-1512621776951-a57141f2eefd'],
+    ['pavo quinoa espinacas', 'photo-1512621776951-a57141f2eefd'],
+    ['turkey quinoa spinach', 'photo-1512621776951-a57141f2eefd'],
+    ['pollo curry arroz', 'photo-1588166524941-3bf61a9c41db'],
+    ['chicken curry rice', 'photo-1588166524941-3bf61a9c41db'],
     ['pollo', 'photo-1598103442097-8b74394b95c3'],
     ['chicken', 'photo-1598103442097-8b74394b95c3'],
-    ['pechuga', 'photo-1598103442097-8b74394b95c3'],
     // Pescado / Fish
+    ['salmon esparragos', 'photo-1467003909585-2f8a72700288'],
     ['salmon asparagus', 'photo-1467003909585-2f8a72700288'],
-    ['salmon', 'photo-1467003909585-2f8a72700288'],
+    ['atun aguacate', 'photo-1523049673857-eb18f1d7b578'],
+    ['tuna avocado', 'photo-1523049673857-eb18f1d7b578'],
+    ['bacalao verduras', 'photo-1519708227418-c8fd9a32b7a2'],
+    ['merluza patatas', 'photo-1519708227418-c8fd9a32b7a2'],
+    ['pescado blanco', 'photo-1519708227418-c8fd9a32b7a2'],
+    ['white fish', 'photo-1519708227418-c8fd9a32b7a2'],
+    ['sushi sashimi', 'photo-1553621042-f6e147245754'],
     ['pescado', 'photo-1467003909585-2f8a72700288'],
     ['fish', 'photo-1467003909585-2f8a72700288'],
-    ['atun', 'photo-1467003909585-2f8a72700288'],
-    ['merluza', 'photo-1467003909585-2f8a72700288'],
-    ['bacalao', 'photo-1467003909585-2f8a72700288'],
     // Carne / Beef
+    ['filete ternera patatas', 'photo-1546833999-b9f581a1996d'],
     ['steak potatoes', 'photo-1546833999-b9f581a1996d'],
+    ['ternera brócoli', 'photo-1504674900247-0877df9cc836'],
+    ['beef broccoli', 'photo-1504674900247-0877df9cc836'],
+    ['hamburguesa casera', 'photo-1568901346375-23c9450c58cd'],
+    ['entrecot verduras', 'photo-1546833999-b9f581a1996d'],
     ['ternera', 'photo-1546833999-b9f581a1996d'],
     ['beef', 'photo-1546833999-b9f581a1996d'],
-    ['carne', 'photo-1546833999-b9f581a1996d'],
-    ['cerdo', 'photo-1546833999-b9f581a1996d'],
-    ['steak', 'photo-1546833999-b9f581a1996d'],
-    ['solomillo', 'photo-1546833999-b9f581a1996d'],
     // Huevos / Eggs
-    ['huevo aguacate', 'photo-1482049016688-2d3e1b311543'],
-    ['eggs avocado', 'photo-1525351484163-7529414344d8'],
+    ['huevos revueltos', 'photo-1525351484163-7529414344d8'],
+    ['scrambled eggs', 'photo-1525351484163-7529414344d8'],
+    ['tortilla espinacas', 'photo-1482049016688-2d3e1b311543'],
+    ['huevos cocidos', 'photo-1516100882582-96c3a05fe590'],
+    ['boiled eggs', 'photo-1516100882582-96c3a05fe590'],
     ['huevo', 'photo-1482049016688-2d3e1b311543'],
-    ['egg', 'photo-1482049016688-2d3e1b311543'],
-    ['tortilla', 'photo-1482049016688-2d3e1b311543'],
-    ['omni', 'photo-1482049016688-2d3e1b311543'],
-    // Desayuno / Breakfast / Avena
-    ['avena fruit', 'photo-1494859814609-3fbd77c95bc1'],
+    // Desayuno
+    ['avena arandanos', 'photo-1494859814609-3fbd77c95bc1'],
     ['oatmeal berries', 'photo-1494859814609-3fbd77c95bc1'],
+    ['yogur griego nueces', 'photo-1511690656952-34342bb7c2f2'],
+    ['greek yogurt nuts', 'photo-1511690656952-34342bb7c2f2'],
+    ['tostada aguacate', 'photo-1525351484163-7529414344d8'],
+    ['avocado toast', 'photo-1525351484163-7529414344d8'],
+    ['fruta variada', 'photo-1490474418585-ba9bad8fd0ea'],
+    ['pancakes fitness', 'photo-1528207776546-365bb710ee93'],
     ['avena', 'photo-1494859814609-3fbd77c95bc1'],
-    ['oatmeal', 'photo-1494859814609-3fbd77c95bc1'],
-    ['breakfast', 'photo-1494859814609-3fbd77c95bc1'],
-    ['pancake', 'photo-1494859814609-3fbd77c95bc1'],
-    ['tostada', 'photo-1525351484163-7529414344d8'],
-    ['toast', 'photo-1525351484163-7529414344d8'],
-    // Ensaladas / Verduras
-    ['ensalada pepino', 'photo-1512621776951-a57141f2eefd'],
-    ['green salad', 'photo-1512621776951-a57141f2eefd'],
-    ['ensalada', 'photo-1512621776951-a57141f2eefd'],
-    ['salad', 'photo-1512621776951-a57141f2eefd'],
-    ['verdura', 'photo-1540420773420-3366772f4999'],
-    ['vegetable', 'photo-1540420773420-3366772f4999'],
-    ['quinoa', 'photo-1512621776951-a57141f2eefd'],
-    ['espinaca', 'photo-1512621776951-a57141f2eefd'],
-    ['brocoli', 'photo-1512621776951-a57141f2eefd'],
-    // Frutas
-    ['smoothie bowl', 'photo-1502741224143-90386d7f8c82'],
-    ['fruta', 'photo-1490474418585-ba9bad8fd0ea'],
-    ['fruit', 'photo-1490474418585-ba9bad8fd0ea'],
-    ['smoothie', 'photo-1502741224143-90386d7f8c82'],
-    ['platano', 'photo-1490474418585-ba9bad8fd0ea'],
-    ['apple', 'photo-1490474418585-ba9bad8fd0ea'],
-    // Pasta / Arroz / Legumbres
-    ['pasta bowl', 'photo-1473093295043-cdd812d0e601'],
-    ['lentejas', 'photo-1514327605112-b887c0e61c0a'],
-    ['garbanzos', 'photo-1514327605112-b887c0e61c0a'],
-    ['lentils', 'photo-1514327605112-b887c0e61c0a'],
-    ['pasta', 'photo-1473093295043-cdd812d0e601'],
-    ['espagueti', 'photo-1473093295043-cdd812d0e601'],
-    ['arroz', 'photo-1536304929831-ee1ca9d44906'],
-    ['rice', 'photo-1536304929831-ee1ca9d44906'],
-    // Postres / Yogur
-    ['yogur nueces', 'photo-1511690656952-34342bb7c2f2'],
-    ['yogur', 'photo-1494314671902-399b18174975'],
-    ['yogurt', 'photo-1494314671902-399b18174975'],
-    ['postre', 'photo-1494314671902-399b18174975'],
-    ['dessert', 'photo-1494314671902-399b18174975'],
-    // Frutos secos
-    ['almendras', 'photo-1508061263366-9e90957f864e'],
-    ['nueces', 'photo-1508061263366-9e90957f864e'],
-    ['nuts', 'photo-1508061263366-9e90957f864e'],
-    // Mexican / Mix
-    ['taco', 'photo-1565299585-3309a4a7b0ae'],
-    ['burrito', 'photo-1565299585-3309a4a7b0ae'],
-    ['fajita', 'photo-1565299585-3309a4a7b0ae'],
+    // Pasta / Arroz
+    ['espaguetis boloñesa', 'photo-1551183053-bf91a1d81141'],
+    ['arroz integral verduras', 'photo-1512621776951-a57141f2eefd'],
+    ['brown rice veg', 'photo-1512621776951-a57141f2eefd'],
+    ['pasta integral', 'photo-1473093295043-cdd812d0e601'],
+    ['arroz blanco', 'photo-1536304929831-ee1ca9d44906'],
+    ['lasaña verduras', 'photo-1574894709066-1102214a6680'],
+    // Veg/Legumbres
+    ['tofu verduras', 'photo-1546069901-ba9599a7e63c'],
+    ['quinoa ensalada', 'photo-1490645935967-10de6ba17051'],
+    ['lentejas estofadas', 'photo-1514327605112-b887c0e61c0a'],
+    ['garbanzos espinacas', 'photo-1514327605112-b887c0e61c0a'],
+    ['ensalada mixta', 'photo-1512621776951-a57141f2eefd'],
+    // Suplementos / Batidos
+    ['batido proteinas', 'photo-1502741224143-90386d7f8c82'],
+    ['protein shake', 'photo-1502741224143-90386d7f8c82'],
+    ['smoothie bowl', 'photo-1494314671902-399b18174975'],
   ];
 
-  // Try to find the best match (multi-word matches first)
+  // Try to find the best match (more specific/long matches first)
   const sortedMap = [...map].sort((a, b) => b[0].length - a[0].length);
   const match = sortedMap.find(([k]) => q.includes(k));
-  const photoId = match ? match[1] : 'photo-1546069901-ba9599a7e63c';
-  return `https://images.unsplash.com/${photoId}?w=800&auto=format&fit=crop&q=80`;
+  
+  if (match) {
+    return `https://images.unsplash.com/${match[1]}?w=800&auto=format&fit=crop&q=80`;
+  }
+
+  // Si no hay match, generamos una imagen de comida variada usando la propia query para que Unsplash intente buscar algo (vía el ID si podemos, pero aquí solo tenemos el mapeo)
+  // Como fallback real, usamos una semilla basada en el texto para que al menos sea determinista pero diferente entre platos
+  const seed = q.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const fallbackPhotos = [
+    'photo-1546069901-ba9599a7e63c',
+    'photo-1504674900247-0877df9cc836',
+    'photo-1512621776951-a57141f2eefd',
+    'photo-1473093295043-cdd812d0e601',
+    'photo-1547592166-23ac45744acd',
+    'photo-1532550907401-a500c9a57435'
+  ];
+  return `https://images.unsplash.com/${fallbackPhotos[seed % fallbackPhotos.length]}?w=800&auto=format&fit=crop&q=80`;
 };
 
 export function getRichFallbackPlan(config: SportConfig): TrainingPlan {

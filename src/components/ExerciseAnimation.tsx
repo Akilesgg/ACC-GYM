@@ -10,118 +10,88 @@ interface ExerciseAnimationProps {
 }
 
 export const ExerciseAnimation = ({ type, isDone, className = '', size = 'md' }: ExerciseAnimationProps) => {
-  const isBoxing = type.toLowerCase().includes('box') || type.toLowerCase().includes('jab') || type.toLowerCase().includes('hook') || type.toLowerCase().includes('uppercut') || type.toLowerCase().includes('punch') || type.toLowerCase().includes('saco') || type.toLowerCase().includes('pera') || type.toLowerCase().includes('sombra');
-  const isLifting = type.toLowerCase().includes('press') || type.toLowerCase().includes('pesa') || type.toLowerCase().includes('mancuerna') || type.toLowerCase().includes('sentadilla') || type.toLowerCase().includes('squat') || type.toLowerCase().includes('deadlift') || type.toLowerCase().includes('flexion') || type.toLowerCase().includes('pushup') || type.toLowerCase().includes('abdomen') || type.toLowerCase().includes('abs');
-  const isRunning = type.toLowerCase().includes('run') || type.toLowerCase().includes('correr') || type.toLowerCase().includes('rodaje') || type.toLowerCase().includes('sprint') || type.toLowerCase().includes('atletismo') || type.toLowerCase().includes('comba') || type.toLowerCase().includes('salto') || type.toLowerCase().includes('cardio');
+  const t = type.toLowerCase();
   
+  // Mapping muscle groups or types to specific "anatomical" looking images
+  // These are Unsplash IDs that have a more technical / clinical or muscle focus feel
+  const muscleMap: Record<string, string> = {
+    'pecho': 'photo-1534438327276-14e5300c3a48', // heavy lift/chest focus
+    'hombros': 'photo-1541534741688-6078c65b12de', // workout/focus
+    'brazos': 'photo-1581009146145-b5ef050c2e1e', // arms
+    'triceps': 'photo-1583454110551-21f2fa2adfcd',
+    'biceps': 'photo-1581009146145-b5ef050c2e1e',
+    'espalda': 'photo-1434682772747-f16d3ea162c3', // back focus
+    'piernas': 'photo-1434608519344-49d77a699e1d', // legs
+    'core': 'photo-1517836357463-d25dfeac3438', // abs/core
+    'cardio': 'photo-1538805060514-97d9cc17730c', // running
+    'full body': 'photo-1571019623452-c697c22c067e',
+  };
+
+  const currentMuscle = Object.keys(muscleMap).find(m => t.includes(m)) || 'full body';
+  const imageId = muscleMap[currentMuscle];
+  const imageUrl = `https://images.unsplash.com/${imageId}?w=400&auto=format&fit=crop&q=80`;
+
   const sizeClasses = {
     sm: 'w-12 h-12',
     md: 'w-24 h-24',
     lg: 'w-32 h-32'
   };
 
-  const iconSizes = {
-    sm: 16,
-    md: 32,
-    lg: 48
-  };
-
   return (
-    <div className={`relative ${sizeClasses[size]} rounded-[2rem] overflow-hidden bg-black/40 border border-white/5 flex items-center justify-center shrink-0 shadow-2xl ${isDone ? 'opacity-40 scale-95' : ''} ${className}`}>
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-secondary/20" />
+    <div className={`relative ${sizeClasses[size]} rounded-[2rem] overflow-hidden bg-black/40 border border-white/10 flex items-center justify-center shrink-0 shadow-2xl group ${isDone ? 'opacity-40 scale-95' : ''} ${className}`}>
+      {/* Background Image with anatomical feel */}
+      <img 
+        src={imageUrl} 
+        alt={type} 
+        className="absolute inset-0 w-full h-full object-cover mix-blend-overlay opacity-60 grayscale group-hover:grayscale-0 transition-all duration-700" 
+      />
       
-      {/* Moving background lines to simulate activity */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(3)].map((_, i) => (
-          <motion.div
-            key={i}
-            animate={{ 
-              x: [-100, 200],
-              opacity: [0, 0.1, 0]
-            }}
-            transition={{ 
-              duration: 2, 
-              repeat: Infinity, 
-              delay: i * 0.7,
-              ease: "linear"
-            }}
-            className="absolute h-[1px] w-full bg-primary top-1/2 -translate-y-1/2 rotate-45"
-            style={{ top: `${20 + i * 30}%` }}
-          />
-        ))}
+      {/* Cyberpunk/Technical Overlays */}
+      <div className="absolute inset-0 bg-gradient-to-t from-primary/30 to-transparent opacity-40" />
+      
+      {/* Animated Technical Crosshair/Scanner */}
+      <motion.div 
+        animate={{ 
+          rotate: 360,
+          scale: [1, 1.05, 1],
+        }}
+        transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+        className="absolute inset-0 border-[1px] border-primary/20 rounded-full m-1 pointer-events-none"
+      />
+
+      {/* Pulse Effect on "Muscle" */}
+      <motion.div 
+        animate={{ 
+          scale: [1, 1.2, 1],
+          opacity: [0.3, 0.6, 0.3]
+        }}
+        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        className="w-12 h-12 rounded-full bg-primary/20 blur-xl pointer-events-none"
+      />
+
+      {/* Scanner line */}
+      <motion.div 
+        animate={{ 
+          top: ['0%', '100%', '0%']
+        }}
+        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+        className="absolute left-0 right-0 h-[2px] bg-primary/40 shadow-[0_0_15px_rgba(var(--primary),0.5)] z-10"
+      />
+
+      {/* Real-time metrics simulation overlay */}
+      <div className="absolute top-2 left-2 flex gap-1 items-start">
+        <div className="w-1 h-3 bg-primary/60 rounded-full animate-pulse" />
+        <div className="w-1 h-2 bg-primary/40 rounded-full animate-pulse delay-75" />
+        <div className="w-1 h-4 bg-primary/80 rounded-full animate-pulse delay-150" />
       </div>
-      
-      {isBoxing && (
-        <div className="relative">
-          <motion.div
-            animate={{ 
-              x: size === 'sm' ? [0, 10, 0] : [0, 40, 0],
-              scale: [1, 1.2, 1],
-              rotate: [0, -10, 0]
-            }}
-            transition={{ duration: 0.8, repeat: Infinity, ease: "circOut" }}
-            className="text-primary"
-          >
-            <Icons.Zap size={iconSizes[size]} />
-          </motion.div>
-          <div className={`absolute ${size === 'sm' ? '-left-2' : '-left-4'} top-1/2 -translate-y-1/2 ${size === 'sm' ? 'w-2 h-2' : 'w-4 h-4'} rounded-full bg-primary/20 animate-ping`} />
-        </div>
-      )}
 
-      {isLifting && (
-        <div className="flex flex-col items-center">
-          <motion.div
-            animate={{ 
-              y: size === 'sm' ? [5, -5, 5] : [10, -10, 10],
-              scaleY: [0.9, 1.1, 0.9]
-            }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-            className="text-secondary"
-          >
-            <Dumbbell size={iconSizes[size]} />
-          </motion.div>
-          <motion.div 
-            animate={{ width: size === 'sm' ? [10, 20, 10] : [20, 40, 20], opacity: [0.2, 0.5, 0.2] }}
-            transition={{ duration: 1.5, repeat: Infinity }}
-            className="h-1 bg-secondary/30 rounded-full mt-2" 
-          />
-        </div>
-      )}
-
-      {isRunning && (
-        <div className="flex gap-1 md:gap-2">
-          {[0, 1, 2].map(i => (
-            <motion.div
-              key={i}
-              animate={{ 
-                y: size === 'sm' ? [0, -5, 0] : [0, -15, 0],
-                opacity: [0.3, 1, 0.3]
-              }}
-              transition={{ 
-                duration: 0.6, 
-                repeat: Infinity, 
-                delay: i * 0.2,
-                ease: "easeInOut" 
-              }}
-              className={`${size === 'sm' ? 'w-1 h-4' : 'w-2 h-8'} bg-primary rounded-full`}
-            />
-          ))}
-        </div>
-      )}
-
-      {!isBoxing && !isLifting && !isRunning && (
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-          className="text-white/20"
-        >
-          <Icons.Activity size={iconSizes[size]} />
-        </motion.div>
-      )}
+      <div className="relative z-20">
+        <Dumbbell className="text-white drop-shadow-[0_0_10px_rgba(255,255,255,0.5)]" size={size === 'sm' ? 16 : 32} />
+      </div>
       
       {size !== 'sm' && (
         <div className="absolute bottom-1 right-2">
-          <span className="text-[6px] font-black uppercase tracking-widest opacity-40">Guía Visual</span>
+          <span className="text-[6px] font-black uppercase tracking-widest text-primary drop-shadow-sm">System Bio-Sync</span>
         </div>
       )}
     </div>
