@@ -103,6 +103,8 @@ export interface UserProfile {
   // Evolution
   weightHistory?: WeightEntry[];
   photos?: GalleryItem[];
+  archivedSports?: SportConfig[];
+  archivedDiets?: NutritionPlan[];
   // Tracking
   progress?: Record<string, DailyProgress>; // Key is YYYY-MM-DD
   streak?: number;

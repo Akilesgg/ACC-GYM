@@ -229,9 +229,22 @@ export default function Profile({ profile, onBack, language }: ProfileProps) {
               </div>
               <h3 className="font-headline text-xl font-black uppercase italic tracking-tight text-on-surface-variant/60">Historial de Disciplinas Archivadas</h3>
             </div>
-            <Card className="bg-surface/30 border-dashed border border-white/5 p-8 text-center">
-              <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-40">No hay disciplinas archivadas recientemente</p>
-            </Card>
+            {profile.archivedSports && profile.archivedSports.length > 0 ? (
+               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                 {profile.archivedSports.map((s, i) => (
+                   <Card key={i} className="bg-surface/20 border-white/5 p-4 flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-surface flex items-center justify-center text-on-surface-variant/30">
+                        <Icons.Trophy size={14} />
+                      </div>
+                      <p className="text-[10px] font-black uppercase tracking-widest">{s.sport}</p>
+                   </Card>
+                 ))}
+               </div>
+            ) : (
+              <Card className="bg-surface/30 border-dashed border border-white/5 p-8 text-center">
+                <p className="text-xs font-bold uppercase tracking-[0.2em] opacity-40">No hay disciplinas archivadas recientemente</p>
+              </Card>
+            )}
         </section>
       </section>
     </div>

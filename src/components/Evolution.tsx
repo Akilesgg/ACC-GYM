@@ -357,9 +357,19 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
                   </div>
                   <h3 className="font-headline text-lg font-black uppercase italic tracking-tight">Archivo de Evolución</h3>
                 </div>
-                <div className="p-12 border-2 border-dashed border-white/5 rounded-[2rem] text-center">
-                  <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Toda tu evolución histórica se guarda aquí de forma segura</p>
-                </div>
+                {profile.archivedSports && profile.archivedSports.length > 0 ? (
+                   <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                     {profile.archivedSports.map((s, i) => (
+                       <Card key={i} className="bg-surface/30 border-white/5 p-4 text-center">
+                          <p className="text-[10px] font-black uppercase tracking-widest leading-tight">{s.sport}</p>
+                       </Card>
+                     ))}
+                   </div>
+                ) : (
+                  <div className="p-12 border-2 border-dashed border-white/5 rounded-[2rem] text-center">
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40">Toda tu evolución histórica se guarda aquí de forma segura</p>
+                  </div>
+                )}
               </section>
 
             {/* Weekly Training Table */}

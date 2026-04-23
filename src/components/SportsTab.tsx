@@ -18,6 +18,7 @@ import { subscribeToSports } from '../services/sports';
 import SportsList from './SportsList';
 import { useStore } from '../store/useStore';
 import TabBackground from './TabBackground';
+import { ExerciseCard } from './ExerciseCard';
 
 const SPORT_ICONS: Record<string, any> = {
   "Dumbbell": Dumbbell,
@@ -229,8 +230,19 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
   };
 
   const removeSport = (sportName: string) => {
+    const sportToArchive = profile.sports.find(s => s.sport === sportName);
     const updatedSports = profile.sports.filter(s => s.sport !== sportName);
-    onUpdateProfile({ ...profile, sports: updatedSports });
+    const updatedArchived = [...(profile.archivedSports || [])];
+    
+    if (sportToArchive) {
+      updatedArchived.push(sportToArchive);
+    }
+
+    onUpdateProfile({ 
+      ...profile, 
+      sports: updatedSports,
+      archivedSports: updatedArchived
+    });
   };
 
   const goBack = () => {
@@ -369,6 +381,19 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
+                        {s.plan && (
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActivePlan(s.plan);
+                            }}
+                            className="bg-primary/10 border-primary/20 text-primary font-black uppercase tracking-widest text-[10px] h-10 px-4 rounded-xl hover:bg-primary/20"
+                          >
+                            <Calendar size={14} className="mr-2" /> {t('verTabla') || 'Ver Tabla'}
+                          </Button>
+                        )}
                         <Button 
                           variant="ghost" 
                           size="icon" 
@@ -473,23 +498,27 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
               </div>
               <p className="text-on-surface leading-relaxed text-lg italic">"{activePlan.reasoning}"</p>
             </Card>
-            <div className="grid grid-cols-1 gap-6">
+            <div className="grid grid-cols-1 gap-12">
               {activePlan.table.map((day, idx) => (
-                <Card key={idx} className="bg-surface border-none p-6">
-                  <h4 className="font-headline text-xl font-bold text-primary mb-6">{day.day}</h4>
-                  <div className="space-y-4">
+                <div key={idx} className="space-y-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
+                      <Calendar size={24} />
+                    </div>
+                    <h4 className="font-headline text-4xl font-black text-on-surface uppercase italic tracking-tighter">{day.day}</h4>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {day.exercises.map((ex, exIdx) => (
-                      <div key={exIdx} className="flex items-center gap-4 p-4 bg-background rounded-xl">
-                        <div className="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-secondary font-bold">{exIdx + 1}</div>
-                        <div className="flex-1">
-                          <p className="font-bold">{ex.name}</p>
-                          <p className="text-xs text-on-surface-variant">{ex.sets} x {ex.reps}</p>
-                        </div>
-                        <p className="text-[10px] text-on-surface-variant italic max-w-[200px] text-right">{ex.notes}</p>
-                      </div>
+                      <ExerciseCard 
+                        key={exIdx} 
+                        exercise={ex} 
+                        isCompleted={false} 
+                        onToggle={() => {}} 
+                      />
                     ))}
                   </div>
-                </Card>
+                </div>
               ))}
             </div>
           </motion.div>

@@ -215,32 +215,32 @@ export default function Dashboard({ profile, onUpdateProfile, onAddSport, onGoTo
                 </Card>
 
                 {/* Training Table */}
-                <div className="grid grid-cols-1 gap-6">
+                <div className="grid grid-cols-1 gap-12">
                   {plan.table.map((day, idx) => (
-                    <Card key={idx} className="bg-surface border-none p-6 overflow-hidden">
-                      <div className="flex items-center justify-between mb-6">
-                        <h4 className="font-headline text-xl font-bold text-primary">{day.day}</h4>
-                        <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">
-                          {day.exercises.length} {t('ejercicios')}
+                    <div key={idx} className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary">
+                            <Zap size={20} />
+                          </div>
+                          <h4 className="font-headline text-3xl font-black text-on-surface uppercase italic tracking-tighter">{day.day}</h4>
+                        </div>
+                        <span className="text-[10px] font-black text-primary/40 uppercase tracking-[0.2em] bg-primary/5 px-4 py-1 rounded-full">
+                          {day.exercises.length} Exercises Scheduled
                         </span>
                       </div>
-                      <div className="space-y-4">
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {day.exercises.map((ex, exIdx) => (
-                          <div key={exIdx} className="flex items-center gap-4 p-4 bg-background rounded-xl group hover:bg-surface-variant transition-all">
-                            <div className="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-secondary font-bold">
-                              {exIdx + 1}
-                            </div>
-                            <div className="flex-1">
-                              <p className="font-bold text-on-surface">{ex.name}</p>
-                              <p className="text-xs text-on-surface-variant">{ex.sets} x {ex.reps}</p>
-                            </div>
-                            <div className="text-right hidden md:block">
-                              <p className="text-[10px] text-on-surface-variant italic">{ex.notes}</p>
-                            </div>
-                          </div>
+                          <ExerciseCard 
+                            key={ex.id || exIdx} 
+                            exercise={ex} 
+                            isCompleted={currentProgress.completedExercises.includes(ex.id)}
+                            onToggle={() => toggleExercise(ex.id)}
+                          />
                         ))}
                       </div>
-                    </Card>
+                    </div>
                   ))}
                 </div>
               </div>

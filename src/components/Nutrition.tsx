@@ -193,12 +193,24 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
 
   const deleteDiet = async (dietId: string) => {
     if (!profile?.uid) return;
+    const dietToArchive = (profile.diets || []).find(d => d.id === dietId);
     const updatedDiets = (profile.diets || []).filter(d => d.id !== dietId);
+    const updatedArchived = [...(profile.archivedDiets || [])];
+    
+    if (dietToArchive) {
+      updatedArchived.push(dietToArchive);
+    }
+
     const updatedPlan = profile.nutritionPlan?.id === dietId
       ? (updatedDiets[0] ?? undefined)
       : profile.nutritionPlan;
 
-    const updated: UserProfile = { ...profile, diets: updatedDiets, nutritionPlan: updatedPlan };
+    const updated: UserProfile = { 
+      ...profile, 
+      diets: updatedDiets, 
+      nutritionPlan: updatedPlan,
+      archivedDiets: updatedArchived
+    };
     setProfile(updated);  // optimistic
     setDietToDelete(null);
     
@@ -206,7 +218,8 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
       const ref = doc(db, 'users', profile.uid);
       await updateDoc(ref, { 
         diets: updatedDiets, 
-        nutritionPlan: updatedPlan || deleteField() 
+        nutritionPlan: updatedPlan || deleteField(),
+        archivedDiets: updatedArchived
       });
       onUpdateProfile(updated);
     } catch (error) {
