@@ -510,84 +510,67 @@ export default function SportsList({ sports, selectedSportNames, savedSportNames
           exit={{ opacity: 0, y: 100 }}
           className="fixed bottom-32 left-1/2 -translate-x-1/2 z-[250] w-full max-w-lg px-4"
         >
-          <div className="relative group">
-            {/* Outer Glow */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-secondary/20 to-primary/20 rounded-[3rem] blur-xl opacity-50 group-hover:opacity-100 transition-opacity" />
-            
-            <div className="relative bg-[#111318]/95 backdrop-blur-3xl p-8 rounded-[3.5rem] border border-white/10 shadow-[0_32px_64px_-12px_rgba(0,0,0,1)] space-y-6">
-              <div className="flex items-start justify-between px-2">
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_12px_rgba(var(--primary),0.8)] animate-pulse" />
-                    <span className="text-sm font-black uppercase tracking-[0.3em] text-primary">
-                      {selectedSportNames.length} {selectedSportNames.length === 1 ? 'Disciplina' : 'Disciplinas'}
-                    </span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedSportNames.map(s => (
-                      <span key={s} className="text-[10px] font-black bg-white/5 text-on-surface-variant px-4 py-1.5 rounded-xl uppercase border border-white/5">
-                        {s}
-                      </span>
-                    ))}
-                  </div>
+          <div className="bg-[#15171c]/95 backdrop-blur-2xl p-8 rounded-[2.5rem] border border-white/5 shadow-2xl space-y-8">
+            <div className="flex items-start justify-between">
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-[#c0ff00]" />
+                  <span className="text-xs font-black uppercase tracking-widest text-[#c0ff00]">
+                    {selectedSportNames.length} {selectedSportNames.length === 1 ? 'DISCIPLINA' : 'DISCIPLINAS'}
+                  </span>
                 </div>
-                
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => {
-                    selectedSportNames.forEach(name => onSelect(name));
-                    setConfiguringSport(null);
-                    setSearch('');
-                    setSelectedLetter(null);
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                  }}
-                  className="rounded-2xl bg-white/5 hover:bg-white/10 border border-white/5 h-12 px-6 group/btn"
-                >
-                  <Search size={14} className="mr-2 text-primary group-hover/btn:scale-125 transition-transform" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-primary">Buscar más</span>
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  {selectedSportNames.map(s => (
+                    <span key={s} className="text-[9px] font-bold bg-white/5 text-white/60 px-3 py-1.5 rounded-xl uppercase">
+                      {s}
+                    </span>
+                  ))}
+                </div>
               </div>
+              
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => {
+                  selectedSportNames.forEach(name => onSelect(name));
+                  setConfiguringSport(null);
+                  setSearch('');
+                  setSelectedLetter(null);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="rounded-full bg-[#1a2b2f] hover:bg-[#1a2b2f]/80 text-[#00d1ff] h-10 px-6 border border-[#00d1ff]/20 text-[10px] font-black uppercase tracking-widest"
+              >
+                + BUSCAR MÁS
+              </Button>
+            </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <Button 
-                  onClick={() => handleConfirm(false)}
-                  className="h-24 rounded-[2.5rem] bg-white/5 border border-white/10 text-white font-black text-xs uppercase tracking-widest hover:bg-white/10 hover:border-primary/50 transition-all flex flex-col items-center justify-center gap-2 group/add"
-                >
-                  <div className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center group-hover/add:bg-primary/20 group-hover/add:text-primary transition-all">
-                    <Plus size={20} />
-                  </div>
-                  <span>{selectedSportNames.every(name => savedSportNames.includes(name)) ? 'Deporte añadido' : 'Añadir deporte'}</span>
-                </Button>
-                
-                <Button 
-                  onClick={() => handleConfirm(true)}
-                  disabled={selectedSportNames.length < 2}
-                  className={`h-24 rounded-[2.5rem] font-black text-xs uppercase tracking-widest transition-all flex flex-col items-center justify-center gap-2 shadow-2xl relative overflow-hidden group/combine ${
-                    selectedSportNames.length >= 2 
-                      ? 'bg-primary text-on-primary shadow-primary/40 hover:scale-[1.02] active:scale-95' 
-                      : 'bg-white/5 text-white/20 cursor-not-allowed grayscale'
-                  }`}
-                >
-                  {/* Internal button shine */}
-                  {selectedSportNames.length >= 2 && (
-                    <motion.div
-                      animate={{ x: ['-100%', '200%'] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-12"
-                    />
-                  )}
-                  
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                    selectedSportNames.length >= 2 
-                      ? 'bg-black/20 group-hover/combine:bg-black/30' 
-                      : 'bg-white/5'
-                  }`}>
-                    <Zap size={20} fill="currentColor" />
-                  </div>
-                  <span className="relative z-10">Combinar Deportes</span>
-                </Button>
-              </div>
+            <div className="grid grid-cols-2 gap-4">
+              <Button 
+                onClick={() => handleConfirm(false)}
+                className="h-20 rounded-[2rem] bg-transparent border-2 border-[#c0ff00]/30 hover:border-[#c0ff00] transition-all flex flex-col items-center justify-center gap-1 group"
+              >
+                <div className="flex items-center gap-2">
+                  <Plus size={16} className="text-[#c0ff00]" />
+                  <span className="text-[11px] font-black uppercase tracking-widest text-[#c0ff00]">
+                    {selectedSportNames.every(name => savedSportNames.includes(name)) ? 'DEPORTE AÑADIDO' : 'DEPORTE AÑADIDO'}
+                  </span>
+                </div>
+              </Button>
+              
+              <Button 
+                onClick={() => handleConfirm(true)}
+                disabled={selectedSportNames.length < 2}
+                className={`h-20 rounded-[2rem] font-black text-[11px] uppercase tracking-widest flex flex-col items-center justify-center gap-1 shadow-lg shadow-[#c0ff00]/20 transition-all ${
+                  selectedSportNames.length >= 2 
+                    ? 'bg-[#c0ff00] text-black hover:scale-[1.02] active:scale-95 opacity-100' 
+                    : 'bg-[#c0ff00]/50 text-black/50 cursor-not-allowed grayscale'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <Zap size={16} fill="currentColor" />
+                  <span>COMBINAR DEPORTES</span>
+                </div>
+              </Button>
             </div>
           </div>
         </motion.div>
