@@ -69,9 +69,9 @@ export default function Dashboard({ profile, onUpdateProfile, onAddSport, onGoTo
   
   const todaysExercises = profile.sports.flatMap(sport => {
     const p = sport.plan || (profile.plan?.id ? profile.plan : null);
-    if (!p) return [];
-    const dayData = p.table.find(day => day.day.toLowerCase().includes(todayName) || day.day.toLowerCase().includes('hoy'));
-    if (!dayData) return [];
+    if (!p || !p.table) return [];
+    const dayData = p.table.find(day => day?.day?.toLowerCase().includes(todayName) || day?.day?.toLowerCase().includes('hoy'));
+    if (!dayData || !dayData.exercises) return [];
     return dayData.exercises.map(ex => ({ ...ex, sportName: sport.sport }));
   });
 

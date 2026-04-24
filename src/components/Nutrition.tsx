@@ -633,6 +633,30 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
                 </div>
               </section>
             )}
+            {/* Archived Diets Section */}
+            {profile.archivedDiets && profile.archivedDiets.length > 0 && (
+              <section className="mt-16 space-y-6 opacity-60">
+                 <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-surface rounded-2xl flex items-center justify-center text-on-surface-variant/40">
+                      <Icons.History size={24} />
+                    </div>
+                    <h3 className="font-headline text-xl font-black uppercase italic tracking-tight text-on-surface-variant/60">Historial de Dietas Archivadas</h3>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {profile.archivedDiets.map((diet, i) => (
+                      <Card key={i} className="bg-surface/20 border-white/5 p-4 flex items-center gap-3">
+                         <div className="w-10 h-10 rounded-lg bg-surface overflow-hidden shrink-0">
+                           <img src={diet.imageUrl || getFallbackImage('ensalada')} alt="" className="w-full h-full object-cover grayscale" />
+                         </div>
+                         <div className="flex-1 min-w-0">
+                           <p className="text-[10px] font-black uppercase tracking-widest truncate">{diet.name}</p>
+                           <p className="text-[8px] font-bold opacity-40 uppercase">{diet.meals.length} Comidas</p>
+                         </div>
+                      </Card>
+                    ))}
+                  </div>
+              </section>
+            )}
           </>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 gap-6 text-center max-w-sm mx-auto">

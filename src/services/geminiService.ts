@@ -61,10 +61,12 @@ const getDietImage = (query: string): string => {
     ['ensalada mixta atun huevo', 'photo-1512621776951-a57141f2eefd'],
     ['quinoa pollo pimientos pepino', 'photo-1490645935967-10de6ba17051'],
     ['tofu verduras soja sesamo', 'photo-1546069901-ba9599a7e63c'],
-    // Suplementos / Batidos
-    ['batido proteinas', 'photo-1502741224143-90386d7f8c82'],
-    ['protein shake', 'photo-1502741224143-90386d7f8c82'],
-    ['smoothie bowl', 'photo-1494314671902-399b18174975'],
+    // High-Density / Ingredient-Rich fallbacks (Clinical/Lab style)
+    ['ingredientes', 'photo-1490645935967-10de6ba17051'],
+    ['ingredients', 'photo-1490645935967-10de6ba17051'],
+    ['preparacion', 'photo-1547592166-23ac45744acd'],
+    ['bowl', 'photo-1494314671902-399b18174975'],
+    ['superfoods', 'photo-1490645935967-10de6ba17051'],
   ];
 
   // Try to find the best match (more specific/long matches first)

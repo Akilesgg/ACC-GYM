@@ -125,15 +125,21 @@ export default function App() {
         
         const merged = {
           ...sanitizedProfile,
-          sports: (localProfile?.sports && localProfile.sports.length !== sanitizedProfile.sports.length)
+          sports: (localProfile?.sports && localProfile.sports.length !== (sanitizedProfile.sports || []).length)
             ? localProfile.sports
             : sanitizedProfile.sports,
+          archivedSports: (localProfile?.archivedSports && localProfile.archivedSports.length !== (sanitizedProfile.archivedSports || []).length)
+            ? localProfile.archivedSports
+            : sanitizedProfile.archivedSports,
           plan: (localProfile?.plan && !sanitizedProfile.plan)
             ? localProfile.plan
             : sanitizedProfile.plan,
-          diets: (localProfile?.diets && localProfile.diets.length !== sanitizedProfile.diets.length)
+          diets: (localProfile?.diets && localProfile.diets.length !== (sanitizedProfile.diets || []).length)
             ? localProfile.diets
-            : sanitizedProfile.diets
+            : sanitizedProfile.diets,
+          archivedDiets: (localProfile?.archivedDiets && localProfile.archivedDiets.length !== (sanitizedProfile.archivedDiets || []).length)
+            ? localProfile.archivedDiets
+            : sanitizedProfile.archivedDiets
         };
         
         setProfile(merged);
