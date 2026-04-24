@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { generateTrainingPlan, generateCombinedTrainingPlan, getRichFallbackPlan } from '../services/geminiService';
 import { motion, AnimatePresence } from 'motion/react';
+import * as Icons from 'lucide-react';
 import { 
   Dumbbell, Target, Loader2, Search, ChevronRight, Info, 
   ArrowLeft, Bike, Waves, Zap, Heart, Activity, 
@@ -74,10 +75,17 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
   const [currentConfigIndex, setCurrentConfigIndex] = useState(0);
   const [allConfigs, setAllConfigs] = useState<SportConfig[]>([]);
   const [loading, setLoading] = useState(false);
-  const [activePlan, setActivePlan] = useState<TrainingPlan | null>(null);
+  const [activePlan, setActivePlan] = useState<TrainingPlan | null>(profile.plan || (profile.sports.length > 0 ? profile.sports[0].plan || null : null));
   const [justSavedSports, setJustSavedSports] = useState<string[]>([]);
   
-  // Reset cuando profile.sports se actualiza
+  useEffect(() => {
+    if (profile.plan && !activePlan) {
+      setActivePlan(profile.plan);
+    } else if (!profile.plan && profile.sports.length > 0 && !activePlan) {
+      const firstPlan = profile.sports.find(s => s.plan)?.plan;
+      if (firstPlan) setActivePlan(firstPlan);
+    }
+  }, [profile.plan, profile.sports]);
   useEffect(() => {
     setJustSavedSports([]);
   }, [profile.sports.length]);
@@ -199,6 +207,10 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
       await onUpdateProfile(updatedProfile);
       setJustSavedSports(prev => [...prev, ...newConfigs.map(c => c.sport)]);
 
+      if (globalPlan) {
+        setActivePlan(globalPlan);
+      }
+
       console.log("[SPORTS] Guardado confirmado por el padre.");
       setShowSuccess(true);
       setSelectedSportsList([]); 
@@ -227,6 +239,23 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
     
     await onUpdateProfile({ ...profile, sports: updatedSports });
     setShowModeModal(null);
+  };
+
+  const generatePlanForSport = async (sport: SportConfig) => {
+    setLoading(true);
+    try {
+      const plan = await generateTrainingPlan(profile, sport, language);
+      const updatedSports = profile.sports.map(s => s.sport === sport.sport ? { ...s, plan } : s);
+      await onUpdateProfile({ ...profile, sports: updatedSports });
+      setActivePlan(plan);
+    } catch (err) {
+      const fallback = getRichFallbackPlan(sport);
+      const updatedSports = profile.sports.map(s => s.sport === sport.sport ? { ...s, plan: fallback } : s);
+      await onUpdateProfile({ ...profile, sports: updatedSports });
+      setActivePlan(fallback);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const removeSport = (sportName: string) => {
@@ -350,11 +379,19 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
       {/* Active Sports Section */}
       {!activePlan && !loading && profile.sports.length > 0 && (
         <section className="space-y-6">
-          <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">{t('tusDeportesActivos')}</h3>
+          <div className="flex items-center justify-between">
+            <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">{t('tusDeportesActivos')}</h3>
+            <Button 
+               onClick={() => setActivePlan(profile.plan || profile.sports[0].plan || null)}
+               className="bg-primary text-on-primary font-black uppercase tracking-[0.2em] italic px-6 h-12 rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 transition-transform"
+            >
+               <Icons.Calendar size={18} className="mr-2" /> {t('verPlanSemanal') || 'VER MI PLAN ACTUAL'}
+            </Button>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {profile.sports.map((s, idx) => (
                     <Card key={idx} 
-                      onClick={() => setShowModeModal(s)}
+                      onClick={() => s.plan ? setActivePlan(s.plan) : generatePlanForSport(s)}
                       className="bg-surface border border-white/5 p-6 flex items-center justify-between group cursor-pointer hover:bg-surface-variant/20 transition-all"
                     >
                       <div className="flex items-center gap-4">
@@ -381,19 +418,17 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        {s.plan && (
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setActivePlan(s.plan);
-                            }}
-                            className="bg-primary/10 border-primary/20 text-primary font-black uppercase tracking-widest text-[10px] h-10 px-4 rounded-xl hover:bg-primary/20"
-                          >
-                            <Calendar size={14} className="mr-2" /> {t('verTabla') || 'Ver Tabla'}
-                          </Button>
-                        )}
+                        <Button 
+                          variant="ghost" 
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowModeModal(s);
+                          }}
+                          className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 text-on-surface-variant transition-colors"
+                        >
+                          <Zap size={18} />
+                        </Button>
                         <Button 
                           variant="ghost" 
                           size="icon" 
@@ -488,8 +523,22 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
         ) : activePlan ? (
           <motion.div key="plan" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-8">
             <div className="flex items-center justify-between">
-              <h3 className="font-headline text-2xl font-black text-primary uppercase italic">{t('planGenerado')}</h3>
-              <Button variant="outline" onClick={() => setActivePlan(null)} className="rounded-full">{t('cambiarDeporte')}</Button>
+              <div className="flex items-center gap-3">
+                <Button variant="ghost" size="icon" onClick={() => setActivePlan(null)} className="rounded-full bg-surface">
+                  <Icons.ArrowLeft size={20} />
+                </Button>
+                <h3 className="font-headline text-2xl font-black text-primary uppercase italic">{t('planGenerado')}</h3>
+              </div>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setActivePlan(null);
+                  setSelectedSportsList([]);
+                }} 
+                className="rounded-2xl font-black uppercase tracking-widest text-[10px] h-10 px-6 border-white/10"
+              >
+                {t('añadirNuevo') || 'Añadir Nuevo Deporte'}
+              </Button>
             </div>
             <Card className="bg-surface border-l-4 border-secondary p-8 relative overflow-hidden">
               <div className="flex items-center gap-3 mb-4">

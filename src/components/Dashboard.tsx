@@ -56,9 +56,14 @@ export default function Dashboard({ profile, onUpdateProfile, onAddSport, onGoTo
     });
   };
 
-  // Use the global plan if available (combined plan), otherwise use the first sport's plan
-  const plan = profile.plan || profile.sports[selectedSportIndex]?.plan;
-  const currentSportName = profile.plan ? t('planCombinado') : profile.sports[selectedSportIndex]?.sport;
+  // Use specific plan if user selects it, or combined plan if exists
+  const hasCombinedPlan = !!profile.plan;
+  const currentSportPlan = profile.sports[selectedSportIndex]?.plan;
+  const plan = (hasCombinedPlan && selectedSportIndex === -1) ? profile.plan : currentSportPlan || profile.plan;
+  
+  const currentSportName = (hasCombinedPlan && selectedSportIndex === -1) 
+    ? t('planCombinado') 
+    : profile.sports[selectedSportIndex]?.sport || 'Training';
 
   const todayName = format(today, 'EEEE', { locale }).toLowerCase();
   
@@ -159,17 +164,17 @@ export default function Dashboard({ profile, onUpdateProfile, onAddSport, onGoTo
             </Card>
 
             {/* Today's Routine if sports active */}
-            {todaysExercises.length > 0 && (
-              <section className="space-y-6">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-headline text-3xl font-black uppercase italic tracking-tight italic">
-                    {t('rutinaHoy')}
-                  </h3>
-                  <div className="px-4 py-1 bg-primary/10 rounded-full">
-                    <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{format(today, 'PPP', { locale })}</span>
-                  </div>
+            <section className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="font-headline text-3xl font-black uppercase italic tracking-tight">
+                  {t('rutinaHoy')}
+                </h3>
+                <div className="px-4 py-1 bg-primary/10 rounded-full">
+                  <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{format(today, 'PPP', { locale })}</span>
                 </div>
-                
+              </div>
+              
+              {todaysExercises.length > 0 ? (
                 <div className="grid grid-cols-1 gap-4">
                   {todaysExercises.map((ex: any, idx) => (
                     <ExerciseCard 
@@ -180,41 +185,70 @@ export default function Dashboard({ profile, onUpdateProfile, onAddSport, onGoTo
                     />
                   ))}
                 </div>
-              </section>
-            )}
+              ) : profile.sports.length > 0 ? (
+                <Card className="bg-surface/50 border-dashed border border-white/5 p-12 text-center rounded-[2rem]">
+                  <div className="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center text-secondary mx-auto mb-4">
+                    <Zap size={32} className="opacity-20" />
+                  </div>
+                  <h4 className="font-headline text-xl font-bold uppercase tracking-widest text-on-surface/40">Día de Descanso / Recuperación</h4>
+                  <p className="text-xs text-on-surface-variant max-w-xs mx-auto mt-2 uppercase font-bold opacity-30">
+                    Hoy no tienes ejercicios programados. Aprovecha para descansar o haz una sesión ligera de movilidad.
+                  </p>
+                </Card>
+              ) : null}
+            </section>
 
             {/* Full Plan Display */}
-            {plan ? (
-              <div className="space-y-8">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-headline text-2xl font-black uppercase tracking-tight">
-                    {language === 'es' ? 'Tu Plan de' : 'Your Plan for'} <span className="text-primary">{currentSportName}</span>
-                  </h3>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={onGoToProfile}
-                    className="text-[10px] font-black uppercase tracking-widest text-secondary"
-                  >
-                    {t('cambiarDeporte')}
-                  </Button>
-                </div>
-
-                {/* Reasoning Card */}
-                <Card className="bg-surface border-l-4 border-secondary p-8 relative overflow-hidden">
-                  <div className="flex items-center gap-3 mb-4">
-                    <Info className="text-secondary" />
-                    <h3 className="font-headline text-xl font-bold text-secondary uppercase tracking-widest">{t('razonamiento')}</h3>
+            <div className="space-y-8">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <h3 className="font-headline text-2xl font-black uppercase tracking-tight">
+                  {language === 'es' ? 'Tu Plan de' : 'Your Plan for'} <span className="text-primary italic">{currentSportName}</span>
+                </h3>
+                
+                {profile.sports.length > 1 && (
+                  <div className="flex flex-wrap gap-2">
+                     {hasCombinedPlan && (
+                       <Button 
+                         variant={selectedSportIndex === -1 ? "default" : "outline"}
+                         size="sm"
+                         onClick={() => setSelectedSportIndex(-1)}
+                         className="rounded-xl h-10 px-4 font-black uppercase tracking-widest text-[10px]"
+                       >
+                         {t('planCombinado')}
+                       </Button>
+                     )}
+                     {profile.sports.map((s, i) => (
+                       <Button 
+                         key={i}
+                         variant={selectedSportIndex === i ? "default" : "outline"}
+                         size="sm"
+                         onClick={() => setSelectedSportIndex(i)}
+                         className="rounded-xl h-10 px-4 font-black uppercase tracking-widest text-[10px]"
+                       >
+                         {s.sport}
+                       </Button>
+                     ))}
                   </div>
-                  <p className="text-on-surface leading-relaxed text-lg italic">
-                    "{plan.reasoning}"
-                  </p>
-                  <div className="absolute -bottom-10 -right-10 opacity-5 pointer-events-none">
-                    <Dumbbell size={200} />
-                  </div>
-                </Card>
+                )}
+              </div>
 
-                {/* Training Table */}
+              {plan ? (
+                <div className="space-y-8">
+                  {/* Reasoning Card */}
+                  <Card className="bg-surface border-l-4 border-secondary p-8 relative overflow-hidden">
+                    <div className="flex items-center gap-3 mb-4">
+                      <Info className="text-secondary" />
+                      <h3 className="font-headline text-xl font-bold text-secondary uppercase tracking-widest">{t('razonamiento')}</h3>
+                    </div>
+                    <p className="text-on-surface leading-relaxed text-lg italic">
+                      "{plan.reasoning}"
+                    </p>
+                    <div className="absolute -bottom-10 -right-10 opacity-5 pointer-events-none">
+                      <Dumbbell size={200} />
+                    </div>
+                  </Card>
+
+                  {/* Training Table */}
                 <div className="grid grid-cols-1 gap-12">
                   {plan.table.map((day, idx) => (
                     <div key={idx} className="space-y-6">
@@ -253,8 +287,9 @@ export default function Dashboard({ profile, onUpdateProfile, onAddSport, onGoTo
                 </Button>
               </div>
             )}
-          </section>
-        </div>
+          </div>
+        </section>
+      </div>
 
         {/* Right Column: News Previews */}
         <div className="space-y-8">

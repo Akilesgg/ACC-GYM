@@ -128,6 +128,9 @@ export default function App() {
           sports: (localProfile?.sports && localProfile.sports.length !== sanitizedProfile.sports.length)
             ? localProfile.sports
             : sanitizedProfile.sports,
+          plan: (localProfile?.plan && !sanitizedProfile.plan)
+            ? localProfile.plan
+            : sanitizedProfile.plan,
           diets: (localProfile?.diets && localProfile.diets.length !== sanitizedProfile.diets.length)
             ? localProfile.diets
             : sanitizedProfile.diets
