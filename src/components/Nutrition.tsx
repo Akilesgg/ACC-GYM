@@ -35,39 +35,54 @@ const TIMEFRAMES = [
   "Mantenimiento Indefinido"
 ];
 
+const FOOD_IMAGES: Record<string, string> = {
+  pollo: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=800&auto=format',
+  pechuga: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=800&auto=format',
+  salmon: 'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=800&auto=format',
+  atun: 'https://images.unsplash.com/photo-1511689660979-10d2b1ddd32b?w=800&auto=format',
+  ternera: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=800&auto=format',
+  carne: 'https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=800&auto=format',
+  huevo: 'https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=800&auto=format',
+  tortilla: 'https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=800&auto=format',
+  avena: 'https://images.unsplash.com/photo-1517673400267-0251440c45dc?w=800&auto=format',
+  platano: 'https://images.unsplash.com/photo-1571771894821-ce9b6c11b08e?w=800&auto=format',
+  nuez: 'https://images.unsplash.com/photo-1508061253366-f7da158b6d46?w=800&auto=format',
+  almendra: 'https://images.unsplash.com/photo-1508061253366-f7da158b6d46?w=800&auto=format',
+  arroz: 'https://images.unsplash.com/photo-1516684732162-798a0062be99?w=800&auto=format',
+  pasta: 'https://images.unsplash.com/photo-1551892374-ecf8754cf8b0?w=800&auto=format',
+  brocoli: 'https://images.unsplash.com/photo-1459411621453-7b03977f4bfc?w=800&auto=format',
+  espinaca: 'https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=800&auto=format',
+  esparrago: 'https://images.unsplash.com/photo-1516367971920-2d4794f9d669?w=800&auto=format',
+  tomate: 'https://images.unsplash.com/photo-1546470427-e26264be0b0d?w=800&auto=format',
+  ensalada: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&auto=format',
+  lechuga: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&auto=format',
+  yogur: 'https://images.unsplash.com/photo-1488477181946-6428a0291777?w=800&auto=format',
+  leche: 'https://images.unsplash.com/photo-1550583724-b2692b85b150?w=800&auto=format',
+  queso: 'https://images.unsplash.com/photo-1486297678162-eb2a19b0a32d?w=800&auto=format',
+  fruta: 'https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=800&auto=format',
+  fresa: 'https://images.unsplash.com/photo-1464965911861-746a04b4bca6?w=800&auto=format',
+  arandano: 'https://images.unsplash.com/photo-1498557850523-fd3d118b962e?w=800&auto=format',
+  manzana: 'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=800&auto=format',
+  batido: 'https://images.unsplash.com/photo-1502741224143-90386d7f8c82?w=800&auto=format',
+  aguacate: 'https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=800&auto=format',
+  sopa: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800&auto=format',
+  pan: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&auto=format',
+  tostada: 'https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=800&auto=format',
+};
+
 export default function Nutrition({ profile, onUpdateProfile, onBack, language }: NutritionProps) {
   const t = useTranslation(language);
   const { setProfile } = useStore();
 
   const getFallbackImage = (text: string): string => {
-    const q = (text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-    const map: [string, string][] = [
-      ['pollo', 'photo-1598103442097-8b74394b95c3'],
-      ['chicken', 'photo-1598103442097-8b74394b95c3'],
-      ['salmon', 'photo-1467003909585-2f8a72700288'],
-      ['ternera', 'photo-1546833999-b9f581a1996d'],
-      ['beef', 'photo-1546833999-b9f581a1996d'],
-      ['huevo', 'photo-1482049016688-2d3e1b311543'],
-      ['egg', 'photo-1482049016688-2d3e1b311543'],
-      ['avena', 'photo-1495214783159-3503fd1b572d'],
-      ['oat', 'photo-1495214783159-3503fd1b572d'],
-      ['pasta', 'photo-1473093295043-cdd812d0e601'],
-      ['arroz', 'photo-1536304929831-ee1ca9d44906'],
-      ['rice', 'photo-1536304929831-ee1ca9d44906'],
-      ['ensalada', 'photo-1512621776951-a57141f2eefd'],
-      ['salad', 'photo-1512621776951-a57141f2eefd'],
-      ['sopa', 'photo-1547592166-23ac45744acd'],
-      ['soup', 'photo-1547592166-23ac45744acd'],
-      ['batido', 'photo-1502741224143-90386d7f8c82'],
-      ['smoothie', 'photo-1502741224143-90386d7f8c82'],
-      ['aguacate', 'photo-1523049673857-eb18f1d7b578'],
-      ['fruta', 'photo-1490474418585-ba9bad8fd0ea'],
-      ['fruit', 'photo-1490474418585-ba9bad8fd0ea'],
-      ['verdura', 'photo-1540420773420-3366772f4999'],
-    ];
-    const match = map.find(([k]) => q.includes(k));
-    const photoId = match ? match[1] : 'photo-1512621776951-a57141f2eefd';
-    return `https://images.unsplash.com/${photoId}?w=800&auto=format&fit=crop&q=80`;
+    const q = (text || '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
+    const match = Object.keys(FOOD_IMAGES).find(k => q.includes(k));
+    return match
+      ? FOOD_IMAGES[match]
+      : 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&auto=format';
   };
 
   const [step, setStep] = useState<'intro' | 'goal' | 'timeframe' | 'allergies' | 'plan'>('intro');
