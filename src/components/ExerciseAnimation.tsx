@@ -68,7 +68,7 @@ const muscleMap: Record<string, string> = {
   const sizeClasses = {
     sm: 'w-12 h-12',
     md: 'w-24 h-24',
-    lg: 'w-32 h-32'
+    lg: 'w-full h-full'
   };
 
   return (

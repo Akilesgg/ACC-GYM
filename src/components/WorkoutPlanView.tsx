@@ -895,10 +895,18 @@ function ExerciseList({ date, exercises, progress, onToggle, language, sportName
                   : 'bg-[#111318] border-white/5 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10'
               }`}
             >
-              <div className="p-8 flex flex-col lg:flex-row lg:items-center gap-8 relative z-10">
-                {/* Exercise Animation / Visual Guide */}
-                <ExerciseAnimation type={ex.name} isDone={isDone} />
+              {/* Exercise Animation Banner */}
+              <div className="relative w-full h-56 overflow-hidden rounded-t-[2.5rem]">
+                <ExerciseAnimation
+                  type={ex.name}
+                  isDone={isDone}
+                  size="lg"
+                  className="!w-full !h-full !rounded-none"
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#111318] pointer-events-none" />
+              </div>
 
+              <div className="p-8 flex flex-col lg:flex-row lg:items-center gap-8 relative z-10">
                 {/* Exercise Progress / Icon (Desktop simple) */}
                 <div className="hidden lg:flex flex-col items-center justify-center gap-2 shrink-0 px-4 border-r border-white/5">
                    <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">ORDEN</span>

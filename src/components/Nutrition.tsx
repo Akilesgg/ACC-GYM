@@ -85,12 +85,12 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
   });
 
   useEffect(() => {
-    if (profile.nutritionPlan && profile.nutritionAutoGenerate !== false && autoGenerate) {
+    if (profile.nutritionPlan) {
       setStep('plan');
     } else if (!profile.nutritionPlan && step === 'plan' && !isGenerating && !loading) {
       setStep('intro');
     }
-  }, [profile.nutritionPlan, profile.nutritionAutoGenerate, isGenerating, loading]);
+  }, [profile.nutritionPlan, isGenerating, loading]);
 
   const handleStart = () => {
     setAutoGenerate(true);
@@ -112,10 +112,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
   };
 
   const generateDiets = async () => {
-    if (!autoGenerate && !loading) {
-      console.log("[Nutrition] Automatic generation blocked.");
-      return;
-    }
+    if (loading) return;
     setLoading(true);
     setIsGenerating(true);
     const allergyDetails = [
@@ -182,7 +179,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
       };
       setProfile(cleared);  
       setStep('intro');
-      setAutoGenerate(false);
+      setAutoGenerate(true);
       setIsResetting(false);
 
       // Firestore en segundo plano
@@ -449,9 +446,9 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
                     >
                       <div className="h-24 overflow-hidden relative">
                         <img 
-                          src={diet.imageUrl || getFallbackImage([diet.name, ...(diet.meals?.flatMap(m => m.ingredients) || [])].join(' '))} 
+                          src={getFallbackImage([diet.name, ...(diet.meals?.flatMap((m: any) => m.ingredients || []) || [])].join(' '))} 
                           alt={diet.name} 
-                          onError={(e) => { (e.target as HTMLImageElement).src = getFallbackImage('ensalada'); }}
+                          onError={(e) => { (e.target as HTMLImageElement).src = getFallbackImage(diet.name || 'ensalada'); }}
                           className="w-full h-full object-cover grayscale group-hover:grayscale-0 transition-all text-[0]"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -555,9 +552,9 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
                 <Card key={idx} className="bg-surface border-none overflow-hidden flex flex-col group hover:bg-surface-variant/30 transition-all duration-500">
                   <div className="h-48 overflow-hidden relative">
                     <img 
-                      src={meal.imageUrl || getFallbackImage([meal.name, ...(meal.ingredients || [])].join(' '))} 
+                      src={getFallbackImage([meal.name, ...(meal.ingredients || [])].join(' '))} 
                       alt={meal.name} 
-                      onError={(e) => { (e.target as HTMLImageElement).src = getFallbackImage('ensalada'); }}
+                      onError={(e) => { (e.target as HTMLImageElement).src = getFallbackImage(meal.name || 'ensalada'); }}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 text-[0]"
                       referrerPolicy="no-referrer"
                     />
@@ -649,7 +646,12 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
                     {profile.archivedDiets.map((diet, i) => (
                       <Card key={i} className="bg-surface/20 border-white/5 p-4 flex items-center gap-3">
                          <div className="w-10 h-10 rounded-lg bg-surface overflow-hidden shrink-0">
-                           <img src={diet.imageUrl || getFallbackImage('ensalada')} alt="" className="w-full h-full object-cover grayscale" />
+                           <img 
+                             src={getFallbackImage(diet.name || 'ensalada')} 
+                             alt="" 
+                             onError={(e) => { (e.target as HTMLImageElement).src = getFallbackImage('ensalada'); }}
+                             className="w-full h-full object-cover grayscale" 
+                           />
                          </div>
                          <div className="flex-1 min-w-0">
                            <p className="text-[10px] font-black uppercase tracking-widest truncate">{diet.name}</p>
