@@ -75,17 +75,9 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
   const [currentConfigIndex, setCurrentConfigIndex] = useState(0);
   const [allConfigs, setAllConfigs] = useState<SportConfig[]>([]);
   const [loading, setLoading] = useState(false);
-  const [activePlan, setActivePlan] = useState<TrainingPlan | null>(profile.plan || (profile.sports.length > 0 ? profile.sports[0].plan || null : null));
+  const [activePlan, setActivePlan] = useState<TrainingPlan | null>(null);
   const [justSavedSports, setJustSavedSports] = useState<string[]>([]);
   
-  useEffect(() => {
-    if (profile.plan && !activePlan) {
-      setActivePlan(profile.plan);
-    } else if (!profile.plan && profile.sports.length > 0 && !activePlan) {
-      const firstPlan = profile.sports.find(s => s.plan)?.plan;
-      if (firstPlan) setActivePlan(firstPlan);
-    }
-  }, [profile.plan, profile.sports]);
   useEffect(() => {
     setJustSavedSports([]);
   }, [profile.sports.length]);
@@ -377,76 +369,68 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
       )}
 
       {/* Active Sports Section */}
-      {!activePlan && !loading && profile.sports.length > 0 && (
-        <section className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">{t('tusDeportesActivos')}</h3>
-            <Button 
-               onClick={() => setActivePlan(profile.plan || profile.sports[0].plan || null)}
-               className="bg-primary text-on-primary font-black uppercase tracking-[0.2em] italic px-6 h-12 rounded-2xl shadow-xl shadow-primary/20 hover:scale-105 transition-transform"
-            >
-               <Icons.Calendar size={18} className="mr-2" /> {t('verPlanSemanal') || 'VER MI PLAN ACTUAL'}
-            </Button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {profile.sports.map((s, idx) => (
-                    <Card key={idx} 
-                      onClick={() => s.plan ? setActivePlan(s.plan) : generatePlanForSport(s)}
-                      className="bg-surface border border-white/5 p-6 flex items-center justify-between group cursor-pointer hover:bg-surface-variant/20 transition-all"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
-                          {(() => {
-                            const Icon = getSportIcon(s.sport);
-                            return <Icon className="text-primary" size={24} />;
-                          })()}
-                        </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h4 className="font-headline font-bold text-lg uppercase">{s.sport}</h4>
-                            {s.trainingMode && (
-                              <span className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-tighter ${s.trainingMode === 'guiado' ? 'bg-primary text-on-primary' : 'bg-secondary/20 text-secondary'}`}>
-                                {s.trainingMode}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex gap-2 items-center">
-                            <p className="text-xs text-on-surface-variant font-black uppercase tracking-widest">{s.daysPerWeek} {t('activos').toLowerCase()}</p>
-                            <span className="w-1 h-1 bg-outline-variant rounded-full" />
-                            <p className="text-[10px] font-bold text-primary uppercase">{s.goal} {s.subtype ? `(${s.subtype})` : ''}</p>
-                          </div>
-                        </div>
-                      </div>
+      {!loading && profile.sports.length > 0 && (
+    <section className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">{t('tusDeportesActivos')}</h3>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {profile.sports.map((s, idx) => (
+                <Card key={idx} 
+                  className="bg-surface border border-white/5 p-6 flex items-center justify-between group"
+                >
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+                      {(() => {
+                        const Icon = getSportIcon(s.sport);
+                        return <Icon className="text-primary" size={24} />;
+                      })()}
+                    </div>
+                    <div>
                       <div className="flex items-center gap-2">
-                        <Button 
-                          variant="ghost" 
-                          size="icon"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowModeModal(s);
-                          }}
-                          className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 text-on-surface-variant transition-colors"
-                        >
-                          <Zap size={18} />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeSport(s.sport);
-                          }}
-                          className="text-on-surface-variant hover:text-destructive hover:bg-destructive/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <Trash2 size={18} />
-                        </Button>
-                        <ChevronRight className="text-on-surface-variant/20 group-hover:text-primary transition-colors" />
+                        <h4 className="font-headline font-bold text-lg uppercase">{s.sport}</h4>
+                        {s.trainingMode && (
+                          <span className={`text-[8px] px-2 py-0.5 rounded-full font-black uppercase tracking-tighter ${s.trainingMode === 'guiado' ? 'bg-primary text-on-primary' : 'bg-secondary/20 text-secondary'}`}>
+                            {s.trainingMode}
+                          </span>
+                        )}
                       </div>
-                    </Card>
-                  ))}
-          </div>
-        </section>
-      )}
+                      <div className="flex gap-2 items-center">
+                        <p className="text-xs text-on-surface-variant font-black uppercase tracking-widest">{s.daysPerWeek} {t('activos').toLowerCase()}</p>
+                        <span className="w-1 h-1 bg-outline-variant rounded-full" />
+                        <p className="text-[10px] font-bold text-primary uppercase">{s.goal} {s.subtype ? `(${s.subtype})` : ''}</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setShowModeModal(s);
+                      }}
+                      className="w-10 h-10 rounded-xl bg-white/5 hover:bg-white/10 text-on-surface-variant transition-colors"
+                    >
+                      <Zap size={18} />
+                    </Button>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeSport(s.sport);
+                      }}
+                      className="text-on-surface-variant hover:text-destructive hover:bg-destructive/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 size={18} />
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+      </div>
+    </section>
+  )}
 
       {/* Mode Selection Modal */}
       <AnimatePresence>
@@ -519,57 +503,6 @@ export default function SportsTab({ profile, onUpdateProfile, onBack, language }
                 ? `La IA está diseñando tu plan de entrenamiento...` 
                 : `La IA está diseñando tu plan de entrenamiento...`}
             </p>
-          </motion.div>
-        ) : activePlan ? (
-          <motion.div key="plan" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-8">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <Button variant="ghost" size="icon" onClick={() => setActivePlan(null)} className="rounded-full bg-surface">
-                  <Icons.ArrowLeft size={20} />
-                </Button>
-                <h3 className="font-headline text-2xl font-black text-primary uppercase italic">{t('planGenerado')}</h3>
-              </div>
-              <Button 
-                variant="outline" 
-                onClick={() => {
-                  setActivePlan(null);
-                  setSelectedSportsList([]);
-                }} 
-                className="rounded-2xl font-black uppercase tracking-widest text-[10px] h-10 px-6 border-white/10"
-              >
-                {t('añadirNuevo') || 'Añadir Nuevo Deporte'}
-              </Button>
-            </div>
-            <Card className="bg-surface border-l-4 border-secondary p-8 relative overflow-hidden">
-              <div className="flex items-center gap-3 mb-4">
-                <Info className="text-secondary" />
-                <h3 className="font-headline text-xl font-bold text-secondary uppercase tracking-widest">{t('razonamiento')}</h3>
-              </div>
-              <p className="text-on-surface leading-relaxed text-lg italic">"{activePlan.reasoning}"</p>
-            </Card>
-            <div className="grid grid-cols-1 gap-12">
-              {activePlan.table.map((day, idx) => (
-                <div key={idx} className="space-y-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
-                      <Calendar size={24} />
-                    </div>
-                    <h4 className="font-headline text-4xl font-black text-on-surface uppercase italic tracking-tighter">{day.day}</h4>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {day.exercises.map((ex, exIdx) => (
-                      <ExerciseCard 
-                        key={exIdx} 
-                        exercise={ex} 
-                        isCompleted={false} 
-                        onToggle={() => {}} 
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
           </motion.div>
         ) : (
           <div className="space-y-8">

@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import { UserProfile, Language } from '../types';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import * as Icons from 'lucide-react';
 import { User, Mail, Shield, Scale, Ruler, Calendar, ArrowLeft, LogOut, Watch, Dumbbell, TrendingUp, ChevronRight, Brain } from 'lucide-react';
 import { useTranslation } from '../lib/i18n';
@@ -10,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useStore } from '../store/useStore';
 import { AreaChart, Area, ResponsiveContainer } from 'recharts';
 import TabBackground from './TabBackground';
+import WorkoutPlanView from './WorkoutPlanView';
 
 interface ProfileProps {
   profile: UserProfile;
@@ -18,9 +20,11 @@ interface ProfileProps {
   language: Language;
 }
 
-export default function Profile({ profile, onBack, language }: ProfileProps) {
+export default function Profile({ profile, onUpdateProfile, onBack, language }: ProfileProps) {
   const t = useTranslation(language);
   const { setActiveScreen } = useStore();
+  const [viewingSportName, setViewingSportName] = useState<string | null>(null);
+  const viewingSport = profile.sports.find(s => s.sport === viewingSportName) || null;
 
   const handleLogout = async () => {
     try {
@@ -33,6 +37,39 @@ export default function Profile({ profile, onBack, language }: ProfileProps) {
   return (
     <div className="space-y-12 pb-32">
       <TabBackground tab="profile" />
+      
+      <AnimatePresence>
+        {viewingSport && (
+          <motion.div
+            initial={{ opacity: 0, y: 100 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 100 }}
+            transition={{ type: "spring", damping: 25, stiffness: 200 }}
+            className="fixed inset-0 z-[200] bg-[#0a0a0c] overflow-y-auto"
+          >
+            <WorkoutPlanView
+              sport={viewingSport}
+              allSports={profile.sports}
+              profile={profile}
+              progress={profile.progress || {}}
+              onToggleExercise={(id, dateKey) => {
+                const dk = dateKey || new Date().toISOString().split('T')[0];
+                const current = profile.progress?.[dk]?.completedExercises || [];
+                const updated = current.includes(id) ? current.filter((e: string) => e !== id) : [...current, id];
+                onUpdateProfile({
+                  ...profile,
+                  progress: { ...profile.progress, [dk]: { ...profile.progress?.[dk], date: dk, completedExercises: updated } }
+                });
+              }}
+              onUpdateProfile={onUpdateProfile}
+              onClose={() => setViewingSportName(null)}
+              language={language}
+              globalPlan={profile.plan}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <section>
         <div className="flex items-center gap-4 mb-8">
           <Button variant="ghost" size="icon" onClick={onBack} className="rounded-full bg-surface">
@@ -137,7 +174,11 @@ export default function Profile({ profile, onBack, language }: ProfileProps) {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {profile.sports.length > 0 ? (
               profile.sports.map((sport) => (
-                <Card key={sport.sport} className="bg-surface border-none p-6 space-y-4 group hover:bg-surface-variant/30 transition-all">
+                <Card 
+                  key={sport.sport} 
+                  onClick={() => setViewingSportName(sport.sport)}
+                  className="bg-surface border-none p-6 space-y-4 group hover:bg-surface-variant/30 transition-all cursor-pointer"
+                >
                   <div className="flex items-center justify-between">
                     <h4 className="font-headline font-bold text-xl uppercase text-primary">{sport.sport}</h4>
                     <div className="flex flex-col items-end gap-1">
