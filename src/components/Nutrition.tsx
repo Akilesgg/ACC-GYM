@@ -72,6 +72,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
 
   const [step, setStep] = useState<'intro' | 'goal' | 'timeframe' | 'allergies' | 'plan'>('intro');
   const [loading, setLoading] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [autoGenerate, setAutoGenerate] = useState(true);
   const [tempData, setTempData] = useState({
@@ -86,10 +87,10 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
   useEffect(() => {
     if (profile.nutritionPlan && profile.nutritionAutoGenerate !== false && autoGenerate) {
       setStep('plan');
-    } else if (!profile.nutritionPlan && step === 'plan') {
+    } else if (!profile.nutritionPlan && step === 'plan' && !isGenerating && !loading) {
       setStep('intro');
     }
-  }, [profile.nutritionPlan, profile.nutritionAutoGenerate]);
+  }, [profile.nutritionPlan, profile.nutritionAutoGenerate, isGenerating, loading]);
 
   const handleStart = () => {
     setAutoGenerate(true);
@@ -116,6 +117,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
       return;
     }
     setLoading(true);
+    setIsGenerating(true);
     const allergyDetails = [
       tempData.isCeliac ? "Celíaco" : "",
       tempData.hasIntolerance ? "Intolerancia" : "",
@@ -149,6 +151,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
       alert("Hubo un problema al generar tu plan. Por favor, inténtalo de nuevo.");
     } finally {
       setLoading(false);
+      setIsGenerating(false);
     }
   };
 
