@@ -68,6 +68,37 @@ export default function WorkoutPlanView({
   const activePlan = sport.plan || globalPlan;
   const [showImportModal, setShowImportModal] = useState(false);
 
+  const handleSwapExercise = (exerciseId: string) => {
+    // Basic swapping logic: find an exercise with the same muscle group from the active plan or global pool
+    const planToSearch = sport.plan || globalPlan;
+    if (!planToSearch) return;
+
+    // We can swap in the current edit context or in the whole plan
+    // If we are in 'edit' tab, we swap in editExercises
+    const exToSwap = editExercises.find(ex => ex.id === exerciseId);
+    
+    if (exToSwap) {
+      const pool = planToSearch.table.flatMap(d => d.exercises);
+      const alternatives = pool.filter(ex => 
+        (ex.muscleGroup === exToSwap.muscleGroup || ex.sport === exToSwap.sport) && 
+        ex.name !== exToSwap.name
+      );
+
+      if (alternatives.length > 0) {
+        const randomAlternative = alternatives[Math.floor(Math.random() * alternatives.length)];
+        setEditExercises(prev => prev.map(ex => 
+          ex.id === exerciseId ? { ...randomAlternative, id: `swap-${Date.now()}`, sport: exToSwap.sport || sport.sport } : ex
+        ));
+      } else {
+        alert("No se encontraron ejercicios similares en tu plan actual.");
+      }
+    } else {
+      // If not in edit exercises, it might be in the daily view
+      // This would require updating the whole profile/plan document
+      alert("Solo puedes cambiar ejercicios en el modo Edición por ahora.");
+    }
+  };
+
   const importRoutine = (sourceSportName: string, sourceDay: string) => {
     const sourceSport = allSports.find(s => s.sport === sourceSportName);
     const sourcePlan = sourceSport?.plan || globalPlan;
@@ -567,6 +598,7 @@ export default function WorkoutPlanView({
               viewMode={viewMode}
               sportName={sport.sport}
               onEditExercise={handleEditExercise}
+              onSwap={handleSwapExercise}
             />
 
             <div className="h-20" /> {/* Extra space to avoid cut-off */}
@@ -952,16 +984,17 @@ export default function WorkoutPlanView({
                 </div>
 
                 <div className="flex-1 overflow-y-auto px-8 pb-12 custom-scrollbar">
-                  <ExerciseList 
-                    date={selectedDayDetail} 
-                    exercises={getWorkoutForDay(selectedDayDetail)} 
-                    progress={progress} 
-                    onToggle={onToggleExercise}
-                    language={language}
-                    viewMode={viewMode}
-                    sportName={sport.sport}
-                    onEditExercise={handleEditExercise}
-                  />
+                    <ExerciseList 
+                      date={selectedDayDetail} 
+                      exercises={getWorkoutForDay(selectedDayDetail)} 
+                      progress={progress} 
+                      onToggle={onToggleExercise}
+                      language={language}
+                      viewMode={viewMode}
+                      sportName={sport.sport}
+                      onEditExercise={handleEditExercise}
+                      onSwap={handleSwapExercise}
+                    />
                 </div>
               </div>
             </motion.div>
@@ -982,6 +1015,7 @@ interface ExerciseListProps {
   onEditExercise: (id: string, field: string, value: string) => void;
   viewMode?: 'cards' | 'table';
   isCombined?: boolean;
+  onSwap?: (id: string) => void;
 }
 
 function ExerciseList({ 
@@ -993,7 +1027,8 @@ function ExerciseList({
   sportName, 
   onEditExercise, 
   viewMode = 'cards',
-  isCombined 
+  isCombined,
+  onSwap
 }: ExerciseListProps) {
   const dateKey = format(date, 'yyyy-MM-dd');
   const dayProgress = progress[dateKey];
@@ -1036,11 +1071,19 @@ function ExerciseList({
                     onClick={() => onToggle(ex.id, dateKey)}
                     className={`group hover:bg-white/[0.02] transition-colors cursor-pointer ${isDone ? 'opacity-40' : ''}`}
                   >
-                    <td className="p-6">
-                      <div className="flex justify-center">
-                        {isDone ? <CheckCircle2 className="text-secondary" size={20} /> : <Circle className="text-white/20 group-hover:text-primary transition-colors" size={20} />}
-                      </div>
-                    </td>
+                      <td className="p-6">
+                        <div className="flex gap-2 justify-center">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            onClick={(e) => { e.stopPropagation(); onSwap?.(ex.id); }}
+                            className="text-white/20 hover:text-primary transition-all"
+                          >
+                            <Icons.RefreshCw size={16} />
+                          </Button>
+                          {isDone ? <CheckCircle2 className="text-secondary" size={20} /> : <Circle className="text-white/20 group-hover:text-primary transition-colors" size={20} />}
+                        </div>
+                      </td>
                     <td className="p-6">
                       <span className="text-[10px] font-black bg-primary/10 text-primary px-3 py-1 rounded-full uppercase tracking-tighter shrink-0 whitespace-nowrap">
                         {ex.sport || sportName}
@@ -1132,6 +1175,12 @@ function ExerciseList({
               </div>
               {/* Badge deporte */}
               <div className="absolute top-3 right-3 flex gap-2">
+                <Button 
+                  onClick={(e) => { e.stopPropagation(); onSwap?.(ex.id); }}
+                  className="w-9 h-9 rounded-full bg-black/60 border border-white/10 flex items-center justify-center hover:bg-primary transition-all text-white"
+                >
+                  <Icons.RefreshCw size={14} />
+                </Button>
                 <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-black/60 text-primary border border-primary/30">
                   {ex.sport || sportName}
                 </span>
