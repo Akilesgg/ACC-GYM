@@ -34,6 +34,15 @@ export default function Profile({ profile, onUpdateProfile, onBack, language }: 
     }
   };
 
+  const handleRemoveSport = (sportName: string) => {
+    if (!confirm(`¿Eliminar ${sportName} de tu perfil?`)) return;
+    const updatedSports = profile.sports.filter(s => s.sport !== sportName);
+    const updatedPlan = updatedSports.length > 0
+      ? (updatedSports[0].plan || profile.plan)
+      : undefined;
+    onUpdateProfile({ ...profile, sports: updatedSports, plan: updatedPlan });
+  };
+
   return (
     <div className="space-y-12 pb-32">
       <TabBackground tab="profile" />
@@ -177,8 +186,14 @@ export default function Profile({ profile, onUpdateProfile, onBack, language }: 
                 <Card 
                   key={sport.sport} 
                   onClick={() => setViewingSportName(sport.sport)}
-                  className="bg-surface border-none p-6 space-y-4 group hover:bg-surface-variant/30 transition-all cursor-pointer"
+                  className="bg-surface border-none p-6 space-y-4 group hover:bg-surface-variant/30 transition-all cursor-pointer relative"
                 >
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleRemoveSport(sport.sport); }}
+                    className="absolute top-3 right-3 w-8 h-8 bg-red-500/10 hover:bg-red-500/30 border border-red-500/30 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 z-10"
+                  >
+                    <Icons.X size={14} className="text-red-400" />
+                  </button>
                   <div className="flex items-center justify-between">
                     <h4 className="font-headline font-bold text-xl uppercase text-primary">{sport.sport}</h4>
                     <div className="flex flex-col items-end gap-1">

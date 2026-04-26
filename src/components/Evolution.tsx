@@ -173,6 +173,15 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
     { date: 'Abr', weight: profile.weight }
   ];
 
+  const handleRemoveSport = (sportName: string) => {
+    if (!confirm(`¿Eliminar ${sportName} de tu perfil?`)) return;
+    const updatedSports = profile.sports.filter(s => s.sport !== sportName);
+    const updatedPlan = updatedSports.length > 0
+      ? (updatedSports[0].plan || profile.plan)
+      : undefined;
+    onUpdateProfile({ ...profile, sports: updatedSports, plan: updatedPlan });
+  };
+
   return (
     <div className="space-y-12 pb-32">
       <TabBackground tab="evolution" />
@@ -284,21 +293,77 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
                 <p className="text-on-surface-variant font-medium">{format(today, 'PPP', { locale })}</p>
               </div>
 
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {todaysExercises.length > 0 ? (
-                  todaysExercises.map((ex: any, idx) => {
+                  todaysExercises.map((ex: any, index) => {
                     const isCompleted = currentProgress.completedExercises.includes(ex.id);
                     return (
-                      <ExerciseCard 
-                        key={ex.id || idx}
-                        exercise={ex}
-                        isCompleted={isCompleted}
-                        onToggle={() => toggleExercise(ex.id)}
-                      />
+                      <motion.div
+                        key={ex.id}
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: index * 0.08 }}
+                        className="relative rounded-3xl overflow-hidden bg-white border border-gray-200 cursor-pointer shadow-xl"
+                        onClick={() => toggleExercise(ex.id)}
+                      >
+                        {/* Animación grande en la parte superior */}
+                        <div className="w-full h-48 bg-[#f5f5f5] rounded-t-2xl overflow-hidden relative">
+                          <ExerciseAnimation
+                            type={ex.name}
+                            isDone={isCompleted}
+                            size="lg"
+                            className="w-full h-full"
+                          />
+                          {/* Badge completado */}
+                          {isCompleted && (
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="absolute top-4 right-4 w-10 h-10 bg-[#22c55e] rounded-full flex items-center justify-center shadow-lg shadow-[#22c55e]/40"
+                            >
+                              <CheckCircle2 size={22} className="text-white" />
+                            </motion.div>
+                          )}
+                          {/* Número de orden */}
+                          <div className="absolute top-4 left-4 w-8 h-8 bg-black/60 rounded-full flex items-center justify-center">
+                            <span className="text-xs font-black text-white">{index + 1}</span>
+                          </div>
+                        </div>
+
+                        {/* Contenido del ejercicio */}
+                        <div className={`p-5 transition-all ${isCompleted ? 'opacity-40' : ''}`}>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-[#22c55e] mb-1">
+                            {ex.sportName || 'Ejercicio'}
+                          </p>
+                          <h4 className={`text-xl font-headline font-black uppercase italic mb-3 text-black ${isCompleted ? 'line-through text-gray-400' : ''}`}>
+                            {ex.name}
+                          </h4>
+                          {ex.muscleGroup && (
+                            <span className="inline-block px-3 py-1 bg-[#22c55e]/10 border border-[#22c55e]/20 rounded-xl text-[10px] font-black uppercase tracking-wider text-[#22c55e] mb-3">
+                              {ex.muscleGroup}
+                            </span>
+                          )}
+                          <div className="flex gap-4 mb-3">
+                            <div className="flex items-center gap-2 bg-gray-100 rounded-xl px-3 py-2">
+                              <span className="text-[10px] font-black uppercase text-gray-500">Series</span>
+                              <span className="text-base font-black text-black">{ex.sets}</span>
+                            </div>
+                            <div className="flex items-center gap-2 bg-gray-100 rounded-xl px-3 py-2">
+                              <span className="text-[10px] font-black uppercase text-gray-500">Reps</span>
+                              <span className="text-base font-black text-black">{ex.reps}</span>
+                            </div>
+                          </div>
+                          {ex.notes && (
+                            <p className="text-xs text-gray-600 italic leading-relaxed">
+                              "{ex.notes}"
+                            </p>
+                          )}
+                        </div>
+                      </motion.div>
                     );
                   })
                 ) : (
-                  <Card className="p-12 text-center bg-surface border-none flex flex-col items-center justify-center gap-4 rounded-[3rem]">
+                  <Card className="col-span-full p-12 text-center bg-surface border-none flex flex-col items-center justify-center gap-4 rounded-[3rem]">
                     <div className="w-16 h-16 bg-background rounded-full flex items-center justify-center text-on-surface-variant/20">
                       <Clock size={32} />
                     </div>
@@ -332,8 +397,14 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
                       >
                         <Card 
                           onClick={() => setSelectedSportName(sport.sport)}
-                          className="bg-surface border-none p-4 flex items-center gap-4 group hover:bg-surface-variant/30 transition-all cursor-pointer h-full"
+                          className="bg-surface border-none p-4 flex items-center gap-4 group hover:bg-surface-variant/30 transition-all cursor-pointer h-full relative"
                         >
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleRemoveSport(sport.sport); }}
+                            className="absolute top-3 right-3 w-8 h-8 bg-red-500/10 hover:bg-red-500/30 border border-red-500/30 rounded-full flex items-center justify-center transition-all opacity-0 group-hover:opacity-100 z-10"
+                          >
+                            <Icons.X size={14} className="text-red-400" />
+                          </button>
                           <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
                             <Dumbbell size={20} />
                           </div>

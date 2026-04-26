@@ -3,7 +3,7 @@ import * as Icons from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { generateNutritionPlan } from '@/src/services/geminiService';
 import { UserProfile, NutritionPlan, Language } from '../types';
 import { motion, AnimatePresence } from 'motion/react';
@@ -88,6 +88,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
   const [step, setStep] = useState<'intro' | 'goal' | 'timeframe' | 'allergies' | 'plan'>('intro');
   const [loading, setLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const generatingRef = useRef(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [autoGenerate, setAutoGenerate] = useState(true);
   const [tempData, setTempData] = useState({
@@ -102,10 +103,10 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
   useEffect(() => {
     if (profile.nutritionPlan) {
       setStep('plan');
-    } else if (!profile.nutritionPlan && step === 'plan' && !isGenerating && !loading) {
+    } else if (!profile.nutritionPlan && step === 'plan' && !generatingRef.current && !loading) {
       setStep('intro');
     }
-  }, [profile.nutritionPlan, isGenerating, loading]);
+  }, [profile.nutritionPlan, loading]);
 
   const handleStart = () => {
     setAutoGenerate(true);
@@ -128,6 +129,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
 
   const generateDiets = async () => {
     if (loading) return;
+    generatingRef.current = true;
     setLoading(true);
     setIsGenerating(true);
     const allergyDetails = [
@@ -164,6 +166,7 @@ export default function Nutrition({ profile, onUpdateProfile, onBack, language }
     } finally {
       setLoading(false);
       setIsGenerating(false);
+      generatingRef.current = false;
     }
   };
 

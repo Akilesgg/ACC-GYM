@@ -58,6 +58,45 @@ export default function WorkoutPlanView({
   const [hasInstructor, setHasInstructor] = useState(sport.hasInstructor || false);
   const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
 
+  const [editTab, setEditTab] = useState<string>('Lunes');
+  const [editExercises, setEditExercises] = useState<any[]>([]);
+  const [newExName, setNewExName] = useState('');
+  const [newExSets, setNewExSets] = useState('3');
+  const [newExReps, setNewExReps] = useState('12');
+
+  const activePlan = sport.plan || globalPlan;
+
+  useEffect(() => {
+    const dayData = activePlan?.table.find(d => d.day === editTab);
+    setEditExercises(dayData?.exercises || []);
+  }, [editTab, activePlan]);
+
+  const saveEditedDay = () => {
+    if (!activePlan) return;
+    const updatedTable = activePlan.table.map(d =>
+      d.day === editTab ? { ...d, exercises: editExercises } : d
+    );
+    const updatedPlan = { ...activePlan, table: updatedTable };
+    const updatedSports = profile.sports.map(s =>
+      s.sport === sport.sport ? { ...s, plan: updatedPlan } : s
+    );
+    onUpdateProfile({ ...profile, sports: updatedSports, plan: updatedPlan });
+  };
+
+  const addExercise = () => {
+    if (!newExName.trim()) return;
+    const newEx = {
+      id: `custom-${Date.now()}`,
+      name: newExName,
+      sets: newExSets,
+      reps: newExReps,
+      notes: 'Ejercicio personalizado',
+      muscleGroup: '',
+    };
+    setEditExercises(prev => [...prev, newEx]);
+    setNewExName('');
+  };
+
   useEffect(() => {
     setLocalSchedule(sport.schedule || {});
     setLocalEquipment(sport.equipment || '');
@@ -185,7 +224,6 @@ export default function WorkoutPlanView({
     }));
   };
 
-  const activePlan = sport.plan || globalPlan;
   const isFallbackPlan = useMemo(() => {
     return (activePlan as any)?.isFallback === true ||
       activePlan?.reasoning?.includes('[Plan local') ||
@@ -261,15 +299,15 @@ export default function WorkoutPlanView({
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 p-1 bg-white/5 rounded-2xl border border-white/5 max-w-lg mx-auto">
-        {(['week', 'today', 'schedule', 'resources'] as const).map(tab => (
+      <div className="flex gap-2 p-1 bg-white/5 rounded-2xl border border-white/5 max-w-2xl mx-auto overflow-x-auto no-scrollbar">
+        {(['week', 'today', 'schedule', 'resources', 'edit'] as const).map(tab => (
           <Button
             key={tab}
             variant={activeTab === tab ? 'default' : 'ghost'}
             onClick={() => setActiveTab(tab)}
-            className="flex-1 rounded-xl text-[10px] font-black uppercase tracking-widest h-10 px-0"
+            className="flex-1 rounded-xl text-[10px] font-black uppercase tracking-widest h-10 px-4 min-w-fit"
           >
-            {tab === 'week' ? 'Semana' : tab === 'today' ? 'Hoy' : tab === 'schedule' ? 'Horario' : 'Recursos'}
+            {tab === 'week' ? 'Semana' : tab === 'today' ? 'Hoy' : tab === 'schedule' ? 'Horario' : tab === 'edit' ? 'Editar' : 'Recursos'}
           </Button>
         ))}
       </div>
@@ -658,6 +696,132 @@ export default function WorkoutPlanView({
             </Card>
           </motion.div>
         )}
+
+        {activeTab === 'edit' && (
+          <motion.div
+            key="edit"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="max-w-4xl mx-auto space-y-8"
+          >
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+              <div>
+                <h3 className="text-3xl font-headline font-black uppercase italic tracking-tight">Editar Tabla</h3>
+                <p className="text-on-surface-variant font-medium mt-1">Personaliza manualmente tus rutinas diarias.</p>
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline"
+                  onClick={() => { if(confirm('¿Generar tabla nueva con IA? Se perderán manuales.')) handleRegenerate(); }}
+                  className="rounded-xl font-black uppercase text-[10px] tracking-widest border-primary/30 text-primary h-12"
+                >
+                  <Sparkles size={14} className="mr-2" /> Regenerar con IA
+                </Button>
+                <Button 
+                  onClick={saveEditedDay}
+                  className="bg-secondary text-background font-black uppercase text-[10px] tracking-widest px-8 rounded-xl h-12 shadow-xl shadow-secondary/20"
+                >
+                  <Save size={14} className="mr-2" /> Guardar Cambios
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+              {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].map(day => (
+                <Button
+                  key={day}
+                  variant={editTab === day ? 'default' : 'outline'}
+                  onClick={() => setEditTab(day)}
+                  className={`rounded-full px-6 font-black uppercase text-[10px] tracking-widest h-10 shrink-0 ${editTab === day ? 'bg-primary' : 'border-white/10'}`}
+                >
+                  {day}
+                </Button>
+              ))}
+            </div>
+
+            <Card className="bg-[#111318] border-none p-8 rounded-[2.5rem] space-y-6">
+              <div className="space-y-4">
+                {editExercises.map((ex, idx) => (
+                  <div key={ex.id} className="flex flex-col md:flex-row gap-4 items-center bg-white/5 p-4 rounded-2xl border border-white/5">
+                    <div className="flex items-center gap-4 flex-1 w-full">
+                       <span className="text-xs font-black text-white/20">{idx + 1}</span>
+                       <Input 
+                        value={ex.name} 
+                        onChange={(e) => {
+                          const updated = [...editExercises];
+                          updated[idx].name = e.target.value;
+                          setEditExercises(updated);
+                        }}
+                        className="bg-transparent border-none text-xl font-headline font-black uppercase italic p-0 h-auto focus-visible:ring-0"
+                      />
+                    </div>
+                    <div className="flex gap-3 w-full md:w-auto">
+                      <div className="flex items-center gap-2 bg-black/40 px-3 py-1 rounded-xl">
+                        <span className="text-[8px] font-black uppercase text-white/40">Sets</span>
+                        <Input 
+                          value={ex.sets}
+                          onChange={(e) => {
+                            const updated = [...editExercises];
+                            updated[idx].sets = e.target.value;
+                            setEditExercises(updated);
+                          }}
+                          className="bg-transparent border-none w-10 text-center font-black p-0 h-auto focus-visible:ring-0"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2 bg-black/40 px-3 py-1 rounded-xl">
+                        <span className="text-[8px] font-black uppercase text-white/40">Reps</span>
+                        <Input 
+                          value={ex.reps}
+                          onChange={(e) => {
+                            const updated = [...editExercises];
+                            updated[idx].reps = e.target.value;
+                            setEditExercises(updated);
+                          }}
+                          className="bg-transparent border-none w-16 text-center font-black p-0 h-auto focus-visible:ring-0"
+                        />
+                      </div>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={() => setEditExercises(prev => prev.filter((_, i) => i !== idx))}
+                        className="text-red-500 hover:bg-red-500/10 rounded-full"
+                      >
+                        <Trash2 size={16} />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="pt-6 border-t border-white/5 flex flex-col md:flex-row gap-4">
+                <Input 
+                  placeholder="Nombre del ejercicio..." 
+                  value={newExName}
+                  onChange={(e) => setNewExName(e.target.value)}
+                  className="flex-1 bg-white/5 border-white/10 rounded-xl h-12 font-black uppercase px-6"
+                />
+                <div className="flex gap-4">
+                   <Input 
+                    placeholder="Series" 
+                    value={newExSets}
+                    onChange={(e) => setNewExSets(e.target.value)}
+                    className="w-20 bg-white/5 border-white/10 rounded-xl h-12 text-center font-black"
+                  />
+                  <Input 
+                    placeholder="Reps" 
+                    value={newExReps}
+                    onChange={(e) => setNewExReps(e.target.value)}
+                    className="w-24 bg-white/5 border-white/10 rounded-xl h-12 text-center font-black"
+                  />
+                  <Button onClick={addExercise} className="bg-primary text-on-primary font-black uppercase tracking-widest px-8 rounded-xl h-12">
+                    <Plus size={18} className="mr-2" /> Añadir
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+        )}
           </>
         )}
       </AnimatePresence>
@@ -843,7 +1007,7 @@ function ExerciseList({ date, exercises, progress, onToggle, language, sportName
         )}
       </div>
 
-      <div className="space-y-4 pb-32">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-32">
         {exercises.map((ex, i) => {
           const isDone = completed.includes(ex.id);
           const isInstructor = ex.isInstructorLed;
@@ -857,7 +1021,7 @@ function ExerciseList({ date, exercises, progress, onToggle, language, sportName
                 onClick={() => onToggle(ex.id, dateKey)}
                 className={`flex flex-col p-8 rounded-[2.5rem] border-2 transition-all cursor-pointer ${
                   isDone ? 'bg-secondary/10 border-secondary/40' : 'bg-primary/5 border-primary/20 hover:border-primary/40'
-                }`}
+                 }`}
               >
                 <div className="flex items-center justify-between mb-4">
                   <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-white">
@@ -889,103 +1053,70 @@ function ExerciseList({ date, exercises, progress, onToggle, language, sportName
                 stiffness: 100
               }}
               onClick={() => onToggle(ex.id, dateKey)}
-              className={`group relative overflow-hidden rounded-[2.5rem] border-2 transition-all cursor-pointer ${
+              className={`group relative overflow-hidden rounded-[2.5rem] border transition-all cursor-pointer shadow-xl ${
                 isDone 
                   ? 'bg-secondary/10 border-secondary/40 opacity-80' 
-                  : 'bg-[#111318] border-white/5 hover:border-primary/40 hover:shadow-2xl hover:shadow-primary/10'
+                  : 'bg-white border-gray-200 hover:border-[#22c55e]/40'
               }`}
             >
-              {/* Exercise Animation Banner */}
-              <div className="relative w-full h-56 overflow-hidden rounded-t-[2.5rem]">
+              <div className="relative h-48 w-full overflow-hidden bg-[#f5f5f5]">
                 <ExerciseAnimation
                   type={ex.name}
                   isDone={isDone}
                   size="lg"
-                  className="!w-full !h-full !rounded-none"
+                  className="w-full h-full"
                 />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#111318] pointer-events-none" />
+                {isDone && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="absolute top-4 right-4 w-10 h-10 bg-[#22c55e] rounded-full flex items-center justify-center shadow-lg shadow-[#22c55e]/40"
+                  >
+                    <CheckCircle2 size={22} className="text-white" />
+                  </motion.div>
+                )}
+                <div className="absolute top-4 left-4 w-8 h-8 bg-black/60 rounded-full flex items-center justify-center text-white font-black text-xs">
+                  {i + 1}
+                </div>
               </div>
 
-              <div className="p-8 flex flex-col lg:flex-row lg:items-center gap-8 relative z-10">
-                {/* Exercise Progress / Icon (Desktop simple) */}
-                <div className="hidden lg:flex flex-col items-center justify-center gap-2 shrink-0 px-4 border-r border-white/5">
-                   <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40">ORDEN</span>
-                   <p className="font-headline font-black text-4xl italic text-primary">{i + 1}</p>
+              <div className={`p-8 space-y-6 text-left transition-all ${isDone ? 'opacity-40' : ''}`}>
+                <div className="space-y-2">
+                  <span className="text-[10px] font-black uppercase text-[#22c55e] tracking-[0.2em] italic">{sportName}</span>
+                  <h4 className={`text-3xl font-headline font-black uppercase italic tracking-tight leading-none text-black ${isDone ? 'line-through text-gray-400' : ''}`}>
+                    {ex.name}
+                  </h4>
+                  {ex.muscleGroup && (
+                    <span className="inline-block px-3 py-1 bg-[#22c55e]/10 border border-[#22c55e]/20 rounded-xl text-[10px] font-black uppercase tracking-wider text-[#22c55e]">
+                      {ex.muscleGroup}
+                    </span>
+                  )}
                 </div>
 
-                <div className="flex-1 space-y-6 text-left">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="space-y-1">
-                      <div className="flex flex-wrap items-center gap-3">
-                        <div className="flex flex-col">
-                          <span className="text-[10px] font-black uppercase text-primary tracking-[0.2em] mb-1 italic">{sportName}</span>
-                          <h4 className={`text-4xl font-headline font-black uppercase italic tracking-tight leading-none ${isDone ? 'line-through opacity-50' : ''}`}>
-                            {ex.name}
-                          </h4>
-                        </div>
-                        {ex.muscleGroup && (
-                          <span className="px-4 py-1.5 bg-primary/10 border border-primary/20 rounded-xl text-[10px] font-black uppercase tracking-wider text-primary shrink-0">
-                            {ex.muscleGroup}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex flex-wrap items-center gap-6 mt-4">
-                         <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-2xl border border-white/5">
-                            <Icons.Layers size={16} className="text-secondary" />
-                            <div className="flex flex-col">
-                              <span className="text-[8px] font-black opacity-40 uppercase leading-none">Series</span>
-                              <span className="text-lg font-headline font-black italic leading-none">{ex.sets}</span>
-                            </div>
-                         </div>
-                         <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-2xl border border-white/5">
-                            <Zap size={16} className="text-primary" />
-                            <div className="flex flex-col">
-                              <span className="text-[8px] font-black opacity-40 uppercase leading-none">Reps</span>
-                              <span className="text-lg font-headline font-black italic leading-none">{ex.reps}</span>
-                            </div>
-                         </div>
-                         {ex.equipment && (
-                           <div className="flex items-center gap-2 opacity-60">
-                             <Icons.Box size={14} />
-                             <span className="text-[10px] font-black uppercase tracking-widest">{ex.equipment}</span>
-                           </div>
-                         )}
-                      </div>
-                    </div>
-
-                    <div className={`w-16 h-16 rounded-full flex items-center justify-center border-4 transition-all shrink-0 ${
-                      isDone 
-                        ? 'bg-secondary border-secondary text-background shadow-lg shadow-secondary/40' 
-                        : 'border-white/10 group-hover:border-primary/50 text-white/20'
-                    }`}>
-                      {isDone ? <CheckCircle2 size={32} /> : <Dumbbell size={32} className="opacity-40" />}
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-2xl border border-gray-200">
+                    <Icons.Layers size={16} className="text-[#22c55e]" />
+                    <div className="flex flex-col">
+                      <span className="text-[8px] font-black opacity-40 uppercase leading-none text-gray-500">Series</span>
+                      <span className="text-lg font-headline font-black italic leading-none text-black">{ex.sets}</span>
                     </div>
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="p-5 bg-background/50 rounded-3xl border border-white/5 relative group-hover:border-primary/20 transition-all flex items-start gap-4 h-full">
-                      <Icons.Text size={18} className="text-primary/40 shrink-0 mt-1" />
-                      <div>
-                        <span className="text-[9px] font-black uppercase tracking-widest opacity-40 block mb-1">Ejecución</span>
-                        <p className="text-sm font-medium leading-relaxed opacity-80 group-hover:opacity-100 italic">
-                          "{ex.notes}"
-                        </p>
-                      </div>
+                  <div className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-2xl border border-gray-200">
+                    <Zap size={16} className="text-[#22c55e]" />
+                    <div className="flex flex-col">
+                      <span className="text-[8px] font-black opacity-40 uppercase leading-none text-gray-500">Reps</span>
+                      <span className="text-lg font-headline font-black italic leading-none text-black">{ex.reps}</span>
                     </div>
-
-                    {ex.executionTip && (
-                      <div className="p-5 bg-secondary/5 rounded-3xl border border-secondary/20 relative transition-all flex items-start gap-4 h-full">
-                        <Sparkles size={18} className="text-secondary shrink-0 mt-1" />
-                        <div>
-                          <span className="text-[9px] font-black uppercase tracking-widest text-secondary block mb-1">Tip de Instructor</span>
-                          <p className="text-sm font-black italic leading-relaxed text-secondary/80">
-                            {ex.executionTip || ex.notes}
-                          </p>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
+
+                {ex.notes && (
+                  <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                    <p className="text-xs font-medium leading-relaxed opacity-60 italic text-gray-700">
+                      "{ex.notes}"
+                    </p>
+                  </div>
+                )}
               </div>
             </motion.div>
           );

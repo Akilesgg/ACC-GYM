@@ -134,6 +134,9 @@ export default function App() {
           plan: (localProfile?.plan && !sanitizedProfile.plan)
             ? localProfile.plan
             : sanitizedProfile.plan,
+          nutritionPlan: (localProfile?.nutritionPlan && !sanitizedProfile.nutritionPlan)
+            ? localProfile.nutritionPlan
+            : sanitizedProfile.nutritionPlan,
           diets: (localProfile?.diets && localProfile.diets.length !== (sanitizedProfile.diets || []).length)
             ? localProfile.diets
             : sanitizedProfile.diets,
