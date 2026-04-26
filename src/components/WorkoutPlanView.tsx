@@ -64,7 +64,30 @@ export default function WorkoutPlanView({
   const [newExSets, setNewExSets] = useState('3');
   const [newExReps, setNewExReps] = useState('12');
 
+  const [isCombinedView, setIsCombinedView] = useState(false);
   const activePlan = sport.plan || globalPlan;
+  const [showImportModal, setShowImportModal] = useState(false);
+
+  const importRoutine = (sourceSportName: string, sourceDay: string) => {
+    const sourceSport = allSports.find(s => s.sport === sourceSportName);
+    const sourcePlan = sourceSport?.plan || globalPlan;
+    const sourceData = sourcePlan?.table.find(d => d.day === sourceDay);
+    
+    if (sourceData?.exercises) {
+      setEditExercises(prev => [
+        ...prev, 
+        ...sourceData.exercises.map(ex => ({ ...ex, id: `${ex.id}-copy-${Date.now()}`, sport: sourceSportName }))
+      ]);
+    }
+    setShowImportModal(false);
+  };
+
+  const duplicateDay = (sourceDay: string) => {
+    const sourceData = activePlan?.table.find(d => d.day === sourceDay);
+    if (sourceData?.exercises) {
+      setEditExercises(sourceData.exercises.map(ex => ({ ...ex, id: `${ex.id}-dup-${Date.now()}` })));
+    }
+  };
 
   useEffect(() => {
     const dayData = activePlan?.table.find(d => d.day === editTab);
@@ -103,67 +126,68 @@ export default function WorkoutPlanView({
     setHasInstructor(sport.hasInstructor || false);
   }, [sport.schedule, sport.equipment, sport.hasInstructor]);
 
-  useEffect(() => {
-    console.log('[WorkoutPlanView] sport.plan:', sport.plan?.table?.length, 'días');
-    console.log('[WorkoutPlanView] globalPlan:', globalPlan?.table?.length, 'días');
-    console.log('[WorkoutPlanView] activePlan usado:', (sport.plan || globalPlan)?.table?.length, 'días');
-  }, [sport, globalPlan]);
-
   const normalizeText = (text: string) => {
     return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   };
 
-  const getWorkoutForDay = (date: Date) => {
+  const getWorkoutForDay = (date: Date, forceAll: boolean = false) => {
     const dayLabel = format(date, 'EEEE', { locale: es }).toLowerCase();
     const normalizedDayLabel = normalizeText(dayLabel);
     const dNum = date.getDay() === 0 ? 7 : date.getDay();
     
-    // Si hay instructor, no devolvemos lista de ejercicios, sino una sesión genérica
-    if (hasInstructor) {
-      return [{
-        id: 'instructor_session',
-        name: `Sesión de ${sport.sport} con Instructor`,
-        sets: '1',
-        reps: 'Sesión',
-        notes: 'Sigue las instrucciones directas de tu profesor durante la clase.',
-        isInstructorLed: true
-      }];
-    }
+    const sportsToQuery = (isCombinedView || forceAll) ? allSports : [sport];
+    let allExercisesResults: any[] = [];
 
-    const activePlan = sport.plan || globalPlan;
-    if (!activePlan?.table) return [];
+    sportsToQuery.forEach(s => {
+      // Si hay instructor, no devolvemos lista de ejercicios, sino una sesión genérica
+      if (s.hasInstructor) {
+        allExercisesResults.push({
+          id: `instructor_session_${s.sport}`,
+          name: `Sesión de ${s.sport} con Instructor`,
+          sets: '1',
+          reps: 'Sesión',
+          notes: 'Sigue las instrucciones directas de tu profesor durante la clase.',
+          isInstructorLed: true,
+          sport: s.sport
+        });
+        return;
+      }
 
-    const workouts = activePlan.table.filter(t => {
-      const d = normalizeText(t.day);
-      return d.includes(normalizedDayLabel) || 
-             d.includes('hoy') || 
-             d.includes(`dia ${dNum}`) || 
-             d.includes(`día ${dNum}`) ||
-             (normalizedDayLabel === 'lunes' && d.includes('lun')) ||
-             (normalizedDayLabel === 'martes' && d.includes('mar')) ||
-             (normalizedDayLabel === 'miercoles' && d.includes('mie')) ||
-             (normalizedDayLabel === 'jueves' && d.includes('jue')) ||
-             (normalizedDayLabel === 'viernes' && d.includes('vie')) ||
-             (normalizedDayLabel === 'sabado' && d.includes('sab')) ||
-             (normalizedDayLabel === 'domingo' && d.includes('dom'));
+      const planToUse = s.plan || globalPlan;
+      if (!planToUse?.table) return;
+
+      const dailyWorkouts = planToUse.table.filter(t => {
+        const d = normalizeText(t.day);
+        return d.includes(normalizedDayLabel) || 
+               d.includes('hoy') || 
+               d.includes(`dia ${dNum}`) || 
+               d.includes(`día ${dNum}`) ||
+               (normalizedDayLabel === 'lunes' && d.includes('lun')) ||
+               (normalizedDayLabel === 'martes' && d.includes('mar')) ||
+               (normalizedDayLabel === 'miercoles' && d.includes('mie')) ||
+               (normalizedDayLabel === 'jueves' && d.includes('jue')) ||
+               (normalizedDayLabel === 'viernes' && d.includes('vie')) ||
+               (normalizedDayLabel === 'sabado' && d.includes('sab')) ||
+               (normalizedDayLabel === 'domingo' && d.includes('dom'));
+      });
+
+      dailyWorkouts.forEach(dw => {
+        dw.exercises.forEach((ex: any) => {
+          // If it's the sport's OWN plan, we add it with the sport name
+          if (s.plan) {
+            allExercisesResults.push({ ...ex, sport: s.sport });
+          } else {
+            // Otherwise (globalPlan), filter by current sport name
+            const sName = normalizeText(s.sport);
+            if (!ex.sport || normalizeText(ex.sport).includes(sName) || sName.includes(normalizeText(ex.sport))) {
+              allExercisesResults.push({ ...ex, sport: s.sport });
+            }
+          }
+        });
+      });
     });
 
-    if (workouts.length === 0) return [];
-    
-    const allExercises = workouts.reduce((acc, curr) => [...acc, ...curr.exercises], [] as any[]);
-    
-    // If it's the sport's OWN plan, we don't filter by name as it's specifically for this sport
-    if (sport.plan) {
-      return allExercises;
-    }
-
-    // Otherwise (globalPlan), filter by current sport name
-    const sName = normalizeText(sport.sport);
-    return allExercises.filter(ex => 
-      !ex.sport || 
-      normalizeText(ex.sport).includes(sName) ||
-      sName.includes(normalizeText(ex.sport))
-    );
+    return allExercisesResults;
   };
 
   const handleSaveSettings = () => {
@@ -299,17 +323,32 @@ export default function WorkoutPlanView({
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 p-1 bg-white/5 rounded-2xl border border-white/5 max-w-2xl mx-auto overflow-x-auto no-scrollbar">
-        {(['week', 'today', 'schedule', 'resources', 'edit'] as const).map(tab => (
-          <Button
-            key={tab}
-            variant={activeTab === tab ? 'default' : 'ghost'}
-            onClick={() => setActiveTab(tab)}
-            className="flex-1 rounded-xl text-[10px] font-black uppercase tracking-widest h-10 px-4 min-w-fit"
-          >
-            {tab === 'week' ? 'Semana' : tab === 'today' ? 'Hoy' : tab === 'schedule' ? 'Horario' : tab === 'edit' ? 'Editar' : 'Recursos'}
-          </Button>
-        ))}
+      <div className="flex flex-col gap-6 max-w-4xl mx-auto">
+        <div className="flex flex-col gap-2 p-1 bg-white/5 rounded-2xl border border-white/5 md:flex-row md:items-center">
+          <div className="flex gap-1 flex-1">
+            {(['week', 'today', 'schedule', 'resources', 'edit'] as const).map(tab => (
+              <Button
+                key={tab}
+                variant={activeTab === tab ? 'default' : 'ghost'}
+                onClick={() => setActiveTab(tab)}
+                className="flex-1 rounded-xl text-[10px] font-black uppercase tracking-widest h-10 px-4 min-w-fit"
+              >
+                {tab === 'week' ? 'Semana' : tab === 'today' ? 'Hoy' : tab === 'schedule' ? 'Horario' : tab === 'edit' ? 'Editar' : 'Recursos'}
+              </Button>
+            ))}
+          </div>
+          {allSports.length > 1 && (
+            <div className="flex items-center gap-2 px-3 py-1 bg-white/5 rounded-xl border border-white/5 overflow-hidden">
+               <span className={`text-[9px] font-black uppercase tracking-widest transition-colors ${isCombinedView ? 'text-primary' : 'opacity-30'}`}>Global</span>
+               <Switch 
+                checked={isCombinedView}
+                onCheckedChange={setIsCombinedView}
+                className="scale-75 data-[state=checked]:bg-primary"
+              />
+            </div>
+          )}
+        </div>
+
       </div>
 
       {/* Tab Content */}
@@ -710,7 +749,14 @@ export default function WorkoutPlanView({
                 <h3 className="text-3xl font-headline font-black uppercase italic tracking-tight">Editar Tabla</h3>
                 <p className="text-on-surface-variant font-medium mt-1">Personaliza manualmente tus rutinas diarias.</p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
+                <Button 
+                  variant="outline"
+                  onClick={() => setShowImportModal(true)}
+                  className="rounded-xl font-black uppercase text-[10px] tracking-widest border-secondary/30 text-secondary h-12"
+                >
+                  <Plus size={14} className="mr-2" /> Importar / Combinar
+                </Button>
                 <Button 
                   variant="outline"
                   onClick={() => { if(confirm('¿Generar tabla nueva con IA? Se perderán manuales.')) handleRegenerate(); }}
@@ -729,16 +775,59 @@ export default function WorkoutPlanView({
 
             <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
               {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].map(day => (
-                <Button
-                  key={day}
-                  variant={editTab === day ? 'default' : 'outline'}
-                  onClick={() => setEditTab(day)}
-                  className={`rounded-full px-6 font-black uppercase text-[10px] tracking-widest h-10 shrink-0 ${editTab === day ? 'bg-primary' : 'border-white/10'}`}
-                >
-                  {day}
-                </Button>
+                <div key={day} className="flex flex-col gap-1 items-center">
+                  <Button
+                    variant={editTab === day ? 'default' : 'outline'}
+                    onClick={() => setEditTab(day)}
+                    className={`rounded-full px-6 font-black uppercase text-[10px] tracking-widest h-10 shrink-0 ${editTab === day ? 'bg-primary' : 'border-white/10'}`}
+                  >
+                    {day}
+                  </Button>
+                  {editTab !== day && (
+                    <button 
+                      onClick={() => duplicateDay(day)}
+                      className="text-[8px] font-black uppercase opacity-40 hover:opacity-100 transition-opacity"
+                    >
+                      Copiar aquí
+                    </button>
+                  )}
+                </div>
               ))}
             </div>
+
+            {showImportModal && (
+              <div className="fixed inset-0 z-[500] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                <Card className="w-full max-w-lg bg-[#111318] border border-white/10 p-8 rounded-[2.5rem] shadow-2xl">
+                  <div className="flex justify-between items-center mb-8">
+                    <h4 className="text-2xl font-headline font-black uppercase italic tracking-tight">Importar Rutina</h4>
+                    <Button variant="ghost" size="icon" onClick={() => setShowImportModal(false)}><X /></Button>
+                  </div>
+                  
+                  <div className="space-y-6">
+                    <p className="text-sm text-on-surface-variant font-medium">Elige de qué deporte y día quieres importar ejercicios:</p>
+                    
+                    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                      {allSports.map(s => (
+                        <div key={s.sport} className="space-y-2">
+                          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">{s.sport}</span>
+                          <div className="grid grid-cols-4 gap-2">
+                            {['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'].map(d => (
+                              <button
+                                key={`${s.sport}-${d}`}
+                                onClick={() => importRoutine(s.sport, d)}
+                                className="px-2 py-2 bg-white/5 hover:bg-white/10 border border-white/5 rounded-lg text-[9px] font-bold uppercase transition-colors"
+                              >
+                                {d.slice(0, 3)}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            )}
 
             <Card className="bg-[#111318] border-none p-8 rounded-[2.5rem] space-y-6">
               <div className="space-y-4">
@@ -883,16 +972,29 @@ export default function WorkoutPlanView({
   );
 }
 
-function ExerciseList({ date, exercises, progress, onToggle, language, sportName, onEditExercise, viewMode = 'cards' }: { 
-  date: Date, 
-  exercises: any[], 
-  progress: Record<string, DailyProgress>, 
-  onToggle: (id: string, d: string) => void,
-  language: Language,
-  sportName: string,
-  onEditExercise?: (id: string, field: string, value: string) => void,
-  viewMode?: 'cards' | 'table'
-}) {
+interface ExerciseListProps {
+  date: Date;
+  exercises: any[];
+  progress: Record<string, DailyProgress>;
+  onToggle: (id: string, dateKey: string) => void;
+  language: Language;
+  sportName: string;
+  onEditExercise: (id: string, field: string, value: string) => void;
+  viewMode?: 'cards' | 'table';
+  isCombined?: boolean;
+}
+
+function ExerciseList({ 
+  date, 
+  exercises, 
+  progress, 
+  onToggle, 
+  language, 
+  sportName, 
+  onEditExercise, 
+  viewMode = 'cards',
+  isCombined 
+}: ExerciseListProps) {
   const dateKey = format(date, 'yyyy-MM-dd');
   const dayProgress = progress[dateKey];
   const completed = dayProgress?.completedExercises || [];
@@ -900,229 +1002,199 @@ function ExerciseList({ date, exercises, progress, onToggle, language, sportName
 
   if (exercises.length === 0) {
     return (
-      <div className="py-20 flex flex-col items-center justify-center text-center opacity-30 space-y-6">
-        <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center"><Clock size={40} /></div>
-        <div>
-          <h4 className="text-2xl font-headline font-black uppercase italic">Día de Recuperación</h4>
-          <p className="font-medium mt-2">Cuerpo y mente necesitan descanso para crecer.</p>
+      <div className="bg-[#111318] border border-white/5 rounded-[2.5rem] p-16 flex flex-col items-center justify-center text-center">
+        <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mb-6 text-white/20">
+          <Clock size={32} />
         </div>
+        <h4 className="text-xl font-headline font-black uppercase italic text-white/40">Día de Descanso / Actividad Libre</h4>
+        <p className="text-sm text-on-surface-variant max-w-xs mt-2">Aprovecha hoy para recuperar o realizar alguna actividad ligera de movilidad.</p>
       </div>
     );
   }
 
   if (viewMode === 'table') {
     return (
-      <div className="space-y-6">
-        <div className="flex items-center justify-between mb-2">
-           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary"><Icons.Table size={20} /></div>
-            <span className="font-black uppercase text-sm tracking-widest">Vista de Tabla Dinámica</span>
-          </div>
+      <Card className="bg-[#111318] border-none overflow-hidden rounded-[2.5rem] shadow-2xl">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead className="bg-black/40 border-b border-white/5">
+              <tr>
+                <th className="p-6 text-[10px] font-black uppercase tracking-widest text-primary">Estado</th>
+                <th className="p-6 text-[10px] font-black uppercase tracking-widest text-primary">Deporte</th>
+                <th className="p-6 text-[10px] font-black uppercase tracking-widest text-primary">Ejercicio</th>
+                <th className="p-6 text-[10px] font-black uppercase tracking-widest text-primary text-center">Sets</th>
+                <th className="p-6 text-[10px] font-black uppercase tracking-widest text-primary text-center">Reps</th>
+                <th className="p-6 text-[10px] font-black uppercase tracking-widest text-primary">Notas</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {exercises.map((ex, i) => {
+                const isDone = completed.includes(ex.id);
+                return (
+                  <tr 
+                    key={ex.id} 
+                    onClick={() => onToggle(ex.id, dateKey)}
+                    className={`group hover:bg-white/[0.02] transition-colors cursor-pointer ${isDone ? 'opacity-40' : ''}`}
+                  >
+                    <td className="p-6">
+                      <div className="flex justify-center">
+                        {isDone ? <CheckCircle2 className="text-secondary" size={20} /> : <Circle className="text-white/20 group-hover:text-primary transition-colors" size={20} />}
+                      </div>
+                    </td>
+                    <td className="p-6">
+                      <span className="text-[10px] font-black bg-primary/10 text-primary px-3 py-1 rounded-full uppercase tracking-tighter shrink-0 whitespace-nowrap">
+                        {ex.sport || sportName}
+                      </span>
+                    </td>
+                    <td className="p-6">
+                      <h5 className={`font-headline font-black uppercase italic text-sm ${isDone ? 'line-through' : ''}`}>
+                        {ex.name}
+                      </h5>
+                      <span className="text-[9px] font-bold opacity-40 uppercase tracking-widest">{ex.muscleGroup}</span>
+                    </td>
+                    <td className="p-6 text-center">
+                      <Input 
+                        value={ex.sets}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => onEditExercise(ex.id, 'sets', e.target.value)}
+                        className="bg-transparent border-none text-center font-black p-0 h-auto w-10 focus-visible:ring-0"
+                      />
+                    </td>
+                    <td className="p-6 text-center">
+                       <Input 
+                        value={ex.reps}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => onEditExercise(ex.id, 'reps', e.target.value)}
+                        className="bg-transparent border-none text-center font-black p-0 h-auto w-16 focus-visible:ring-0"
+                      />
+                    </td>
+                    <td className="p-6 max-w-xs">
+                      <p className="text-[10px] italic leading-tight text-on-surface-variant line-clamp-2">
+                        {ex.notes || '-'}
+                      </p>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
-        
-        <Card className="bg-[#111318] border border-white/5 rounded-[2rem] overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="border-b border-white/5 bg-white/5">
-                  <th className="p-4 text-[10px] font-black uppercase tracking-widest opacity-40">Estado</th>
-                  <th className="p-4 text-[10px] font-black uppercase tracking-widest opacity-40">Ejercicio</th>
-                  <th className="p-4 text-[10px] font-black uppercase tracking-widest opacity-40">Secuencia</th>
-                  <th className="p-4 text-[10px] font-black uppercase tracking-widest opacity-40">Grupo</th>
-                  <th className="p-4 text-[10px] font-black uppercase tracking-widest opacity-40">Notas</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {exercises.map((ex, i) => {
-                  const isDone = completed.includes(ex.id);
-                  return (
-                    <motion.tr 
-                      key={ex.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: i * 0.05 }}
-                      onClick={() => onToggle(ex.id, dateKey)}
-                      className={`cursor-pointer hover:bg-white/[0.02] transition-colors ${isDone ? 'opacity-40' : ''}`}
-                    >
-                      <td className="p-4">
-                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${isDone ? 'bg-secondary border-secondary' : 'border-white/10'}`}>
-                          {isDone && <CheckCircle2 size={12} className="text-background" />}
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        <div className="flex items-center gap-4 py-2">
-                          <ExerciseAnimation type={ex.name} isDone={isDone} size="md" className="shadow-lg shadow-primary/20 border-primary/30" />
-                          <div className="text-left">
-                            <span className="text-[9px] font-black uppercase text-primary tracking-[0.3em] block mb-1 italic leading-none">{sportName}</span>
-                            <span className="text-xl font-headline font-black uppercase italic block tracking-tight leading-none mb-2">{ex.name}</span>
-                            <div className="flex items-center gap-2">
-                              <span className="bg-white/5 text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border border-white/5">{ex.equipment || 'Sin material'}</span>
-                              <span className="bg-primary/10 text-primary text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md border border-primary/20">{ex.muscleGroup}</span>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        <div className="flex flex-col">
-                           <span className="text-xs font-black text-secondary">{ex.sets} <span className="text-[8px] opacity-40">SETS</span></span>
-                           <span className="text-xs font-black text-primary">{ex.reps} <span className="text-[8px] opacity-40">REPS</span></span>
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        <span className="px-2 py-1 bg-white/5 rounded-md text-[8px] font-black uppercase whitespace-nowrap">{ex.muscleGroup}</span>
-                      </td>
-                      <td className="p-4 max-w-xs">
-                        <p className="text-[10px] font-medium opacity-60 line-clamp-2 italic">"{ex.notes}"</p>
-                      </td>
-                    </motion.tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </Card>
-        
-        {isFinished && (
-           <motion.div initial={{ scale: 0.9 }} animate={{ scale: 1 }} className="p-6 bg-secondary/10 border border-secondary/20 rounded-3xl text-center">
-              <Trophy size={32} className="mx-auto text-secondary mb-2" />
-              <h5 className="font-headline font-black uppercase italic text-secondary">¡Entrenamiento de hoy Finalizado!</h5>
-           </motion.div>
-        )}
-      </div>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-6">
-      {/* Exercise Count Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center text-primary"><ClipboardList size={20} /></div>
-          <span className="font-black uppercase text-sm tracking-widest">{exercises.length} Ejercicios</span>
-        </div>
-        {isFinished && (
-           <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} className="flex items-center gap-2 text-secondary font-black text-xs uppercase bg-secondary/10 px-4 py-2 rounded-full border border-secondary/20">
-             <Trophy size={14} /> ¡COMPLETADO!
-           </motion.div>
-        )}
-      </div>
+    <div className="grid grid-cols-1 gap-6 pb-32">
+      {exercises.map((ex, i) => {
+        const isDone = completed.includes(ex.id);
+        const isInstructor = ex.isInstructorLed;
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-32">
-        {exercises.map((ex, i) => {
-          const isDone = completed.includes(ex.id);
-          const isInstructor = ex.isInstructorLed;
-
-          if (isInstructor) {
-            return (
-              <motion.div
-                key={ex.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                onClick={() => onToggle(ex.id, dateKey)}
-                className={`flex flex-col p-8 rounded-[2.5rem] border-2 transition-all cursor-pointer ${
-                  isDone ? 'bg-secondary/10 border-secondary/40' : 'bg-primary/5 border-primary/20 hover:border-primary/40'
-                 }`}
-              >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center text-white">
-                    <UserCircle2 size={32} />
-                  </div>
-                  <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all ${isDone ? 'bg-secondary border-secondary text-background' : 'border-white/10'}`}>
-                    {isDone ? <CheckCircle2 size={24} /> : <Circle size={24} className="opacity-10" />}
-                  </div>
-                </div>
-                <h4 className="text-2xl font-headline font-black uppercase italic leading-none">{ex.name}</h4>
-                <p className="text-sm font-medium opacity-60 mt-2">{ex.notes}</p>
-                <div className="mt-6 pt-6 border-t border-white/5 flex items-center gap-4">
-                  <div className="px-4 py-2 bg-white/5 rounded-full text-[10px] font-black uppercase tracking-widest">Presencial</div>
-                  <div className="px-4 py-2 bg-white/5 rounded-full text-[10px] font-black uppercase tracking-widest text-secondary">Instructor Titular</div>
-                </div>
-              </motion.div>
-            );
-          }
-
-          return (
-            <motion.div
-              key={ex.id}
-              initial={{ opacity: 0, scale: 0.95, y: 30 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ 
-                delay: i * 0.1,
-                type: "spring",
-                damping: 20,
-                stiffness: 100
-              }}
-              onClick={() => onToggle(ex.id, dateKey)}
-              className={`group relative overflow-hidden rounded-[2.5rem] border transition-all cursor-pointer shadow-xl ${
-                isDone 
-                  ? 'bg-secondary/10 border-secondary/40 opacity-80' 
-                  : 'bg-white border-gray-200 hover:border-[#22c55e]/40'
-              }`}
-            >
-              <div className="relative h-48 w-full overflow-hidden bg-[#f5f5f5]">
+        return (
+          <motion.div
+            key={ex.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ 
+              delay: i * 0.05,
+              type: "spring",
+              damping: 20,
+              stiffness: 100
+            }}
+            onClick={() => onToggle(ex.id, dateKey)}
+            className={`group relative overflow-hidden rounded-[2.5rem] border transition-all cursor-pointer shadow-xl ${
+              isDone 
+                ? 'bg-secondary/10 border-secondary/40 opacity-80' 
+                : 'bg-[#111318] border-white/5 hover:border-primary/40'
+            }`}
+          >
+            {/* PARTE SUPERIOR — GIF del ejercicio a pantalla completa */}
+            <div className="relative w-full h-52 bg-black overflow-hidden">
+              {!isInstructor && (
                 <ExerciseAnimation
                   type={ex.name}
                   isDone={isDone}
                   size="lg"
+                  muscleGroup={ex.muscleGroup}
                   className="w-full h-full"
                 />
-                {isDone && (
-                  <motion.div
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    className="absolute top-4 right-4 w-10 h-10 bg-[#22c55e] rounded-full flex items-center justify-center shadow-lg shadow-[#22c55e]/40"
-                  >
-                    <CheckCircle2 size={22} className="text-white" />
-                  </motion.div>
+              )}
+              {isInstructor && (
+                <div className="w-full h-full flex flex-col items-center justify-center bg-secondary/10 text-secondary">
+                  <UserCircle2 size={48} className="mb-2" />
+                  <span className="text-[10px] font-black uppercase tracking-widest">Sesión con Instructor</span>
+                </div>
+              )}
+              {/* Degradado al contenido */}
+              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#111318] to-transparent" />
+              {/* Número de orden */}
+              <div className="absolute top-3 left-3 w-9 h-9 rounded-full bg-black/60 border border-white/20 flex items-center justify-center">
+                <span className="text-sm font-black text-white">{i + 1}</span>
+              </div>
+              {/* Badge deporte */}
+              <div className="absolute top-3 right-3 flex gap-2">
+                <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-black/60 text-primary border border-primary/30">
+                  {ex.sport || sportName}
+                </span>
+                {ex.muscleGroup && (
+                  <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-black/60 text-secondary border border-secondary/30">
+                    {ex.muscleGroup}
+                  </span>
                 )}
-                <div className="absolute top-4 left-4 w-8 h-8 bg-black/60 rounded-full flex items-center justify-center text-white font-black text-xs">
-                  {i + 1}
+              </div>
+            </div>
+
+            {/* PARTE INFERIOR — Info del ejercicio */}
+            <div className="p-5 space-y-3">
+              {/* Nombre */}
+              <h4 className={`text-xl font-headline font-black uppercase italic leading-tight
+                ${isDone ? 'line-through text-on-surface-variant' : 'text-white'}`}>
+                {ex.name}
+              </h4>
+              
+              {/* Series y Reps */}
+              <div className="flex gap-3">
+                <div className="flex-1 bg-white/5 rounded-2xl p-3 text-center">
+                  <p className="text-[9px] font-black uppercase text-on-surface-variant mb-1">Series</p>
+                  <p className="text-2xl font-black text-primary">{ex.sets}</p>
+                </div>
+                <div className="flex-1 bg-white/5 rounded-2xl p-3 text-center">
+                  <p className="text-[9px] font-black uppercase text-on-surface-variant mb-1">Reps</p>
+                  <p className="text-2xl font-black text-secondary">{ex.reps}</p>
                 </div>
               </div>
 
-              <div className={`p-8 space-y-6 text-left transition-all ${isDone ? 'opacity-40' : ''}`}>
-                <div className="space-y-2">
-                  <span className="text-[10px] font-black uppercase text-[#22c55e] tracking-[0.2em] italic">{sportName}</span>
-                  <h4 className={`text-3xl font-headline font-black uppercase italic tracking-tight leading-none text-black ${isDone ? 'line-through text-gray-400' : ''}`}>
-                    {ex.name}
-                  </h4>
-                  {ex.muscleGroup && (
-                    <span className="inline-block px-3 py-1 bg-[#22c55e]/10 border border-[#22c55e]/20 rounded-xl text-[10px] font-black uppercase tracking-wider text-[#22c55e]">
-                      {ex.muscleGroup}
-                    </span>
-                  )}
+              {/* Explicación de ejecución */}
+              {ex.notes && (
+                <div className="bg-white/3 border border-white/8 rounded-2xl p-4">
+                  <p className="text-[9px] font-black uppercase tracking-widest text-primary mb-2">
+                    Cómo ejecutarlo
+                  </p>
+                  <p className="text-sm text-on-surface-variant leading-relaxed italic">
+                    "{ex.notes}"
+                  </p>
                 </div>
+              )}
 
-                <div className="flex flex-wrap items-center gap-4">
-                  <div className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-2xl border border-gray-200">
-                    <Icons.Layers size={16} className="text-[#22c55e]" />
-                    <div className="flex flex-col">
-                      <span className="text-[8px] font-black opacity-40 uppercase leading-none text-gray-500">Series</span>
-                      <span className="text-lg font-headline font-black italic leading-none text-black">{ex.sets}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-2xl border border-gray-200">
-                    <Zap size={16} className="text-[#22c55e]" />
-                    <div className="flex flex-col">
-                      <span className="text-[8px] font-black opacity-40 uppercase leading-none text-gray-500">Reps</span>
-                      <span className="text-lg font-headline font-black italic leading-none text-black">{ex.reps}</span>
-                    </div>
+              {/* Alternativas siempre visibles si existen */}
+              {ex.alternatives && ex.alternatives.length > 0 && (
+                <div>
+                  <p className="text-[9px] font-black uppercase tracking-widest text-secondary mb-2">
+                    Sin equipo: usa
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {ex.alternatives.map((alt: string, idx: number) => (
+                      <span key={idx} className="text-[10px] px-2 py-1 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary">
+                        {alt}
+                      </span>
+                    ))}
                   </div>
                 </div>
-
-                {ex.notes && (
-                  <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
-                    <p className="text-xs font-medium leading-relaxed opacity-60 italic text-gray-700">
-                      "{ex.notes}"
-                    </p>
-                  </div>
-                )}
-              </div>
-            </motion.div>
-          );
-        })}
-      </div>
-
+              )}
+            </div>
+          </motion.div>
+        );
+      })}
+      
       {isFinished && (
         <motion.div 
           initial={{ opacity: 0, scale: 0.5 }} 

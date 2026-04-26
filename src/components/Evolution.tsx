@@ -293,7 +293,7 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
                 <p className="text-on-surface-variant font-medium">{format(today, 'PPP', { locale })}</p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 gap-6">
                 {todaysExercises.length > 0 ? (
                   todaysExercises.map((ex: any, index) => {
                     const isCompleted = currentProgress.completedExercises.includes(ex.id);
@@ -303,60 +303,82 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.08 }}
-                        className="relative rounded-3xl overflow-hidden bg-white border border-gray-200 cursor-pointer shadow-xl"
+                        className={`group relative overflow-hidden rounded-[2.5rem] border transition-all cursor-pointer shadow-xl ${
+                          isCompleted 
+                            ? 'bg-secondary/10 border-secondary/40 opacity-80' 
+                            : 'bg-[#111318] border-white/5 hover:border-primary/40'
+                        }`}
                         onClick={() => toggleExercise(ex.id)}
                       >
-                        {/* Animación grande en la parte superior */}
-                        <div className="w-full h-48 bg-[#f5f5f5] rounded-t-2xl overflow-hidden relative">
+                        {/* PARTE SUPERIOR — GIF del ejercicio a pantalla completa */}
+                        <div className="relative w-full h-52 bg-black overflow-hidden">
                           <ExerciseAnimation
                             type={ex.name}
                             isDone={isCompleted}
                             size="lg"
+                            muscleGroup={ex.muscleGroup}
                             className="w-full h-full"
                           />
-                          {/* Badge completado */}
-                          {isCompleted && (
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="absolute top-4 right-4 w-10 h-10 bg-[#22c55e] rounded-full flex items-center justify-center shadow-lg shadow-[#22c55e]/40"
-                            >
-                              <CheckCircle2 size={22} className="text-white" />
-                            </motion.div>
-                          )}
+                          {/* Degradado al contenido */}
+                          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#111318] to-transparent" />
                           {/* Número de orden */}
-                          <div className="absolute top-4 left-4 w-8 h-8 bg-black/60 rounded-full flex items-center justify-center">
-                            <span className="text-xs font-black text-white">{index + 1}</span>
+                          <div className="absolute top-3 left-3 w-9 h-9 rounded-full bg-black/60 border border-white/20 flex items-center justify-center">
+                            <span className="text-sm font-black text-white">{index + 1}</span>
+                          </div>
+                          {/* Badge deporte */}
+                          <div className="absolute top-3 right-3">
+                            <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-black/60 text-primary border border-primary/30">
+                              {ex.muscleGroup || ex.sportName}
+                            </span>
                           </div>
                         </div>
 
-                        {/* Contenido del ejercicio */}
-                        <div className={`p-5 transition-all ${isCompleted ? 'opacity-40' : ''}`}>
-                          <p className="text-[10px] font-black uppercase tracking-widest text-[#22c55e] mb-1">
-                            {ex.sportName || 'Ejercicio'}
-                          </p>
-                          <h4 className={`text-xl font-headline font-black uppercase italic mb-3 text-black ${isCompleted ? 'line-through text-gray-400' : ''}`}>
+                        {/* PARTE INFERIOR — Info del ejercicio */}
+                        <div className="p-5 space-y-3">
+                          {/* Nombre */}
+                          <h4 className={`text-xl font-headline font-black uppercase italic leading-tight
+                            ${isCompleted ? 'line-through text-on-surface-variant' : 'text-white'}`}>
                             {ex.name}
                           </h4>
-                          {ex.muscleGroup && (
-                            <span className="inline-block px-3 py-1 bg-[#22c55e]/10 border border-[#22c55e]/20 rounded-xl text-[10px] font-black uppercase tracking-wider text-[#22c55e] mb-3">
-                              {ex.muscleGroup}
-                            </span>
-                          )}
-                          <div className="flex gap-4 mb-3">
-                            <div className="flex items-center gap-2 bg-gray-100 rounded-xl px-3 py-2">
-                              <span className="text-[10px] font-black uppercase text-gray-500">Series</span>
-                              <span className="text-base font-black text-black">{ex.sets}</span>
+                          
+                          {/* Series y Reps */}
+                          <div className="flex gap-3">
+                            <div className="flex-1 bg-white/5 rounded-2xl p-3 text-center">
+                              <p className="text-[9px] font-black uppercase text-on-surface-variant mb-1">Series</p>
+                              <p className="text-2xl font-black text-primary">{ex.sets}</p>
                             </div>
-                            <div className="flex items-center gap-2 bg-gray-100 rounded-xl px-3 py-2">
-                              <span className="text-[10px] font-black uppercase text-gray-500">Reps</span>
-                              <span className="text-base font-black text-black">{ex.reps}</span>
+                            <div className="flex-1 bg-white/5 rounded-2xl p-3 text-center">
+                              <p className="text-[9px] font-black uppercase text-on-surface-variant mb-1">Reps</p>
+                              <p className="text-2xl font-black text-secondary">{ex.reps}</p>
                             </div>
                           </div>
+
+                          {/* Explicación de ejecución */}
                           {ex.notes && (
-                            <p className="text-xs text-gray-600 italic leading-relaxed">
-                              "{ex.notes}"
-                            </p>
+                            <div className="bg-white/3 border border-white/8 rounded-2xl p-4">
+                              <p className="text-[9px] font-black uppercase tracking-widest text-primary mb-2">
+                                Cómo ejecutarlo
+                              </p>
+                              <p className="text-sm text-on-surface-variant leading-relaxed italic">
+                                "{ex.notes}"
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Alternativas si existen */}
+                          {ex.alternatives && ex.alternatives.length > 0 && (
+                            <div>
+                              <p className="text-[9px] font-black uppercase tracking-widest text-secondary mb-2">
+                                Sin equipo: usa
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                {ex.alternatives.map((alt: string, idx: number) => (
+                                  <span key={idx} className="text-[10px] px-2 py-1 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary">
+                                    {alt}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
                           )}
                         </div>
                       </motion.div>
