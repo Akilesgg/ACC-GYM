@@ -867,6 +867,9 @@ export default function WorkoutPlanView({
                   <div key={ex.id} className="flex flex-col md:flex-row gap-4 items-center bg-white/5 p-4 rounded-2xl border border-white/5">
                     <div className="flex items-center gap-4 flex-1 w-full">
                        <span className="text-xs font-black text-white/20">{idx + 1}</span>
+                       <div className="w-12 h-12 rounded-lg overflow-hidden bg-black shrink-0 border border-white/5">
+                         <ExerciseAnimation type={ex.name} isDone={false} size="sm" muscleGroup={ex.muscleGroup} className="w-full h-full" />
+                       </div>
                        <Input 
                         value={ex.name} 
                         onChange={(e) => {
@@ -1054,6 +1057,7 @@ function ExerciseList({
           <table className="w-full text-left">
             <thead className="bg-black/40 border-b border-white/5">
               <tr>
+                <th className="p-6 text-[10px] font-black uppercase tracking-widest text-primary">Visual</th>
                 <th className="p-6 text-[10px] font-black uppercase tracking-widest text-primary">Estado</th>
                 <th className="p-6 text-[10px] font-black uppercase tracking-widest text-primary">Deporte</th>
                 <th className="p-6 text-[10px] font-black uppercase tracking-widest text-primary">Ejercicio</th>
@@ -1071,8 +1075,19 @@ function ExerciseList({
                     onClick={() => onToggle(ex.id, dateKey)}
                     className={`group hover:bg-white/[0.02] transition-colors cursor-pointer ${isDone ? 'opacity-40' : ''}`}
                   >
-                      <td className="p-6">
-                        <div className="flex gap-2 justify-center">
+                    <td className="p-4">
+                      <div className="w-20 h-20 overflow-hidden rounded-xl bg-black border border-white/5">
+                        <ExerciseAnimation 
+                          type={ex.name} 
+                          isDone={isDone} 
+                          size="sm" 
+                          muscleGroup={ex.muscleGroup} 
+                          className="w-full h-full"
+                        />
+                      </div>
+                    </td>
+                    <td className="p-6">
+                      <div className="flex gap-2 justify-center">
                           <Button 
                             variant="ghost" 
                             size="icon" 

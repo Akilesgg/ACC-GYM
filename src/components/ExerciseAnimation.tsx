@@ -14,152 +14,124 @@ interface ExerciseAnimationProps {
 // y Giphy con GIFs de dominio público de ejercicios
 const EXERCISE_GIFS: Record<string, { gif: string; muscle: string; color: string }> = {
   // PECHO
-  'press banca': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Bench-Press.gif',
-    muscle: 'Pectoral', color: '#ef4444'
-  },
   'bench press': {
     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Bench-Press.gif',
     muscle: 'Pectoral', color: '#ef4444'
   },
-  'flexion': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Push-Up.gif',
-    muscle: 'Pectoral / Tríceps', color: '#ef4444'
+  'mancuerda bench': {
+    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Bench-Press.gif',
+    muscle: 'Pectoral', color: '#ef4444'
   },
   'push up': {
     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Push-Up.gif',
     muscle: 'Pectoral / Tríceps', color: '#ef4444'
   },
+  'peck deck': {
+    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Butterfly.gif',
+    muscle: 'Pectoral', color: '#ef4444'
+  },
   'aperturas': {
     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Fly.gif',
     muscle: 'Pectoral', color: '#ef4444'
   },
-  'fondos': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Chest-Dips.gif',
-    muscle: 'Tríceps / Pecho', color: '#ef4444'
+  'pullover': {
+     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Pullover.gif',
+     muscle: 'Pectoral / Dorsal', color: '#ef4444'
   },
 
   // ESPALDA
-  'dominada': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Pull-Up.gif',
-    muscle: 'Dorsal / Bíceps', color: '#3b82f6'
-  },
   'pull up': {
     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Pull-Up.gif',
     muscle: 'Dorsal / Bíceps', color: '#3b82f6'
   },
-  'remo con barra': {
+  'rows': {
     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Bent-Over-Row.gif',
     muscle: 'Dorsal / Romboides', color: '#3b82f6'
-  },
-  'remo': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Dumbbell-Row.gif',
-    muscle: 'Dorsal / Romboides', color: '#3b82f6'
-  },
-  'peso muerto': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Deadlift.gif',
-    muscle: 'Isquios / Espalda Baja', color: '#3b82f6'
   },
   'deadlift': {
     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Deadlift.gif',
     muscle: 'Isquios / Espalda Baja', color: '#3b82f6'
   },
+  'lat pulldown': {
+    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Lat-Pulldown.gif',
+    muscle: 'Dorsal', color: '#3b82f6'
+  },
+  'face pull': {
+    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Face-Pull.gif',
+    muscle: 'Hombro Posterior', color: '#3b82f6'
+  },
 
   // PIERNAS
-  'sentadilla con barra': {
+  'squats': {
     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Squat.gif',
     muscle: 'Cuádriceps / Glúteos', color: '#22c55e'
   },
-  'sentadilla': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Squat.gif',
-    muscle: 'Cuádriceps / Glúteos', color: '#22c55e'
-  },
-  'squat': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Squat.gif',
-    muscle: 'Cuádriceps / Glúteos', color: '#22c55e'
-  },
-  'zancada': {
+  'lunges': {
     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Lunge.gif',
     muscle: 'Cuádriceps / Glúteos', color: '#22c55e'
   },
-  'lunge': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Lunge.gif',
-    muscle: 'Cuádriceps / Glúteos', color: '#22c55e'
-  },
-  'prensa': {
+  'leg press': {
     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Leg-Press.gif',
     muscle: 'Cuádriceps', color: '#22c55e'
   },
-  'extension de cuadriceps': {
+  'leg extension': {
     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Leg-Extension.gif',
     muscle: 'Cuádriceps', color: '#22c55e'
   },
-  'curl de femoral': {
+  'leg curl': {
     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Lying-Leg-Curl.gif',
     muscle: 'Isquiotibiales', color: '#22c55e'
   },
-  'gemelo': {
+  'calf raise': {
     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Standing-Calf-Raise.gif',
     muscle: 'Gemelos', color: '#22c55e'
   },
+  'hip thrust': {
+    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Hip-Thrust.gif',
+    muscle: 'Glúteos', color: '#22c55e'
+  },
 
   // HOMBROS
-  'press militar': {
+  'military press': {
     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Military-Press.gif',
     muscle: 'Deltoides', color: '#f59e0b'
   },
-  'militar': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Military-Press.gif',
-    muscle: 'Deltoides', color: '#f59e0b'
-  },
-  'elevacion lateral': {
+  'lateral raise': {
     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Lateral-Raise.gif',
     muscle: 'Deltoides Lateral', color: '#f59e0b'
   },
-  'elevacion frontal': {
+  'front raise': {
     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Dumbbell-Front-Raise.gif',
     muscle: 'Deltoides Frontal', color: '#f59e0b'
   },
-  'elevacion': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Lateral-Raise.gif',
-    muscle: 'Deltoides', color: '#f59e0b'
+  'shrugs': {
+    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Shrug.gif',
+    muscle: 'Trapecio', color: '#f59e0b'
   },
 
-  // BÍCEPS / TRÍCEPS
-  'curl con barra': {
+  // BRAZOS
+  'biceps curl': {
     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Curl.gif',
     muscle: 'Bíceps', color: '#f59e0b'
   },
-  'curl de bicep': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Biceps-Curl.gif',
-    muscle: 'Bíceps', color: '#f59e0b'
+  'hammer curl': {
+    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Hammer-Curl.gif',
+    muscle: 'Bíceps / Braquial', color: '#f59e0b'
   },
-  'curl': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Biceps-Curl.gif',
-    muscle: 'Bíceps', color: '#f59e0b'
-  },
-  'bicep': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Biceps-Curl.gif',
-    muscle: 'Bíceps', color: '#f59e0b'
-  },
-  'extension de tricep': {
+  'triceps pushdown': {
     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Triceps-Pushdown.gif',
     muscle: 'Tríceps', color: '#f59e0b'
   },
-  'tricep': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Triceps-Pushdown.gif',
-    muscle: 'Tríceps', color: '#f59e0b'
+  'skull crusher': {
+     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Skull-Crusher.gif',
+     muscle: 'Tríceps', color: '#f59e0b'
   },
-  'mancuerna': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Biceps-Curl.gif',
-    muscle: 'Bíceps', color: '#f59e0b'
+  'dips': {
+    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Chest-Dips.gif',
+    muscle: 'Tríceps / Pecho', color: '#f59e0b'
   },
 
   // CORE
-  'plancha': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/04/Plank.gif',
-    muscle: 'Core', color: '#8b5cf6'
-  },
   'plank': {
     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/04/Plank.gif',
     muscle: 'Core', color: '#8b5cf6'
@@ -168,9 +140,9 @@ const EXERCISE_GIFS: Record<string, { gif: string; muscle: string; color: string
     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Crunch.gif',
     muscle: 'Abdomen', color: '#8b5cf6'
   },
-  'abdominal': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Crunch.gif',
-    muscle: 'Abdomen', color: '#8b5cf6'
+  'leg raise': {
+    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Lying-Leg-Raise.gif',
+    muscle: 'Abdomen Inferior', color: '#8b5cf6'
   },
   'russian twist': {
     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Russian-Twist.gif',
@@ -180,105 +152,33 @@ const EXERCISE_GIFS: Record<string, { gif: string; muscle: string; color: string
     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Mountain-Climber.gif',
     muscle: 'Core / Cardio', color: '#8b5cf6'
   },
-  'core': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/04/Plank.gif',
-    muscle: 'Core', color: '#8b5cf6'
-  },
 
   // BOXEO
   'jab': {
     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/09/Boxing-Jab-Cross.gif',
     muscle: 'Hombros / Core', color: '#ef4444'
   },
-  'jab-cross': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/09/Boxing-Jab-Cross.gif',
-    muscle: 'Hombros / Core', color: '#ef4444'
-  },
-  'hook': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/09/Boxing-Jab-Cross.gif',
-    muscle: 'Oblicuos / Hombros', color: '#ef4444'
-  },
-  'uppercut': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/09/Boxing-Jab-Cross.gif',
-    muscle: 'Hombros / Core', color: '#ef4444'
-  },
-  'saco': {
+  'boxeo': {
     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/09/Boxing-Jab-Cross.gif',
     muscle: 'Full Body', color: '#ef4444'
   },
-  'sombra': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/09/Boxing-Jab-Cross.gif',
-    muscle: 'Full Body', color: '#ef4444'
-  },
-  'comba': {
+  'jump rope': {
     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Jump-Rope.gif',
     muscle: 'Cardio / Gemelos', color: '#ef4444'
   },
 
-  // CARDIO / HIIT
+  // CARDIO
   'burpee': {
     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Burpee.gif',
     muscle: 'Full Body', color: '#06b6d4'
-  },
-  'saltar a la comba': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Jump-Rope.gif',
-    muscle: 'Cardio', color: '#06b6d4'
-  },
-  'saltar': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Jump-Rope.gif',
-    muscle: 'Cardio', color: '#06b6d4'
   },
   'jumping jack': {
     gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Jumping-Jack.gif',
     muscle: 'Cardio', color: '#06b6d4'
   },
-  'sprint': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/09/High-Knees.gif',
-    muscle: 'Cardio / Piernas', color: '#06b6d4'
-  },
-  'rodaje': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/09/High-Knees.gif',
-    muscle: 'Cardio', color: '#06b6d4'
-  },
-  'correr': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/09/High-Knees.gif',
-    muscle: 'Cardio', color: '#06b6d4'
-  },
-  'high knees': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/09/High-Knees.gif',
-    muscle: 'Cardio / Core', color: '#06b6d4'
-  },
-
-  // CICLISMO
-  'cicl': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Stationary-Bike.gif',
-    muscle: 'Cuádriceps / Cardio', color: '#22c55e'
-  },
-  'bici': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Stationary-Bike.gif',
-    muscle: 'Cuádriceps / Cardio', color: '#22c55e'
-  },
-  'spinning': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Stationary-Bike.gif',
-    muscle: 'Cuádriceps / Cardio', color: '#22c55e'
-  },
-
-  // YOGA / MOVILIDAD
-  'yoga': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Downward-Dog.gif',
-    muscle: 'Movilidad Full Body', color: '#8b5cf6'
-  },
-  'estiramiento': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Hamstring-Stretch.gif',
-    muscle: 'Flexibilidad', color: '#8b5cf6'
-  },
-  'stretch': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Hamstring-Stretch.gif',
-    muscle: 'Flexibilidad', color: '#8b5cf6'
-  },
-  'movilidad': {
-    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Downward-Dog.gif',
-    muscle: 'Movilidad', color: '#8b5cf6'
+  'mountain climbers': {
+    gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Mountain-Climber.gif',
+    muscle: 'Full Body / Core', color: '#06b6d4'
   },
 };
 
@@ -300,11 +200,23 @@ const getExerciseData = (name: string, muscleGroup?: string) => {
     .sort((a, b) => b.length - a.length);
   
   const match = sortedKeys.find(k => q.includes(k));
+
+  // Intentar match parcial si no hay match exacto
+  if (!match) {
+    if (q.includes('pecho') || q.includes('press')) return EXERCISE_GIFS['bench press'];
+    if (q.includes('espalda') || q.includes('remo')) return EXERCISE_GIFS['rows'];
+    if (q.includes('pierna') || q.includes('sentadilla') || q.includes('squat')) return EXERCISE_GIFS['squats'];
+    if (q.includes('bicep')) return EXERCISE_GIFS['biceps curl'];
+    if (q.includes('tricep')) return EXERCISE_GIFS['triceps pushdown'];
+    if (q.includes('core') || q.includes('abs') || q.includes('abdominal')) return EXERCISE_GIFS['plank'];
+  }
+
   return match ? EXERCISE_GIFS[match] : DEFAULT_GIF;
 };
 
 export const ExerciseAnimation = ({ type, isDone, className = '', size = 'md', muscleGroup }: ExerciseAnimationProps) => {
   const [playing, setPlaying] = useState(true);
+  const [loading, setLoading] = useState(true);
   const data = getExerciseData(type, muscleGroup);
 
   const sizeMap = {
@@ -318,6 +230,10 @@ export const ExerciseAnimation = ({ type, isDone, className = '', size = 'md', m
       className={`relative ${sizeMap[size]} rounded-2xl overflow-hidden shrink-0 bg-black cursor-pointer group ${isDone ? 'opacity-40 grayscale' : ''} ${className}`}
       onClick={(e) => { e.stopPropagation(); setPlaying(p => !p); }}
     >
+      <div className={`absolute inset-0 bg-black flex items-center justify-center transition-opacity duration-500 ${loading ? 'opacity-100' : 'opacity-0'}`}>
+        <div className="w-8 h-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+      </div>
+
       <AnimatePresence mode="wait">
         {/* GIF real del ejercicio */}
         {(playing && !isDone) ? (
@@ -328,6 +244,7 @@ export const ExerciseAnimation = ({ type, isDone, className = '', size = 'md', m
             exit={{ opacity: 0 }}
             src={data.gif}
             alt={type}
+            onLoad={() => setLoading(false)}
             className="absolute inset-0 w-full h-full object-cover"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
@@ -344,6 +261,7 @@ export const ExerciseAnimation = ({ type, isDone, className = '', size = 'md', m
             exit={{ opacity: 0 }}
             src={data.gif.replace('giphy.gif', '200_s.gif')}
             alt={type}
+            onLoad={() => setLoading(false)}
             className="absolute inset-0 w-full h-full object-cover grayscale"
           />
         )}

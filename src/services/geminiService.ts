@@ -107,11 +107,11 @@ export function getRichFallbackPlan(config: SportConfig): TrainingPlan {
   const exerciseBank: Record<string, Record<string, {name:string,sets:string,reps:string,notes:string,muscleGroup:string}[]>> = {
     boxeo: {
       fuerza: [
-        { name: 'Jab-Cross en saco (3 rounds)', sets: '3', reps: '3 min', notes: 'Mantén los codos pegados al cuerpo. Extiende completamente el brazo al golpear.', muscleGroup: 'Hombros / Core' },
-        { name: 'Hook izquierdo y derecho', sets: '3', reps: '2 min', notes: 'Gira las caderas con cada gancho. El poder viene de las piernas.', muscleGroup: 'Oblicuos / Hombros' },
-        { name: 'Uppercut doble en combinación', sets: '3', reps: '2 min', notes: 'Flexiona rodillas antes de subir el golpe. No telegrafíes el movimiento.', muscleGroup: 'Tríceps / Core' },
-        { name: 'Flexiones de boxeador (con rotación)', sets: '4', reps: '12', notes: 'Al subir, rotar y extender un brazo al frente simulando un jab.', muscleGroup: 'Pecho / Hombros' },
-        { name: 'Saltar a la comba', sets: '5', reps: '2 min', notes: 'Mantén ritmo constante. Alterna velocidad cada 30 segundos.', muscleGroup: 'Cardiovascular / Gemelos' },
+        { name: 'Jab-Cross en saco (3 rounds)', sets: '3', reps: '3 min', notes: 'Mantén los codos pegados al cuerpo para una defensa hermética. Extiende completamente el brazo al golpear rotando el nudillo al final. La potencia nace desde el pie trasero, sube por la cadera y se libera en el impacto.', muscleGroup: 'Hombros / Core' },
+        { name: 'Hook izquierdo y derecho', sets: '3', reps: '2 min', notes: 'Gira las caderas 90 grados con cada gancho. El brazo debe formar una L perfecta. Imagina que pasas el golpe a través del saco, no solo al impacto superficial.', muscleGroup: 'Oblicuos / Hombros' },
+        { name: 'Uppercut doble en combinación', sets: '3', reps: '2 min', notes: 'Flexiona rodillas bajando el centro de gravedad antes de subir el golpe circular. No telegrafíes el movimiento bajando la mano; mantén la guardia alta hasta el despegue.', muscleGroup: 'Tríceps / Core' },
+        { name: 'Flexiones de boxeador (con rotación)', sets: '4', reps: '12', notes: 'Al subir de la flexión, rota explosivamente el torso y extiende un brazo al frente simulando un jab potente. Trabaja la transferencia de fuerza cinética.', muscleGroup: 'Pecho / Hombros' },
+        { name: 'Saltar a la comba', sets: '5', reps: '2 min', notes: 'Mantén ritmo constante con saltos cortos y pies juntos. Usa exclusivamente las muñecas para girar la cuerda. Alterna velocidad: 30s explosivo / 30s recuperación activa.', muscleGroup: 'Cardiovascular / Gemelos' },
       ],
       resistencia: [
         { name: 'Shadowboxing (sombra)', sets: '6', reps: '3 min', notes: 'Visualiza un rival. Muévete constantemente, nunca estático.', muscleGroup: 'Full body' },
@@ -263,22 +263,22 @@ export async function generateCombinedTrainingPlan(profile: UserProfile, configs
       ? `Genera un plan de entrenamiento COMBINADO, profesional y EDUCATIVO para: ${sportsList}.
         Perfil: ${profile.username}, ${profile.weight}kg, ${profile.height}cm. Objetivo: ${profile.nutritionGoal || 'Mejora general'}. Nivel: ${profile.experienceLevel}. Lesiones: ${profile.injuries || 'Ninguna'}.
         
-        Instrucciones:
+        Instrucciones CRÍTICAS:
         1. Horario semanal de 7 días.
         2. Por cada deporte/día: 5-7 EJERCICIOS con progresión técnica (Técnica -> Potencia -> Resistencia).
         3. Identifica cada ejercicio con su 'sport'.
         4. ADAPTA AL EQUIPAMIENTO REAL: ${JSON.stringify(configs.map(c => c.equipment))}. Si no hay material específico, usa 'alternatives'.
-        5. Rellena: 'muscleGroup', 'equipment' necesario, 'executionTip' (consejo pro), 'videoKeyword' (ej: "propioception drills football") y 'alternatives' (sin material).
+        5. Rellena DETALLADAMENTE: 'muscleGroup', 'equipment', 'executionTip' (consejo avanzado de biomecánica), 'notes' (Explicación detallada de cómo ejecutarlo, qué sentir y errores comunes. Mínimo 30 palabras por ejercicio), 'videoKeyword' y 'alternatives'.
         6. 'executionNotes': Explicación de la mentalidad semanal.`
       : `Generate a COMBINED EDUCATIONAL training plan for: ${sportsList}.
         Profile: ${profile.username}, ${profile.weight}kg, ${profile.height}cm. Goal: ${profile.nutritionGoal || 'General improvement'}. Level: ${profile.experienceLevel}. Injuries: ${profile.injuries || 'None'}.
         
-        Instructions:
+        CRITICAL Instructions:
         1. 7-day weekly schedule.
         2. Per sport/day: 5-7 EXERCISES with technical progression.
         3. Label each exercise with its 'sport'.
         4. ADAPT TO EQUIPMENT: ${JSON.stringify(configs.map(c => c.equipment))}. Use 'alternatives' if equipment is missing.
-        5. Fill: 'muscleGroup', 'equipment', 'executionTip' (pro tip), 'videoKeyword' (e.g., "boxing footwork drills") and 'alternatives' (no equipment).
+        5. Fill DETAILED info: 'muscleGroup', 'equipment', 'executionTip' (advanced biomechanics cue), 'notes' (Detailed execution instructions, what to feel, and common mistakes. Minimum 30 words per exercise), 'videoKeyword' and 'alternatives'.
         6. 'executionNotes': Weekly mindset explanation.`;
 
     const generatePromise = async () => {
