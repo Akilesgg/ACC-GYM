@@ -107,6 +107,8 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
   };
 
   const todaysExercises = getExercisesForDay(today);
+  const sportName = todaysExercises.length > 0 ? (todaysExercises[0] as any).sportName : "COMPLETO";
+
   const currentProgress = profile.progress?.[dateKey] || {
     date: dateKey,
     completedExercises: [],
