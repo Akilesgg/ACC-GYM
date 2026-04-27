@@ -4,7 +4,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { motion, AnimatePresence } from 'motion/react';
 import * as Icons from 'lucide-react';
-import { CheckCircle2, Circle, Calendar as CalendarIcon, Trophy, Flame, TrendingUp, ArrowLeft, Brain, Loader2, Scale, Camera, BarChart3, Dumbbell, Clock } from 'lucide-react';
+import { CheckCircle2, Circle, Calendar as CalendarIcon, Trophy, Flame, TrendingUp, ArrowLeft, Brain, Loader2, Scale, Camera, BarChart3, Dumbbell, Clock, Info, ChevronDown } from 'lucide-react';
 import { format, startOfToday, isSameDay, parseISO, eachDayOfInterval, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { useTranslation } from '../lib/i18n';
@@ -288,9 +288,19 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
           >
             {/* Daily Routine */}
             <section className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h3 className="font-headline text-2xl font-black uppercase italic tracking-tight">{t('rutinaHoy')}</h3>
-                <p className="text-on-surface-variant font-medium">{format(today, 'PPP', { locale })}</p>
+              <div className="flex flex-col sm:flex-row sm:items-baseline gap-4 mb-8">
+                <div className="flex items-center gap-3">
+                  <h3 className="font-headline text-3xl font-black uppercase italic tracking-tight text-white">
+                    {t('rutinaHoy')}
+                  </h3>
+                  <div className="h-0.5 w-10 bg-[#22c55e]" />
+                  <span className="text-2xl font-black text-[#22c55e] uppercase italic tracking-tighter">
+                    {sportName || "FISICA"}
+                  </span>
+                </div>
+                <p className="text-[#8e7b71] font-bold text-sm ml-auto">
+                  {format(today, 'd MMMM yyyy', { locale: es })}
+                </p>
               </div>
 
               <div className="grid grid-cols-1 gap-6">
@@ -300,86 +310,96 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
                     return (
                       <motion.div
                         key={ex.id}
-                        initial={{ opacity: 0, y: 30 }}
+                        initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.08 }}
-                        className={`group relative overflow-hidden rounded-[2.5rem] border transition-all cursor-pointer shadow-xl ${
-                          isCompleted 
-                            ? 'bg-secondary/10 border-secondary/40 opacity-80' 
-                            : 'bg-[#111318] border-white/5 hover:border-primary/40'
-                        }`}
+                        transition={{ delay: index * 0.05 }}
+                        className="group relative bg-[#1a1614] border border-[#2d2420] rounded-2xl overflow-hidden hover:border-[#22c55e]/50 transition-all cursor-pointer shadow-xl mb-6 last:mb-0"
                         onClick={() => toggleExercise(ex.id)}
                       >
-                        {/* PARTE SUPERIOR — GIF del ejercicio a pantalla completa */}
-                        <div className="relative w-full h-52 bg-black overflow-hidden">
-                          <ExerciseAnimation
-                            type={ex.name}
-                            isDone={isCompleted}
-                            size="lg"
-                            muscleGroup={ex.muscleGroup}
-                            className="w-full h-full"
-                          />
-                          {/* Degradado al contenido */}
-                          <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#111318] to-transparent" />
-                          {/* Número de orden */}
-                          <div className="absolute top-3 left-3 w-9 h-9 rounded-full bg-black/60 border border-white/20 flex items-center justify-center">
-                            <span className="text-sm font-black text-white">{index + 1}</span>
-                          </div>
-                          {/* Badge deporte */}
-                          <div className="absolute top-3 right-3">
-                            <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-black/60 text-primary border border-primary/30">
-                              {ex.muscleGroup || ex.sportName}
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* PARTE INFERIOR — Info del ejercicio */}
-                        <div className="p-5 space-y-3">
-                          {/* Nombre */}
-                          <h4 className={`text-xl font-headline font-black uppercase italic leading-tight
-                            ${isCompleted ? 'line-through text-on-surface-variant' : 'text-white'}`}>
-                            {ex.name}
-                          </h4>
-                          
-                          {/* Series y Reps */}
-                          <div className="flex gap-3">
-                            <div className="flex-1 bg-white/5 rounded-2xl p-3 text-center">
-                              <p className="text-[9px] font-black uppercase text-on-surface-variant mb-1">Series</p>
-                              <p className="text-2xl font-black text-primary">{ex.sets}</p>
+                        <div className="flex flex-col lg:flex-row p-6 gap-6">
+                          {/* Visual Animado — Larger and more prominent */}
+                          <div className="relative w-full lg:w-72 shrink-0">
+                            <ExerciseAnimation 
+                              type={ex.name} 
+                              isDone={isCompleted} 
+                              muscleGroup={ex.muscleGroup}
+                              size="lg"
+                              className="rounded-2xl border border-white/5 shadow-2xl bg-black/40"
+                            />
+                            <div className="absolute top-2 left-2 flex gap-2">
+                              <span className="bg-black/80 text-white text-[10px] font-black px-2 py-0.5 rounded-md border border-white/10">
+                                #{index + 1}
+                              </span>
+                              <span className="bg-[#22c55e] text-black text-[10px] font-black px-2 py-0.5 rounded-md shadow-[0_2px_10px_rgba(34,197,94,0.3)] uppercase tracking-tighter">
+                                {ex.sportName || 'FITNESS'}
+                              </span>
                             </div>
-                            <div className="flex-1 bg-white/5 rounded-2xl p-3 text-center">
-                              <p className="text-[9px] font-black uppercase text-on-surface-variant mb-1">Reps</p>
-                              <p className="text-2xl font-black text-secondary">{ex.reps}</p>
-                            </div>
+                            {ex.muscleGroup && (
+                              <div className="absolute top-2 right-2">
+                                <span className="bg-white/10 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-md border border-white/10 uppercase tracking-tighter">
+                                  {ex.muscleGroup}
+                                </span>
+                              </div>
+                            )}
                           </div>
 
-                          {/* Explicación de ejecución */}
-                          {ex.notes && (
-                            <div className="bg-white/3 border border-white/8 rounded-2xl p-4">
-                              <p className="text-[9px] font-black uppercase tracking-widest text-primary mb-2">
-                                Cómo ejecutarlo
-                              </p>
-                              <p className="text-sm text-on-surface-variant leading-relaxed italic">
-                                "{ex.notes}"
-                              </p>
-                            </div>
-                          )}
-
-                          {/* Alternativas si existen */}
-                          {ex.alternatives && ex.alternatives.length > 0 && (
+                          {/* Info Detallada */}
+                          <div className="flex-1 min-w-0 flex flex-col justify-between">
                             <div>
-                              <p className="text-[9px] font-black uppercase tracking-widest text-secondary mb-2">
-                                Sin equipo: usa
-                              </p>
-                              <div className="flex flex-wrap gap-2">
-                                {ex.alternatives.map((alt: string, idx: number) => (
-                                  <span key={idx} className="text-[10px] px-2 py-1 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary">
-                                    {alt}
-                                  </span>
-                                ))}
+                              <div className="flex items-start justify-between gap-2 mb-2">
+                                <h4 className="text-xl font-black text-white leading-tight uppercase group-hover:text-[#22c55e] transition-colors">
+                                  {ex.name}
+                                </h4>
+                                <div
+                                  className={`shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${
+                                    isCompleted 
+                                      ? 'bg-[#22c55e] border-[#22c55e] text-black scale-110 shadow-[0_0_15px_rgba(34,197,94,0.4)]' 
+                                      : 'border-[#2d2420] text-transparent hover:border-[#22c55e]/50 text-white/10'
+                                  }`}
+                                >
+                                  <CheckCircle2 size={18} />
+                                </div>
+                              </div>
+
+                              <div className="grid grid-cols-2 gap-2">
+                                <div className="bg-black/30 p-2 rounded-xl border border-white/5">
+                                  <span className="block text-[9px] text-[#8e7b71] font-bold uppercase mb-0.5">Series y Reps</span>
+                                  <span className="text-sm font-black text-white">{ex.sets} x {ex.reps}</span>
+                                </div>
+                                <div className="bg-black/30 p-2 rounded-xl border border-white/5">
+                                  <span className="block text-[9px] text-[#8e7b71] font-bold uppercase mb-0.5">Descanso</span>
+                                  <span className="text-sm font-black text-[#22c55e]">{ex.restTime}s</span>
+                                </div>
                               </div>
                             </div>
-                          )}
+
+                            {/* Sección informativa enriquecida */}
+                            <div className="mt-4" onClick={(e) => e.stopPropagation()}>
+                              <details className="group/details">
+                                <summary className="list-none cursor-pointer flex items-center justify-between text-xs font-bold text-[#8e7b71] hover:text-white transition-colors">
+                                  <div className="flex items-center gap-2">
+                                    <Info size={14} className="text-[#22c55e]" />
+                                    <span>CÓMO EJECUTAR</span>
+                                  </div>
+                                  <ChevronDown size={14} className="group-open/details:rotate-180 transition-transform" />
+                                </summary>
+                                <div className="mt-2 text-xs leading-relaxed text-[#b4a59d] bg-black/40 p-3 rounded-xl border border-white/5 animate-in fade-in slide-in-from-top-1">
+                                  <p className="mb-2 italic border-l-2 border-[#22c55e] pl-2">
+                                    {ex.notes || "Mantén el control en todo momento y no descuides la técnica."}
+                                  </p>
+                                  {(ex.executionTip || ex.execution) && (
+                                    <div className="flex gap-2">
+                                      <div className="w-1 h-auto bg-[#22c55e] rounded-full" />
+                                      <p className="text-[11px] leading-relaxed">
+                                        <span className="text-[#22c55e] font-black block mb-0.5 text-[9px]">TIP PRO:</span>
+                                        {ex.executionTip || ex.execution}
+                                      </p>
+                                    </div>
+                                  )}
+                                </div>
+                              </details>
+                            </div>
+                          </div>
                         </div>
                       </motion.div>
                     );

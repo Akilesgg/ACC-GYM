@@ -165,13 +165,19 @@ export default function Dashboard({ profile, onUpdateProfile, onAddSport, onGoTo
 
             {/* Today's Routine if sports active */}
             <section className="space-y-6">
-              <div className="flex items-center justify-between">
-                <h3 className="font-headline text-3xl font-black uppercase italic tracking-tight">
-                  {t('rutinaHoy')}
-                </h3>
-                <div className="px-4 py-1 bg-primary/10 rounded-full">
-                  <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{format(today, 'PPP', { locale })}</span>
+              <div className="flex flex-col sm:flex-row sm:items-baseline gap-4 mb-8">
+                <div className="flex items-center gap-3">
+                  <h3 className="font-headline text-3xl font-black uppercase italic tracking-tight text-white leading-none">
+                    {t('rutinaHoy')}
+                  </h3>
+                  <div className="h-1 w-8 bg-[#22c55e] shrink-0" />
+                  <span className="text-2xl font-black text-[#22c55e] uppercase italic tracking-tighter leading-none">
+                    {currentSportName || "FITNESS"}
+                  </span>
                 </div>
+                <p className="text-[#8e7b71] font-bold text-xs uppercase tracking-widest sm:ml-auto opacity-70">
+                  {format(today, 'd MMMM yyyy', { locale: es })}
+                </p>
               </div>
               
               {todaysExercises.length > 0 ? (

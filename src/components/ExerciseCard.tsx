@@ -20,50 +20,54 @@ export function ExerciseCard({ exercise, isCompleted, onToggle }: any) {
   return (
     <Card 
       onClick={onToggle}
-      className={`relative overflow-hidden group cursor-pointer transition-all border-2 rounded-[2rem] ${
+      className={`relative overflow-hidden group cursor-pointer transition-all border border-[#2d2420] rounded-[2rem] ${
         isCompleted 
-          ? 'bg-primary/5 border-primary/20 opacity-80' 
-          : 'bg-surface border-white/5 hover:border-primary/40'
+          ? 'bg-[#22c55e]/5 border-[#22c55e]/20 opacity-80' 
+          : 'bg-[#1a1614] hover:border-[#22c55e]/50 shadow-2xl'
       }`}
     >
-      <div className="p-6 md:p-8 flex flex-col md:flex-row items-center gap-8 relative z-10 text-left">
-        <ExerciseAnimation type={exercise.name} isDone={isCompleted} size="md" />
+      <div className="p-6 md:p-8 flex flex-col lg:flex-row items-center gap-10 relative z-10 text-left">
+        <div className="relative shrink-0 w-full lg:w-64">
+           <ExerciseAnimation type={exercise.name} isDone={isCompleted} size="lg" className="rounded-2xl border border-white/5 bg-black/40 shadow-xl" />
+        </div>
 
-        <div className="flex-1 w-full space-y-4">
+        <div className="flex-1 w-full space-y-5">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-1">
-              <span className="text-[10px] font-black uppercase tracking-widest text-primary italic">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#22c55e] italic">
                 {exercise.sportName || 'ENTRENAMIENTO'}
               </span>
-              <h4 className={`text-2xl md:text-3xl font-headline font-black uppercase italic leading-tight ${isCompleted ? 'line-through opacity-40 text-on-surface-variant' : 'text-on-surface'}`}>
+              <h4 className={`text-2xl md:text-4xl font-headline font-black uppercase italic leading-tight transition-colors ${isCompleted ? 'line-through opacity-40 text-[#8e7b71]' : 'text-white group-hover:text-[#22c55e]'}`}>
                 {exercise.name}
               </h4>
             </div>
 
-            <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all shrink-0 ${
+            <div className={`w-14 h-14 rounded-full flex items-center justify-center border-2 transition-all shrink-0 ${
               isCompleted 
-                ? 'bg-primary border-primary text-on-primary shadow-lg shadow-primary/40' 
-                : 'border-white/10 group-hover:border-primary/50 text-white/10'
+                ? 'bg-[#22c55e] border-[#22c55e] text-black shadow-[0_0_20px_rgba(34,197,94,0.4)] scale-110' 
+                : 'border-white/10 group-hover:border-[#22c55e]/50 text-white/5'
             }`}>
-              {isCompleted ? <CheckCircle2 size={24} /> : <Circle size={24} />}
+              {isCompleted ? <CheckCircle2 size={32} /> : <Circle size={32} className="opacity-20" />}
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-6">
-            <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-2xl">
-              <Layers size={14} className="text-secondary" />
-              <span className="text-xs font-black uppercase tracking-widest">{exercise.sets} <span className="opacity-40 whitespace-nowrap">Series</span></span>
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex flex-col bg-black/30 px-6 py-3 rounded-2xl border border-white/5 min-w-[120px]">
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#8e7b71] mb-1">Series</span>
+              <span className="text-xl font-black text-white">{exercise.sets}</span>
             </div>
-            <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-2xl">
-              <Zap size={14} className="text-primary" />
-              <span className="text-xs font-black uppercase tracking-widest">{exercise.reps} <span className="opacity-40 whitespace-nowrap">Reps/Min</span></span>
+            <div className="flex flex-col bg-black/30 px-6 py-3 rounded-2xl border border-white/5 min-w-[120px]">
+              <span className="text-[9px] font-black uppercase tracking-[0.2em] text-[#8e7b71] mb-1">Repeticiones</span>
+              <span className="text-xl font-black text-white">{exercise.reps}</span>
             </div>
           </div>
           
           {exercise.notes && (
-            <p className="text-xs font-medium text-on-surface-variant italic leading-relaxed opacity-60 group-hover:opacity-100 transition-opacity">
-              "{exercise.notes}"
-            </p>
+            <div className="relative p-4 bg-black/20 rounded-2xl border-l-4 border-[#22c55e]">
+               <p className="text-sm font-medium text-[#b4a59d] italic leading-relaxed">
+                "{exercise.notes}"
+              </p>
+            </div>
           )}
         </div>
       </div>
@@ -72,7 +76,7 @@ export function ExerciseCard({ exercise, isCompleted, onToggle }: any) {
         <motion.div 
           initial={{ width: 0 }}
           animate={{ width: '100%' }}
-          className="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-primary to-secondary"
+          className="absolute bottom-0 left-0 h-1 bg-[#22c55e] shadow-[0_0_15px_rgba(34,197,94,0.8)]"
         />
       )}
     </Card>

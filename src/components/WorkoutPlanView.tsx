@@ -4,7 +4,7 @@ import { format, startOfToday, isSameDay, startOfWeek, addDays, parseISO } from 
 import { es } from 'date-fns/locale';
 import { 
   CheckCircle2, Circle, Trophy, Dumbbell, X, Zap, Target, 
-  Clock, Calendar, ClipboardList, MapPin, Save, Info, ChevronRight, 
+  Clock, Calendar, ClipboardList, MapPin, Save, Info, ChevronRight, ChevronDown, 
   Trash2, Plus, LayoutGrid, UserCircle2, Settings2, Sparkles,
   AlertCircle
 } from 'lucide-react';
@@ -67,35 +67,62 @@ export default function WorkoutPlanView({
   const [isCombinedView, setIsCombinedView] = useState(false);
   const activePlan = sport.plan || globalPlan;
   const [showImportModal, setShowImportModal] = useState(false);
+  const [focusedExercise, setFocusedExercise] = useState<any | null>(null);
 
-  const handleSwapExercise = (exerciseId: string) => {
+  const handleSwapExercise = (exerciseId: string, forceNoEquipment: boolean = false) => {
     // Basic swapping logic: find an exercise with the same muscle group from the active plan or global pool
     const planToSearch = sport.plan || globalPlan;
     if (!planToSearch) return;
 
     // We can swap in the current edit context or in the whole plan
     // If we are in 'edit' tab, we swap in editExercises
-    const exToSwap = editExercises.find(ex => ex.id === exerciseId);
+    const exToSwap = editExercises.find(ex => ex.id === exerciseId) || 
+                   activePlan.table.flatMap(d => d.exercises).find(ex => ex.id === exerciseId);
     
     if (exToSwap) {
       const pool = planToSearch.table.flatMap(d => d.exercises);
-      const alternatives = pool.filter(ex => 
+      let alternatives = pool.filter(ex => 
         (ex.muscleGroup === exToSwap.muscleGroup || ex.sport === exToSwap.sport) && 
         ex.name !== exToSwap.name
       );
 
+      if (forceNoEquipment) {
+        // Try to find one with no equipment in pool or use existing alternatives field
+        const bodyweightShorthand = ['flexion', 'sentadilla', 'plancha', 'core', 'calistenia', 'push up', 'squat', 'plank'];
+        alternatives = alternatives.filter(ex => 
+          bodyweightShorthand.some(term => ex.name.toLowerCase().includes(term)) ||
+          ex.equipment?.toLowerCase().includes('ninguno') ||
+          ex.equipment?.toLowerCase().includes('propio')
+        );
+      }
+
       if (alternatives.length > 0) {
         const randomAlternative = alternatives[Math.floor(Math.random() * alternatives.length)];
-        setEditExercises(prev => prev.map(ex => 
-          ex.id === exerciseId ? { ...randomAlternative, id: `swap-${Date.now()}`, sport: exToSwap.sport || sport.sport } : ex
-        ));
+        
+        // If we are in edit mode, update editExercises
+        if (activeTab === 'edit') {
+          setEditExercises(prev => prev.map(ex => 
+            ex.id === exerciseId ? { ...randomAlternative, id: `swap-${Date.now()}`, sport: exToSwap.sport || sport.sport } : ex
+          ));
+        } else {
+          // In daily view, we update the whole activePlan and profile
+          const updatedTable = activePlan.table.map(d => ({
+            ...d,
+            exercises: d.exercises.map(ex => 
+              ex.id === exerciseId ? { ...randomAlternative, id: `swap-${Date.now()}`, sport: exToSwap.sport || sport.sport } : ex
+            )
+          }));
+          const updatedPlan = { ...activePlan, table: updatedTable };
+          const updatedSports = profile.sports.map(s => 
+            s.sport === sport.sport ? { ...s, plan: updatedPlan } : s
+          );
+          onUpdateProfile({ ...profile, sports: updatedSports, plan: updatedPlan });
+        }
       } else {
-        alert("No se encontraron ejercicios similares en tu plan actual.");
+        alert("No se encontraron ejercicios similares. Prueba regenerando el plan con IA especificando tu material.");
       }
     } else {
-      // If not in edit exercises, it might be in the daily view
-      // This would require updating the whole profile/plan document
-      alert("Solo puedes cambiar ejercicios en el modo Edición por ahora.");
+      alert("No se pudo encontrar el ejercicio para cambiar.");
     }
   };
 
@@ -589,17 +616,20 @@ export default function WorkoutPlanView({
               </motion.div>
             )}
 
-            <ExerciseList 
-              date={today} 
-              exercises={getWorkoutForDay(today)} 
-              progress={progress} 
-              onToggle={onToggleExercise}
-              language={language}
-              viewMode={viewMode}
-              sportName={sport.sport}
-              onEditExercise={handleEditExercise}
-              onSwap={handleSwapExercise}
-            />
+                <div className="flex flex-col gap-2">
+                  <ExerciseList 
+                    date={today} 
+                    exercises={getWorkoutForDay(today)} 
+                    progress={progress} 
+                    onToggle={onToggleExercise}
+                    language={language}
+                    viewMode={viewMode}
+                    sportName={sport.sport}
+                    onEditExercise={handleEditExercise}
+                    onSwap={handleSwapExercise}
+                    onFocus={setFocusedExercise}
+                  />
+                </div>
 
             <div className="h-20" /> {/* Extra space to avoid cut-off */}
           </motion.div>
@@ -997,7 +1027,119 @@ export default function WorkoutPlanView({
                       sportName={sport.sport}
                       onEditExercise={handleEditExercise}
                       onSwap={handleSwapExercise}
+                      onFocus={setFocusedExercise}
                     />
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Exercise Focus Modal */}
+      <AnimatePresence>
+        {focusedExercise && (
+          <div className="fixed inset-0 z-[600] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setFocusedExercise(null)}
+              className="absolute inset-0 bg-black/95 backdrop-blur-xl"
+            />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="relative w-full max-w-4xl bg-[#111318] rounded-[3rem] border border-white/10 shadow-2xl overflow-hidden overflow-y-auto max-h-[90vh] custom-scrollbar"
+            >
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={() => setFocusedExercise(null)} 
+                className="absolute top-6 right-6 z-10 w-12 h-12 rounded-full bg-black/40 hover:bg-white/10"
+              >
+                <X size={24} />
+              </Button>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2">
+                <div className="aspect-square bg-black relative">
+                  <ExerciseAnimation 
+                    type={focusedExercise.name} 
+                    muscleGroup={focusedExercise.muscleGroup} 
+                    isDone={false} 
+                    size="lg" 
+                    className="w-full h-full" 
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#111318] via-transparent to-transparent hidden lg:block" />
+                </div>
+                
+                <div className="p-8 lg:p-12 space-y-8">
+                  <div>
+                    <span className="text-secondary font-black uppercase text-[10px] tracking-widest bg-secondary/10 px-3 py-1 rounded-full border border-secondary/20">
+                      {focusedExercise.muscleGroup || 'Full Body'}
+                    </span>
+                    <h3 className="text-4xl font-headline font-black uppercase italic leading-none tracking-tight mt-4">
+                      {focusedExercise.name}
+                    </h3>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-white/5 p-6 rounded-3xl border border-white/5 text-center">
+                      <p className="text-[10px] font-black uppercase text-white/40 mb-2">Series</p>
+                      <p className="text-4xl font-black text-primary">{focusedExercise.sets}</p>
+                    </div>
+                    <div className="bg-white/5 p-6 rounded-3xl border border-white/5 text-center">
+                      <p className="text-[10px] font-black uppercase text-white/40 mb-2">Repeticiones</p>
+                      <p className="text-4xl font-black text-secondary">{focusedExercise.reps}</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    <div className="space-y-3">
+                      <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary flex items-center gap-2">
+                        <Icons.BookOpen size={14} /> Instrucciones de Ejecución
+                      </h4>
+                      <p className="text-on-surface-variant font-medium leading-relaxed italic border-l-2 border-primary/30 pl-4">
+                        {focusedExercise.notes}
+                      </p>
+                    </div>
+
+                    {focusedExercise.equipment && (
+                      <div className="space-y-3">
+                        <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-400 flex items-center gap-2">
+                          <Icons.Package size={14} /> Equipamiento Necesario
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {focusedExercise.equipment.split(',').map((eq: string, idx: number) => (
+                            <span key={idx} className="text-xs px-3 py-1 bg-amber-400/10 border border-amber-400/20 rounded-full text-amber-400 font-bold italic">
+                              {eq.trim()}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {focusedExercise.executionTip && (
+                      <div className="bg-primary/5 border border-primary/20 p-6 rounded-3xl flex items-start gap-4">
+                        <Icons.Lightbulb className="text-primary shrink-0" size={24} />
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-1">Biomecánica Pro Tip</p>
+                          <p className="text-sm font-bold text-white/80 leading-relaxed italic">"{focusedExercise.executionTip}"</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-4 border-t border-white/5 flex flex-col gap-3">
+                    <Button 
+                      onClick={() => { handleSwapExercise(focusedExercise.id, true); setFocusedExercise(null); }}
+                      className="w-full bg-white/5 border border-white/10 hover:bg-white/10 h-14 rounded-2xl font-black uppercase tracking-widest text-xs"
+                    >
+                      <Icons.RefreshCw size={14} className="mr-2" /> No tengo este material (Cambiar)
+                    </Button>
+                    <p className="text-[9px] text-center text-white/20 font-medium">Pulsa fuera o en la X para volver a la tabla</p>
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -1018,7 +1160,8 @@ interface ExerciseListProps {
   onEditExercise: (id: string, field: string, value: string) => void;
   viewMode?: 'cards' | 'table';
   isCombined?: boolean;
-  onSwap?: (id: string) => void;
+  onSwap?: (id: string, forceNoEquipment?: boolean) => void;
+  onFocus?: (ex: any) => void;
 }
 
 function ExerciseList({ 
@@ -1031,7 +1174,8 @@ function ExerciseList({
   onEditExercise, 
   viewMode = 'cards',
   isCombined,
-  onSwap
+  onSwap,
+  onFocus
 }: ExerciseListProps) {
   const dateKey = format(date, 'yyyy-MM-dd');
   const dayProgress = progress[dateKey];
@@ -1076,7 +1220,10 @@ function ExerciseList({
                     className={`group hover:bg-white/[0.02] transition-colors cursor-pointer ${isDone ? 'opacity-40' : ''}`}
                   >
                     <td className="p-4">
-                      <div className="w-20 h-20 overflow-hidden rounded-xl bg-black border border-white/5">
+                      <div 
+                        className="w-20 h-20 overflow-hidden rounded-xl bg-black border border-white/5 cursor-zoom-in hover:scale-105 active:scale-95 transition-transform"
+                        onClick={(e) => { e.stopPropagation(); onFocus?.(ex); }}
+                      >
                         <ExerciseAnimation 
                           type={ex.name} 
                           isDone={isDone} 
@@ -1152,108 +1299,104 @@ function ExerciseList({
             key={ex.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ 
-              delay: i * 0.05,
-              type: "spring",
-              damping: 20,
-              stiffness: 100
-            }}
+            transition={{ delay: i * 0.05 }}
             onClick={() => onToggle(ex.id, dateKey)}
-            className={`group relative overflow-hidden rounded-[2.5rem] border transition-all cursor-pointer shadow-xl ${
-              isDone 
-                ? 'bg-secondary/10 border-secondary/40 opacity-80' 
-                : 'bg-[#111318] border-white/5 hover:border-primary/40'
-            }`}
+            className="group relative bg-[#1a1614] border border-[#2d2420] rounded-2xl overflow-hidden hover:border-[#22c55e]/50 transition-all cursor-pointer shadow-xl mb-2 last:mb-0"
           >
-            {/* PARTE SUPERIOR — GIF del ejercicio a pantalla completa */}
-            <div className="relative w-full h-52 bg-black overflow-hidden">
-              {!isInstructor && (
-                <ExerciseAnimation
-                  type={ex.name}
-                  isDone={isDone}
-                  size="lg"
+            <div className="flex flex-col lg:flex-row p-6 gap-6">
+              {/* Visual Animado — Larger and more prominent */}
+              <div className="relative w-full lg:w-72 shrink-0">
+                <ExerciseAnimation 
+                  type={ex.name} 
+                  isDone={isDone} 
                   muscleGroup={ex.muscleGroup}
-                  className="w-full h-full"
+                  size="lg"
+                  className="rounded-2xl border border-white/5 shadow-2xl bg-black/40"
                 />
-              )}
-              {isInstructor && (
-                <div className="w-full h-full flex flex-col items-center justify-center bg-secondary/10 text-secondary">
-                  <UserCircle2 size={48} className="mb-2" />
-                  <span className="text-[10px] font-black uppercase tracking-widest">Sesión con Instructor</span>
-                </div>
-              )}
-              {/* Degradado al contenido */}
-              <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-[#111318] to-transparent" />
-              {/* Número de orden */}
-              <div className="absolute top-3 left-3 w-9 h-9 rounded-full bg-black/60 border border-white/20 flex items-center justify-center">
-                <span className="text-sm font-black text-white">{i + 1}</span>
-              </div>
-              {/* Badge deporte */}
-              <div className="absolute top-3 right-3 flex gap-2">
-                <Button 
-                  onClick={(e) => { e.stopPropagation(); onSwap?.(ex.id); }}
-                  className="w-9 h-9 rounded-full bg-black/60 border border-white/10 flex items-center justify-center hover:bg-primary transition-all text-white"
-                >
-                  <Icons.RefreshCw size={14} />
-                </Button>
-                <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-black/60 text-primary border border-primary/30">
-                  {ex.sport || sportName}
-                </span>
-                {ex.muscleGroup && (
-                  <span className="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full bg-black/60 text-secondary border border-secondary/30">
-                    {ex.muscleGroup}
+                <div className="absolute top-2 left-2 flex gap-2">
+                  <span className="bg-black/80 text-white text-[10px] font-black px-2 py-0.5 rounded-md border border-white/10">
+                    #{i + 1}
                   </span>
+                  <span className="bg-[#22c55e] text-black text-[10px] font-black px-2 py-0.5 rounded-md shadow-[0_2px_10px_rgba(34,197,94,0.3)] uppercase tracking-tighter">
+                    {ex.sport || sportName || 'FITNESS'}
+                  </span>
+                </div>
+                {ex.muscleGroup && (
+                  <div className="absolute top-2 right-2">
+                    <span className="bg-white/10 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-md border border-white/10 uppercase tracking-tighter">
+                      {ex.muscleGroup}
+                    </span>
+                  </div>
                 )}
               </div>
-            </div>
 
-            {/* PARTE INFERIOR — Info del ejercicio */}
-            <div className="p-5 space-y-3">
-              {/* Nombre */}
-              <h4 className={`text-xl font-headline font-black uppercase italic leading-tight
-                ${isDone ? 'line-through text-on-surface-variant' : 'text-white'}`}>
-                {ex.name}
-              </h4>
-              
-              {/* Series y Reps */}
-              <div className="flex gap-3">
-                <div className="flex-1 bg-white/5 rounded-2xl p-3 text-center">
-                  <p className="text-[9px] font-black uppercase text-on-surface-variant mb-1">Series</p>
-                  <p className="text-2xl font-black text-primary">{ex.sets}</p>
-                </div>
-                <div className="flex-1 bg-white/5 rounded-2xl p-3 text-center">
-                  <p className="text-[9px] font-black uppercase text-on-surface-variant mb-1">Reps</p>
-                  <p className="text-2xl font-black text-secondary">{ex.reps}</p>
-                </div>
-              </div>
-
-              {/* Explicación de ejecución */}
-              {ex.notes && (
-                <div className="bg-white/3 border border-white/8 rounded-2xl p-4">
-                  <p className="text-[9px] font-black uppercase tracking-widest text-primary mb-2">
-                    Cómo ejecutarlo
-                  </p>
-                  <p className="text-sm text-on-surface-variant leading-relaxed italic">
-                    "{ex.notes}"
-                  </p>
-                </div>
-              )}
-
-              {/* Alternativas siempre visibles si existen */}
-              {ex.alternatives && ex.alternatives.length > 0 && (
+              {/* Info Detallada */}
+              <div className="flex-1 min-w-0 flex flex-col justify-between">
                 <div>
-                  <p className="text-[9px] font-black uppercase tracking-widest text-secondary mb-2">
-                    Sin equipo: usa
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {ex.alternatives.map((alt: string, idx: number) => (
-                      <span key={idx} className="text-[10px] px-2 py-1 bg-secondary/10 border border-secondary/20 rounded-xl text-secondary">
-                        {alt}
-                      </span>
-                    ))}
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <h4 className="text-xl font-black text-white leading-tight uppercase group-hover:text-[#22c55e] transition-colors">
+                      {ex.name}
+                    </h4>
+                    <div className="flex gap-2">
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        onClick={(e) => { e.stopPropagation(); onSwap?.(ex.id); }}
+                        className="w-8 h-8 rounded-full bg-white/5 text-white/40 hover:text-[#22c55e] hover:bg-[#22c55e]/10 transition-all"
+                      >
+                        <Icons.RefreshCw size={14} />
+                      </Button>
+                      <div
+                        className={`shrink-0 w-8 h-8 rounded-full border-2 flex items-center justify-center transition-all ${
+                          isDone 
+                            ? 'bg-[#22c55e] border-[#22c55e] text-black scale-110 shadow-[0_0_15px_rgba(34,197,94,0.4)]' 
+                            : 'border-[#2d2420] text-transparent hover:border-[#22c55e]/50'
+                        }`}
+                      >
+                        <CheckCircle2 size={18} />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="bg-black/30 p-2 rounded-xl border border-white/5">
+                      <span className="block text-[9px] text-[#8e7b71] font-bold uppercase mb-0.5">Series y Reps</span>
+                      <span className="text-sm font-black text-white">{ex.sets} x {ex.reps}</span>
+                    </div>
+                    <div className="bg-black/30 p-2 rounded-xl border border-white/5">
+                      <span className="block text-[9px] text-[#8e7b71] font-bold uppercase mb-0.5">Descanso</span>
+                      <span className="text-sm font-black text-[#22c55e]">{ex.restTime}s</span>
+                    </div>
                   </div>
                 </div>
-              )}
+
+                {/* Sección informativa enriquecida */}
+                <div className="mt-4" onClick={(e) => e.stopPropagation()}>
+                  <details className="group/details">
+                    <summary className="list-none cursor-pointer flex items-center justify-between text-xs font-bold text-[#8e7b71] hover:text-white transition-colors">
+                      <div className="flex items-center gap-2">
+                        <Info size={14} className="text-[#22c55e]" />
+                        <span>CÓMO EJECUTAR</span>
+                      </div>
+                      <ChevronDown size={14} className="group-open/details:rotate-180 transition-transform" />
+                    </summary>
+                    <div className="mt-2 text-xs leading-relaxed text-[#b4a59d] bg-black/40 p-3 rounded-xl border border-white/5 animate-in fade-in slide-in-from-top-1">
+                      <p className="mb-2 italic border-l-2 border-[#22c55e] pl-2">
+                        {ex.notes || "Mantén el control en todo momento y no descuides la técnica."}
+                      </p>
+                      {ex.executionTip && (
+                        <div className="flex gap-2">
+                          <div className="w-1 h-auto bg-[#22c55e] rounded-full" />
+                          <p className="text-[11px] leading-relaxed">
+                            <span className="text-[#22c55e] font-black block mb-0.5 text-[9px]">TIP PRO:</span>
+                            {ex.executionTip || ex.execution}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </details>
+                </div>
+              </div>
             </div>
           </motion.div>
         );
