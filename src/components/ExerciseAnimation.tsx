@@ -12,46 +12,35 @@ interface ExerciseAnimationProps {
 
 // Estilos de animación CSS puros para el SVG
 const SVG_ANIMATIONS = `
-  @keyframes squat {
-    0%, 100% { transform: translateY(0) scale(1); }
-    50% { transform: translateY(35px) scale(0.95, 0.85); }
+  @keyframes concentric-eccentric-squat {
+    0%, 100% { transform: translateY(0) scaleY(1); }
+    45%, 55% { transform: translateY(45px) scaleY(0.85); }
   }
-  @keyframes press {
+  @keyframes concentric-eccentric-press {
     0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-35px); }
+    45%, 55% { transform: translateY(-50px); }
   }
-  @keyframes run-body {
-    0%, 100% { transform: translateY(0) rotate(-2deg); }
-    50% { transform: translateY(-5px) rotate(2deg); }
-  }
-  @keyframes run-leg-l {
-    0%, 100% { transform: rotate(45deg); }
-    50% { transform: rotate(-45deg); }
-  }
-  @keyframes run-leg-r {
-    0%, 100% { transform: rotate(-45deg); }
-    50% { transform: rotate(45deg); }
-  }
-  @keyframes punch-torso {
+  @keyframes concentric-eccentric-curl {
     0%, 100% { transform: rotate(0deg); }
-    30% { transform: rotate(-15deg); }
+    45%, 55% { transform: rotate(-105deg); }
   }
-  @keyframes punch-arm {
-    0%, 100% { transform: translateX(0) scaleX(1); }
-    30% { transform: translateX(50px) scaleX(1.4); }
+  @keyframes anatomical-glow {
+    0%, 100% { filter: brightness(1) drop-shadow(0 0 2px #00f2ff); opacity: 0.7; }
+    50% { filter: brightness(2) drop-shadow(0 0 12px #00f2ff); opacity: 1; }
   }
-  @keyframes muscle-active-glow {
-    0%, 100% { filter: brightness(1) drop-shadow(0 0 2px currentColor); opacity: 0.8; }
-    50% { filter: brightness(1.8) drop-shadow(0 0 10px currentColor); opacity: 1; }
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.05); opacity: 0.8; }
   }
 `;
 
 const getAnimationType = (name: string) => {
   const q = name.toLowerCase();
-  if (q.includes('sentadilla') || q.includes('squat') || q.includes('zancada') || q.includes('lunge') || q.includes('pierna')) return 'squat';
-  if (q.includes('press') || q.includes('militar') || q.includes('flexion') || q.includes('push up') || q.includes('dominada')) return 'press';
+  if (q.includes('sentadilla') || q.includes('squat') || q.includes('zancada') || q.includes('lunge') || q.includes('pierna') || q.includes('prensa')) return 'squat';
+  if (q.includes('press') || q.includes('militar') || q.includes('flexion') || q.includes('push up') || q.includes('pecho')) return 'press';
+  if (q.includes('curl') || q.includes('remo') || q.includes('brazo')) return 'curl';
   if (q.includes('jab') || q.includes('cross') || q.includes('punch') || q.includes('boxeo')) return 'punch';
-  if (q.includes('correr') || q.includes('sprint') || q.includes('comba')) return 'run';
+  if (q.includes('correr') || q.includes('sprint') || q.includes('comba') || q.includes('run')) return 'run';
   return 'squat';
 };
 
@@ -61,28 +50,29 @@ export const ExerciseAnimation = ({ type, isDone, className = '', size = 'md', m
   const animationType = getAnimationType(type);
   const q = (type + ' ' + (muscleGroup || '')).toLowerCase();
 
-  const isMuscleActive = (group: string) => {
-    const groupMap: Record<string, string[]> = {
-      'chest': ['pecho', 'chest', 'pectoral', 'banca', 'flexion', 'pushup'],
-      'abs': ['abs', 'core', 'abdominal', 'plank', 'plancha', 'crunch', 'jab', 'cross'],
-      'shoulders': ['hombro', 'shoulder', 'militar', 'press', 'delto', 'upper'],
-      'biceps': ['bicep', 'curl', 'brazo', 'pullup', 'dominada'],
-      'triceps': ['tricep', 'flexion', 'press', 'fondo', 'dips', 'jab', 'cross'],
-      'quads': ['pierna', 'cuadric', 'sentadilla', 'squat', 'lunge', 'zancada', 'prensa'],
-      'hams': ['isquio', 'femoral', 'muerto', 'deadlift', 'glute'],
-      'calves': ['gemelo', 'calf', 'comba', 'jump', 'correr', 'sprint']
-    };
-    return groupMap[group]?.some(term => q.includes(term)) || false;
-  };
+  const activeMuscles = useMemo(() => {
+    const groups = [
+      { id: 'pectoral', terms: ['pecho', 'chest', 'pectoral', 'banca', 'flexion', 'pushup'] },
+      { id: 'abs', terms: ['abs', 'core', 'abdominal', 'plank', 'plancha', 'crunch', 'jab', 'cross'] },
+      { id: 'deltoid', terms: ['hombro', 'shoulder', 'militar', 'press', 'delto', 'upper'] },
+      { id: 'biceps', terms: ['bicep', 'curl', 'brazo', 'pullup', 'dominada'] },
+      { id: 'triceps', terms: ['tricep', 'flexion', 'press', 'fondo', 'dips', 'jab', 'cross'] },
+      { id: 'quads', terms: ['pierna', 'cuadric', 'sentadilla', 'squat', 'lunge', 'zancada', 'prensa'] },
+      { id: 'hams', terms: ['isquio', 'femoral', 'muerto', 'deadlift', 'glute'] },
+      { id: 'calves', terms: ['gemelo', 'calf', 'comba', 'jump', 'correr', 'sprint'] },
+      { id: 'back', terms: ['espalda', 'back', 'dorsal', 'remo', 'pullup', 'dominada'] }
+    ];
+    return groups.filter(g => g.terms.some(term => q.includes(term))).map(g => g.id);
+  }, [q]);
 
-  const getMuscleStyle = (group: string) => {
-    const active = isMuscleActive(group);
-    if (!active) return { fill: '#1a1d23', stroke: '#2e3541', strokeWidth: '0.5' };
+  const getMuscleStyle = (muscleId: string) => {
+    const isActive = activeMuscles.includes(muscleId);
+    if (!isActive) return { fill: '#1a1d23', stroke: '#2e3541', strokeWidth: '0.8' };
     
     return { 
       fill: '#00f2ff', 
-      color: '#00f2ff',
-      animation: playing && !isDone ? 'muscle-active-glow 1.5s infinite' : 'none'
+      filter: 'drop-shadow(0 0 4px #00f2ff)',
+      animation: playing && !isDone ? 'anatomical-glow 2s ease-in-out infinite' : 'none'
     };
   };
 
@@ -94,78 +84,143 @@ export const ExerciseAnimation = ({ type, isDone, className = '', size = 'md', m
 
   return (
     <div
-      className={`relative ${sizeMap[size]} overflow-hidden shrink-0 bg-[#0a0c10] border border-white/5 group ${isDone ? 'opacity-40 grayscale' : ''} ${className}`}
+      className={`relative ${sizeMap[size]} overflow-hidden bg-[#05070a] border border-white/5 group ${isDone ? 'opacity-40 grayscale' : ''} ${className} flex items-center justify-center`}
       onClick={(e) => { e.stopPropagation(); setPlaying(p => !p); }}
     >
       <style dangerouslySetInnerHTML={{ __html: SVG_ANIMATIONS }} />
       
-      <div className="absolute inset-0 flex items-center justify-center p-4">
+      <div className="absolute inset-0 flex items-center justify-center">
+        {/* Anatomical Heatmap Background Overlay */}
+        <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] bg-[radial-gradient(circle_at_center,#00f2ff_0%,transparent_70%)] animate-pulse" />
+        </div>
+
         <svg 
           viewBox="0 0 200 400" 
-          className="w-full h-full max-w-[280px]"
+          className="w-full h-full max-w-[320px]"
           preserveAspectRatio="xMidYMid meet"
         >
+          {/* Central Glow */}
+          {playing && !isDone && (
+            <circle cx="100" cy="180" r="140" fill="url(#grad-glow-strong)" />
+          )}
+
           <defs>
-            <radialGradient id="grad-glow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#00f2ff" stopOpacity="0.2" />
+            <radialGradient id="grad-glow-strong" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#00f2ff" stopOpacity="0.15" />
               <stop offset="100%" stopColor="#00f2ff" stopOpacity="0" />
             </radialGradient>
           </defs>
 
-          {playing && !isDone && (
-            <circle cx="100" cy="150" r="120" fill="url(#grad-glow)" />
-          )}
-
+          {/* Main Anatomical Figure */}
           <g style={{ 
-            animation: playing && !isDone ? (animationType === 'squat' ? 'squat 1.5s ease-in-out infinite' : animationType === 'press' ? 'press 1.5s ease-in-out infinite' : animationType === 'run' ? 'run-body 0.6s infinite' : animationType === 'punch' ? 'punch-torso 0.8s infinite' : 'none') : 'none',
-            transformOrigin: '100px 200px'
+            animation: playing && !isDone ? (
+              animationType === 'squat' ? 'concentric-eccentric-squat 2s ease-in-out infinite' : 
+              animationType === 'press' ? 'concentric-eccentric-press 1.8s ease-in-out infinite' : 
+              'none'
+            ) : 'none',
+            transformOrigin: '100px 250px'
           }}>
-            <path d="M100 20 C115 20 125 35 125 55 C125 75 110 85 100 85 C90 85 75 75 75 55 C75 35 85 20 100 20" fill="#1a1d23" />
-            <path d="M92 82 L108 82 L110 95 L90 95 Z" fill="#1a1d23" />
-
-            <path d="M85 95 L115 95 L130 110 L70 110 Z" style={getMuscleStyle('shoulders')} />
-            <path d="M72 115 C85 112 100 115 100 115 S115 112 128 115 C132 135 120 155 100 155 C80 155 68 135 72 115" style={getMuscleStyle('chest')} />
-            <line x1="100" y1="115" x2="100" y2="155" stroke="#0a0c10" strokeWidth="1" opacity="0.3" />
-
-            {[165, 185, 205].map((y, i) => (
+            {/* Cabez y Cuello */}
+            <path d="M100 30 C112 30 120 42 120 58 C120 74 108 82 100 82 C92 82 80 74 80 58 C80 42 88 30 100 30" fill="#1a1d23" stroke="#2e3541" />
+            
+            {/* Torso / Core */}
+            <path d="M75 90 L125 90 L135 150 L120 230 L80 230 L65 150 Z" fill="#0f1115" stroke="#2e3541" strokeWidth="1" />
+            
+            {/* Pectorales */}
+            <path d="M78 100 C90 98 100 102 100 102 S110 98 122 100 C125 115 118 135 100 135 C82 135 75 115 78 100" style={getMuscleStyle('pectoral')} />
+            
+            {/* Abdominales (Rectus Abdominis) */}
+            {[145, 160, 175, 190].map((y) => (
               <g key={y}>
-                <rect x="82" y={y} width="16" height="15" rx="3" style={getMuscleStyle('abs')} />
-                <rect x="102" y={y} width="16" height="15" rx="3" style={getMuscleStyle('abs')} />
+                <rect x="86" y={y} width="12" height="12" rx="2" style={getMuscleStyle('abs')} />
+                <rect x="102" y={y} width="12" height="12" rx="2" style={getMuscleStyle('abs')} />
               </g>
             ))}
 
-            <path d="M70 110 L65 170 L80 230 L120 230 L135 170 L130 110 Z" fill="none" stroke="#2e3541" strokeWidth="1" />
-            <path d="M55 110 C45 110 40 120 40 135 C40 150 50 160 65 160 C75 160 75 125 70 110 Z" style={getMuscleStyle('shoulders')} />
-            <path d="M145 110 C155 110 160 120 160 135 C160 150 150 160 135 160 C125 160 125 125 130 110 Z" style={getMuscleStyle('shoulders')} />
+            {/* Serratos / Oblicuos */}
+            <path d="M70 140 L75 220" stroke="#2e3541" strokeWidth="0.5" strokeDasharray="2 2" />
+            <path d="M130 140 L125 220" stroke="#2e3541" strokeWidth="0.5" strokeDasharray="2 2" />
 
-            <g style={{ animation: playing && !isDone && animationType === 'punch' ? 'punch-arm 0.8s infinite' : 'none', transformOrigin: '65px 110px' }}>
-              <path d="M40 135 L30 200 C28 215 35 225 45 220 L55 160 Z" style={getMuscleStyle('biceps')} />
-              <path d="M35 220 L25 300 C24 310 35 315 45 305 L50 225 Z" fill="#1a1d23" stroke="#2e3541" strokeWidth="0.5" />
+            {/* Hombros (Deltoides) */}
+            <path d="M62 90 C50 90 45 105 45 125 C45 140 55 150 70 145 C78 115 75 95 62 90 Z" style={getMuscleStyle('deltoid')} />
+            <path d="M138 90 C150 90 155 105 155 125 C155 140 145 150 130 145 C122 115 125 95 138 90 Z" style={getMuscleStyle('deltoid')} />
+
+            {/* Brazos Superiores */}
+            <g id="right-arm" style={{ animation: playing && !isDone && animationType === 'curl' ? 'concentric-eccentric-curl 1.5s ease-in-out infinite' : 'none', transformOrigin: '145px 125px' }}>
+              {/* Biceps/Triceps area */}
+              <path d="M145 125 L165 190 C168 205 160 215 150 210 L135 150 Z" style={getMuscleStyle('biceps')} />
+              {/* Forearm */}
+              <path d="M155 210 L170 280 C172 295 162 305 150 295 L140 215 Z" fill="#1a1d23" stroke="#2e3541" />
             </g>
 
-            <path d="M160 135 L170 200 C172 215 165 225 155 220 L145 160 Z" style={getMuscleStyle('biceps')} />
-            <path d="M165 220 L175 300 C176 310 165 315 155 305 L150 225 Z" fill="#1a1d23" stroke="#2e3541" strokeWidth="0.5" />
-
-            <path d="M80 230 L120 230 L135 265 L65 265 Z" fill="#1a1d23" stroke="#2e3541" strokeWidth="1" />
-
-            <g style={{ animation: playing && !isDone && animationType === 'run' ? 'run-leg-l 0.6s infinite' : 'none', transformOrigin: '80px 260px' }}>
-              <path d="M65 265 C60 290 65 330 80 340 L95 340 L100 265 Z" style={getMuscleStyle('quads')} />
-              <path d="M80 340 L75 390 L95 390 L95 340 Z" style={getMuscleStyle('calves')} />
+            <g id="left-arm">
+              <path d="M55 125 L35 190 C32 205 40 215 50 210 L65 150 Z" style={getMuscleStyle('biceps')} />
+              <path d="M45 210 L30 280 C28 295 38 305 50 295 L60 215 Z" fill="#1a1d23" stroke="#2e3541" />
             </g>
 
-            <g style={{ animation: playing && !isDone && animationType === 'run' ? 'run-leg-r 0.6s infinite' : 'none', transformOrigin: '120px 260px' }}>
-              <path d="M100 265 L105 340 L120 340 C135 330 140 290 135 265 Z" style={getMuscleStyle('quads')} />
-              <path d="M105 340 L105 390 L125 390 L120 340 Z" style={getMuscleStyle('calves')} />
+            {/* Pelvis */}
+            <path d="M80 230 L120 230 L135 260 L65 260 Z" fill="#1a1d23" stroke="#2e3541" strokeWidth="1" />
+
+            {/* Piernas (Biomecanicamente correctas) */}
+            <g id="right-leg" style={{ animation: (animationType === 'run') ? 'run-leg-l 0.6s infinite' : 'none', transformOrigin: '115px 250px' }}>
+              {/* Cuadriceps */}
+              <path d="M102 260 L108 335 L135 330 C145 315 145 285 135 260 Z" style={getMuscleStyle('quads')} />
+              {/* Pantorrillas */}
+              <path d="M108 335 L108 390 L130 395 L135 330 Z" style={getMuscleStyle('calves')} />
             </g>
+
+            <g id="left-leg" style={{ animation: (animationType === 'run') ? 'run-leg-r 0.6s infinite' : 'none', transformOrigin: '85px 250px' }}>
+              <path d="M98 260 L92 335 L65 330 C55 315 55 285 65 260 Z" style={getMuscleStyle('quads')} />
+              <path d="M92 335 L92 390 L70 395 L65 330 Z" style={getMuscleStyle('calves')} />
+            </g>
+          </g>
+
+          {/* Muscle Highlight Indicator (Mini anatomical map bottom corner) */}
+          <g transform="scale(0.2) translate(800, 1600)" opacity="0.6">
+            <rect x="0" y="0" width="200" height="400" rx="40" fill="#1a1d23" />
+            <text x="100" y="380" textAnchor="middle" fill="#00f2ff" fontSize="40" fontWeight="bold">FOCUS</text>
+            <circle cx="100" cy="100" r="30" fill={activeMuscles.length > 0 ? '#00f2ff' : '#2e3541'} />
+            <path d="M80 150 L120 150 L130 250 L70 250 Z" fill={activeMuscles.some(m => ['chest', 'abs', 'back'].includes(m)) ? '#00f2ff' : '#2e3541'} />
           </g>
         </svg>
       </div>
 
+      <AnimatePresence>
+        {!playing && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center"
+          >
+            <div className="w-16 h-16 rounded-full bg-[#00f2ff]/20 border border-[#00f2ff]/50 flex items-center justify-center text-[#00f2ff]">
+              <Play fill="currentColor" size={32} />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {isDone && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/60 pointer-events-none">
-          <CheckCircle2 size={size === 'lg' ? 64 : 32} className="text-[#00f2ff] drop-shadow-[0_0_15px_#00f2ff]" />
+        <div className="absolute inset-0 flex items-center justify-center bg-black/70 backdrop-blur-md pointer-events-none">
+          <div className="relative">
+            <div className="absolute inset-0 blur-xl bg-[#00f2ff]/50 animate-pulse" />
+            <CheckCircle2 size={80} className="text-[#00f2ff] relative z-10" />
+          </div>
         </div>
       )}
+
+      {/* Info Label */}
+      <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center bg-black/60 backdrop-blur-md border border-white/5 py-1.5 px-3 rounded-xl pointer-events-none">
+        <span className="text-[10px] font-black text-[#00f2ff] uppercase tracking-widest">{animationType}</span>
+        <div className="flex gap-1">
+          {activeMuscles.slice(0, 2).map(m => (
+            <span key={m} className="text-[8px] bg-[#00f2ff]/10 text-[#00f2ff] px-1.5 py-0.5 rounded-full border border-[#00f2ff]/20 uppercase">
+              {m}
+            </span>
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
