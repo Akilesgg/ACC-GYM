@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { CheckCircle2, Play, Pause } from 'lucide-react';
 
 interface ExerciseAnimationProps {
@@ -9,296 +9,76 @@ interface ExerciseAnimationProps {
   muscleGroup?: string;
 }
 
-// GIFs de muscles.wiki — figura musculada real, movimiento correcto
-// Formato: https://muscles.wiki/exercises/{slug}.gif
-
-const EXERCISE_MAP: Record<string, { gif: string; still: string; muscle: string; color: string }> = {
-  // PIERNAS
-  'sentadilla': {
-    gif: 'https://muscles.wiki/exercises/barbell-back-squat.gif',
-    still: 'https://muscles.wiki/exercises/barbell-back-squat-still.webp',
-    muscle: 'Cuádriceps / Glúteos', color: '#22c55e'
-  },
-  'squat': {
-    gif: 'https://muscles.wiki/exercises/barbell-back-squat.gif',
-    still: 'https://muscles.wiki/exercises/barbell-back-squat-still.webp',
-    muscle: 'Cuádriceps / Glúteos', color: '#22c55e'
-  },
-  'zancada': {
-    gif: 'https://muscles.wiki/exercises/dumbbell-lunge.gif',
-    still: 'https://muscles.wiki/exercises/dumbbell-lunge-still.webp',
-    muscle: 'Cuádriceps / Glúteos', color: '#22c55e'
-  },
-  'peso muerto': {
-    gif: 'https://muscles.wiki/exercises/barbell-deadlift.gif',
-    still: 'https://muscles.wiki/exercises/barbell-deadlift-still.webp',
-    muscle: 'Isquios / Espalda', color: '#3b82f6'
-  },
-  'deadlift': {
-    gif: 'https://muscles.wiki/exercises/barbell-deadlift.gif',
-    still: 'https://muscles.wiki/exercises/barbell-deadlift-still.webp',
-    muscle: 'Isquios / Espalda', color: '#3b82f6'
-  },
-  'prensa': {
-    gif: 'https://muscles.wiki/exercises/leg-press.gif',
-    still: 'https://muscles.wiki/exercises/leg-press-still.webp',
-    muscle: 'Cuádriceps', color: '#22c55e'
-  },
-  'gemelo': {
-    gif: 'https://muscles.wiki/exercises/standing-calf-raise.gif',
-    still: 'https://muscles.wiki/exercises/standing-calf-raise-still.webp',
-    muscle: 'Gemelos', color: '#22c55e'
-  },
-  'hip thrust': {
-    gif: 'https://muscles.wiki/exercises/barbell-hip-thrust.gif',
-    still: 'https://muscles.wiki/exercises/barbell-hip-thrust-still.webp',
-    muscle: 'Glúteos', color: '#22c55e'
-  },
-
-  // PECHO
-  'press banca': {
-    gif: 'https://muscles.wiki/exercises/barbell-bench-press.gif',
-    still: 'https://muscles.wiki/exercises/barbell-bench-press-still.webp',
-    muscle: 'Pectoral', color: '#ef4444'
-  },
-  'bench press': {
-    gif: 'https://muscles.wiki/exercises/barbell-bench-press.gif',
-    still: 'https://muscles.wiki/exercises/barbell-bench-press-still.webp',
-    muscle: 'Pectoral', color: '#ef4444'
-  },
-  'press inclinado': {
-    gif: 'https://muscles.wiki/exercises/incline-dumbbell-press.gif',
-    still: 'https://muscles.wiki/exercises/incline-dumbbell-press-still.webp',
-    muscle: 'Pectoral Superior', color: '#ef4444'
-  },
-  'flexion': {
-    gif: 'https://muscles.wiki/exercises/push-up.gif',
-    still: 'https://muscles.wiki/exercises/push-up-still.webp',
-    muscle: 'Pectoral / Tríceps', color: '#ef4444'
-  },
-  'push up': {
-    gif: 'https://muscles.wiki/exercises/push-up.gif',
-    still: 'https://muscles.wiki/exercises/push-up-still.webp',
-    muscle: 'Pectoral / Tríceps', color: '#ef4444'
-  },
-  'aperturas': {
-    gif: 'https://muscles.wiki/exercises/dumbbell-fly.gif',
-    still: 'https://muscles.wiki/exercises/dumbbell-fly-still.webp',
-    muscle: 'Pectoral', color: '#ef4444'
-  },
-  'fondos': {
-    gif: 'https://muscles.wiki/exercises/tricep-dip.gif',
-    still: 'https://muscles.wiki/exercises/tricep-dip-still.webp',
-    muscle: 'Tríceps / Pecho', color: '#ef4444'
-  },
-
-  // ESPALDA
-  'dominada': {
-    gif: 'https://muscles.wiki/exercises/pull-up.gif',
-    still: 'https://muscles.wiki/exercises/pull-up-still.webp',
-    muscle: 'Dorsal / Bíceps', color: '#3b82f6'
-  },
-  'pull up': {
-    gif: 'https://muscles.wiki/exercises/pull-up.gif',
-    still: 'https://muscles.wiki/exercises/pull-up-still.webp',
-    muscle: 'Dorsal / Bíceps', color: '#3b82f6'
-  },
-  'remo con barra': {
-    gif: 'https://muscles.wiki/exercises/barbell-row.gif',
-    still: 'https://muscles.wiki/exercises/barbell-row-still.webp',
-    muscle: 'Dorsal / Romboides', color: '#3b82f6'
-  },
-  'remo': {
-    gif: 'https://muscles.wiki/exercises/dumbbell-row.gif',
-    still: 'https://muscles.wiki/exercises/dumbbell-row-still.webp',
-    muscle: 'Dorsal / Romboides', color: '#3b82f6'
-  },
-  'jalon': {
-    gif: 'https://muscles.wiki/exercises/lat-pulldown.gif',
-    still: 'https://muscles.wiki/exercises/lat-pulldown-still.webp',
-    muscle: 'Dorsal', color: '#3b82f6'
-  },
-
-  // HOMBROS
-  'press militar': {
-    gif: 'https://muscles.wiki/exercises/overhead-press.gif',
-    still: 'https://muscles.wiki/exercises/overhead-press-still.webp',
-    muscle: 'Deltoides', color: '#f59e0b'
-  },
-  'militar': {
-    gif: 'https://muscles.wiki/exercises/overhead-press.gif',
-    still: 'https://muscles.wiki/exercises/overhead-press-still.webp',
-    muscle: 'Deltoides', color: '#f59e0b'
-  },
-  'elevacion lateral': {
-    gif: 'https://muscles.wiki/exercises/dumbbell-lateral-raise.gif',
-    still: 'https://muscles.wiki/exercises/dumbbell-lateral-raise-still.webp',
-    muscle: 'Deltoides Lateral', color: '#f59e0b'
-  },
-  'elevacion': {
-    gif: 'https://muscles.wiki/exercises/dumbbell-lateral-raise.gif',
-    still: 'https://muscles.wiki/exercises/dumbbell-lateral-raise-still.webp',
-    muscle: 'Deltoides', color: '#f59e0b'
-  },
-
-  // BÍCEPS / TRÍCEPS
-  'curl con barra': {
-    gif: 'https://muscles.wiki/exercises/barbell-curl.gif',
-    still: 'https://muscles.wiki/exercises/barbell-curl-still.webp',
-    muscle: 'Bíceps', color: '#f59e0b'
-  },
-  'curl de bicep': {
-    gif: 'https://muscles.wiki/exercises/dumbbell-curl.gif',
-    still: 'https://muscles.wiki/exercises/dumbbell-curl-still.webp',
-    muscle: 'Bíceps', color: '#f59e0b'
-  },
-  'curl': {
-    gif: 'https://muscles.wiki/exercises/dumbbell-curl.gif',
-    still: 'https://muscles.wiki/exercises/dumbbell-curl-still.webp',
-    muscle: 'Bíceps', color: '#f59e0b'
-  },
-  'bicep': {
-    gif: 'https://muscles.wiki/exercises/dumbbell-curl.gif',
-    still: 'https://muscles.wiki/exercises/dumbbell-curl-still.webp',
-    muscle: 'Bíceps', color: '#f59e0b'
-  },
-  'extension tricep': {
-    gif: 'https://muscles.wiki/exercises/tricep-pushdown.gif',
-    still: 'https://muscles.wiki/exercises/tricep-pushdown-still.webp',
-    muscle: 'Tríceps', color: '#f59e0b'
-  },
-  'tricep': {
-    gif: 'https://muscles.wiki/exercises/tricep-pushdown.gif',
-    still: 'https://muscles.wiki/exercises/tricep-pushdown-still.webp',
-    muscle: 'Tríceps', color: '#f59e0b'
-  },
-  'mancuerna': {
-    gif: 'https://muscles.wiki/exercises/dumbbell-curl.gif',
-    still: 'https://muscles.wiki/exercises/dumbbell-curl-still.webp',
-    muscle: 'Bíceps', color: '#f59e0b'
-  },
-
-  // CORE
-  'plancha': {
-    gif: 'https://muscles.wiki/exercises/plank.gif',
-    still: 'https://muscles.wiki/exercises/plank-still.webp',
-    muscle: 'Core', color: '#8b5cf6'
-  },
-  'plank': {
-    gif: 'https://muscles.wiki/exercises/plank.gif',
-    still: 'https://muscles.wiki/exercises/plank-still.webp',
-    muscle: 'Core', color: '#8b5cf6'
-  },
-  'crunch': {
-    gif: 'https://muscles.wiki/exercises/crunch.gif',
-    still: 'https://muscles.wiki/exercises/crunch-still.webp',
-    muscle: 'Abdomen', color: '#8b5cf6'
-  },
-  'abdominal': {
-    gif: 'https://muscles.wiki/exercises/crunch.gif',
-    still: 'https://muscles.wiki/exercises/crunch-still.webp',
-    muscle: 'Abdomen', color: '#8b5cf6'
-  },
-  'russian twist': {
-    gif: 'https://muscles.wiki/exercises/russian-twist.gif',
-    still: 'https://muscles.wiki/exercises/russian-twist-still.webp',
-    muscle: 'Oblicuos', color: '#8b5cf6'
-  },
-  'mountain climber': {
-    gif: 'https://muscles.wiki/exercises/mountain-climber.gif',
-    still: 'https://muscles.wiki/exercises/mountain-climber-still.webp',
-    muscle: 'Core / Cardio', color: '#8b5cf6'
-  },
-  'core': {
-    gif: 'https://muscles.wiki/exercises/plank.gif',
-    still: 'https://muscles.wiki/exercises/plank-still.webp',
-    muscle: 'Core', color: '#8b5cf6'
-  },
-
-  // BOXEO / CARDIO
-  'jab': {
-    gif: 'https://muscles.wiki/exercises/boxing-jab.gif',
-    still: 'https://muscles.wiki/exercises/boxing-jab-still.webp',
-    muscle: 'Hombros / Core', color: '#ef4444'
-  },
-  'cross': {
-    gif: 'https://muscles.wiki/exercises/boxing-jab.gif',
-    still: 'https://muscles.wiki/exercises/boxing-jab-still.webp',
-    muscle: 'Hombros / Core', color: '#ef4444'
-  },
-  'hook': {
-    gif: 'https://muscles.wiki/exercises/boxing-jab.gif',
-    still: 'https://muscles.wiki/exercises/boxing-jab-still.webp',
-    muscle: 'Oblicuos / Hombros', color: '#ef4444'
-  },
-  'uppercut': {
-    gif: 'https://muscles.wiki/exercises/boxing-jab.gif',
-    still: 'https://muscles.wiki/exercises/boxing-jab-still.webp',
-    muscle: 'Hombros / Core', color: '#ef4444'
-  },
-  'saco': {
-    gif: 'https://muscles.wiki/exercises/boxing-jab.gif',
-    still: 'https://muscles.wiki/exercises/boxing-jab-still.webp',
-    muscle: 'Full Body', color: '#ef4444'
-  },
-  'sombra': {
-    gif: 'https://muscles.wiki/exercises/boxing-jab.gif',
-    still: 'https://muscles.wiki/exercises/boxing-jab-still.webp',
-    muscle: 'Full Body', color: '#ef4444'
-  },
-  'comba': {
-    gif: 'https://muscles.wiki/exercises/jump-rope.gif',
-    still: 'https://muscles.wiki/exercises/jump-rope-still.webp',
-    muscle: 'Cardio / Gemelos', color: '#ef4444'
-  },
-  'burpee': {
-    gif: 'https://muscles.wiki/exercises/burpee.gif',
-    still: 'https://muscles.wiki/exercises/burpee-still.webp',
-    muscle: 'Full Body', color: '#06b6d4'
-  },
-  'saltar': {
-    gif: 'https://muscles.wiki/exercises/jump-rope.gif',
-    still: 'https://muscles.wiki/exercises/jump-rope-still.webp',
-    muscle: 'Cardio', color: '#06b6d4'
-  },
-  'sprint': {
-    gif: 'https://muscles.wiki/exercises/high-knees.gif',
-    still: 'https://muscles.wiki/exercises/high-knees-still.webp',
-    muscle: 'Cardio / Piernas', color: '#06b6d4'
-  },
-  'correr': {
-    gif: 'https://muscles.wiki/exercises/high-knees.gif',
-    still: 'https://muscles.wiki/exercises/high-knees-still.webp',
-    muscle: 'Cardio', color: '#06b6d4'
-  },
-  'bici': {
-    gif: 'https://muscles.wiki/exercises/stationary-bike.gif',
-    still: 'https://muscles.wiki/exercises/stationary-bike-still.webp',
-    muscle: 'Cuádriceps / Cardio', color: '#22c55e'
-  },
-  'spinning': {
-    gif: 'https://muscles.wiki/exercises/stationary-bike.gif',
-    still: 'https://muscles.wiki/exercises/stationary-bike-still.webp',
-    muscle: 'Cuádriceps / Cardio', color: '#22c55e'
-  },
-  'estiramiento': {
-    gif: 'https://muscles.wiki/exercises/hamstring-stretch.gif',
-    still: 'https://muscles.wiki/exercises/hamstring-stretch-still.webp',
-    muscle: 'Flexibilidad', color: '#8b5cf6'
-  },
-  'yoga': {
-    gif: 'https://muscles.wiki/exercises/downward-dog.gif',
-    still: 'https://muscles.wiki/exercises/downward-dog-still.webp',
-    muscle: 'Movilidad', color: '#8b5cf6'
-  },
+// GIFs de fitnessprogramer.com — figura real, movimiento correcto
+const EXERCISE_MAP: Record<string, { gif: string; muscle: string; color: string }> = {
+  'sentadilla':       { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Squat.gif',                   muscle: 'Cuádriceps / Glúteos',   color: '#22c55e' },
+  'squat':            { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Squat.gif',                   muscle: 'Cuádriceps / Glúteos',   color: '#22c55e' },
+  'zancada':          { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Lunge.gif',                  muscle: 'Cuádriceps / Glúteos',   color: '#22c55e' },
+  'lunge':            { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Lunge.gif',                  muscle: 'Cuádriceps / Glúteos',   color: '#22c55e' },
+  'peso muerto':      { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Deadlift.gif',                muscle: 'Isquios / Espalda',      color: '#3b82f6' },
+  'deadlift':         { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Deadlift.gif',                muscle: 'Isquios / Espalda',      color: '#3b82f6' },
+  'prensa':           { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Leg-Press.gif',                       muscle: 'Cuádriceps',             color: '#22c55e' },
+  'gemelo':           { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Standing-Calf-Raise.gif',             muscle: 'Gemelos',                color: '#22c55e' },
+  'hip thrust':       { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Barbell-Hip-Thrust.gif',              muscle: 'Glúteos',                color: '#22c55e' },
+  'gluteo':           { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Barbell-Hip-Thrust.gif',              muscle: 'Glúteos',                color: '#22c55e' },
+  'press banca':      { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Bench-Press.gif',             muscle: 'Pectoral',               color: '#ef4444' },
+  'bench press':      { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Bench-Press.gif',             muscle: 'Pectoral',               color: '#ef4444' },
+  'press inclinado':  { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Incline-Dumbbell-Press.gif',          muscle: 'Pectoral Superior',      color: '#ef4444' },
+  'aperturas':        { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Dumbbell-Fly.gif',                    muscle: 'Pectoral',               color: '#ef4444' },
+  'fondos':           { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Chest-Dips.gif',                      muscle: 'Tríceps / Pecho',        color: '#ef4444' },
+  'flexion':          { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Push-Up.gif',                         muscle: 'Pectoral / Tríceps',     color: '#ef4444' },
+  'push up':          { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Push-Up.gif',                         muscle: 'Pectoral / Tríceps',     color: '#ef4444' },
+  'dominada':         { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Pull-Up.gif',                         muscle: 'Dorsal / Bíceps',        color: '#3b82f6' },
+  'pull up':          { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Pull-Up.gif',                         muscle: 'Dorsal / Bíceps',        color: '#3b82f6' },
+  'remo con barra':   { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Bent-Over-Row.gif',           muscle: 'Dorsal / Romboides',     color: '#3b82f6' },
+  'remo':             { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Dumbbell-Row.gif',                    muscle: 'Dorsal / Romboides',     color: '#3b82f6' },
+  'jalon':            { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Lat-Pulldown.gif',                    muscle: 'Dorsal',                 color: '#3b82f6' },
+  'press militar':    { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Military-Press.gif',          muscle: 'Deltoides',              color: '#f59e0b' },
+  'militar':          { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Military-Press.gif',          muscle: 'Deltoides',              color: '#f59e0b' },
+  'elevacion lateral':{ gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Lateral-Raise.gif',          muscle: 'Deltoides Lateral',      color: '#f59e0b' },
+  'elevacion frontal':{ gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Dumbbell-Front-Raise.gif',            muscle: 'Deltoides Frontal',      color: '#f59e0b' },
+  'elevacion':        { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Lateral-Raise.gif',          muscle: 'Deltoides',              color: '#f59e0b' },
+  'curl con barra':   { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Curl.gif',                    muscle: 'Bíceps',                 color: '#f59e0b' },
+  'curl de bicep':    { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Biceps-Curl.gif',            muscle: 'Bíceps',                 color: '#f59e0b' },
+  'curl':             { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Biceps-Curl.gif',            muscle: 'Bíceps',                 color: '#f59e0b' },
+  'bicep':            { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Biceps-Curl.gif',            muscle: 'Bíceps',                 color: '#f59e0b' },
+  'extension tricep': { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Triceps-Pushdown.gif',                muscle: 'Tríceps',                color: '#f59e0b' },
+  'tricep':           { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Triceps-Pushdown.gif',                muscle: 'Tríceps',                color: '#f59e0b' },
+  'mancuerna':        { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Biceps-Curl.gif',            muscle: 'Bíceps',                 color: '#f59e0b' },
+  'plancha':          { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/04/Plank.gif',                           muscle: 'Core',                   color: '#8b5cf6' },
+  'plank':            { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/04/Plank.gif',                           muscle: 'Core',                   color: '#8b5cf6' },
+  'crunch':           { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Crunch.gif',                          muscle: 'Abdomen',                color: '#8b5cf6' },
+  'abdominal':        { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Crunch.gif',                          muscle: 'Abdomen',                color: '#8b5cf6' },
+  'russian twist':    { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Russian-Twist.gif',                   muscle: 'Oblicuos',               color: '#8b5cf6' },
+  'mountain climber': { gif: 'https://fitnessprogramer.com/wp-content/uploads/2022/01/Mountain-Climbers.gif',               muscle: 'Core / Cardio',          color: '#8b5cf6' },
+  'core':             { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/04/Plank.gif',                           muscle: 'Core',                   color: '#8b5cf6' },
+  'jab':              { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/09/Boxing-Jab-Cross.gif',                muscle: 'Hombros / Core',         color: '#ef4444' },
+  'cross':            { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/09/Boxing-Jab-Cross.gif',                muscle: 'Hombros / Core',         color: '#ef4444' },
+  'hook':             { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/09/Boxing-Jab-Cross.gif',                muscle: 'Oblicuos / Hombros',     color: '#ef4444' },
+  'uppercut':         { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/09/Boxing-Jab-Cross.gif',                muscle: 'Hombros / Core',         color: '#ef4444' },
+  'saco':             { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/09/Boxing-Jab-Cross.gif',                muscle: 'Full Body',              color: '#ef4444' },
+  'sombra':           { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/09/Boxing-Jab-Cross.gif',                muscle: 'Full Body',              color: '#ef4444' },
+  'comba':            { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Jump-Rope.gif',                       muscle: 'Cardio / Gemelos',       color: '#ef4444' },
+  'saltar':           { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Jump-Rope.gif',                       muscle: 'Cardio',                 color: '#06b6d4' },
+  'burpee':           { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Burpee.gif',                          muscle: 'Full Body',              color: '#06b6d4' },
+  'sprint':           { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/09/High-Knees.gif',                      muscle: 'Cardio / Piernas',       color: '#06b6d4' },
+  'correr':           { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/09/High-Knees.gif',                      muscle: 'Cardio',                 color: '#06b6d4' },
+  'rodaje':           { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/09/High-Knees.gif',                      muscle: 'Cardio',                 color: '#06b6d4' },
+  'jumping jack':     { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Jumping-Jack.gif',                    muscle: 'Cardio',                 color: '#06b6d4' },
+  'bici':             { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Stationary-Bike.gif',                 muscle: 'Cuádriceps / Cardio',    color: '#22c55e' },
+  'spinning':         { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Stationary-Bike.gif',                 muscle: 'Cuádriceps / Cardio',    color: '#22c55e' },
+  'cicl':             { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Stationary-Bike.gif',                 muscle: 'Cuádriceps / Cardio',    color: '#22c55e' },
+  'estiramiento':     { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Hamstring-Stretch.gif',               muscle: 'Flexibilidad',           color: '#8b5cf6' },
+  'yoga':             { gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/06/Downward-Dog.gif',                    muscle: 'Movilidad',              color: '#8b5cf6' },
 };
 
-const DEFAULT = {
-  gif: 'https://muscles.wiki/exercises/barbell-back-squat.gif',
-  still: 'https://muscles.wiki/exercises/barbell-back-squat-still.webp',
+const DEFAULT_DATA = {
+  gif: 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Squat.gif',
   muscle: 'Full Body',
   color: '#22c55e'
 };
+
+const DEFAULT_GIF = 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Squat.gif';
 
 const getExerciseData = (name: string, muscleGroup?: string) => {
   const q = (name + ' ' + (muscleGroup || ''))
@@ -309,10 +89,10 @@ const getExerciseData = (name: string, muscleGroup?: string) => {
   // Buscar de más específico a más genérico (ordenar por longitud de key desc)
   const sorted = Object.keys(EXERCISE_MAP).sort((a, b) => b.length - a.length);
   const match = sorted.find(k => q.includes(k));
-  return match ? EXERCISE_MAP[match] : DEFAULT;
+  return match ? EXERCISE_MAP[match] : DEFAULT_DATA;
 };
 
-const FALLBACK_GIF = 'https://muscles.wiki/exercises/barbell-back-squat.gif';
+const FALLBACK_GIF = 'https://fitnessprogramer.com/wp-content/uploads/2021/02/Barbell-Squat.gif';
 
 export const ExerciseAnimation = ({
   type, isDone, className = '', size = 'md', muscleGroup
@@ -321,6 +101,24 @@ export const ExerciseAnimation = ({
   const [gifError, setGifError] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const data = getExerciseData(type, muscleGroup);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setLoaded(false);
+    setGifError(false);
+    
+    // Si en 5 segundos no carga, usar fallback
+    timeoutRef.current = setTimeout(() => {
+      if (!loaded) {
+        setGifError(true);
+        setLoaded(true);
+      }
+    }, 5000);
+
+    return () => {
+      if (timeoutRef.current) clearTimeout(timeoutRef.current);
+    };
+  }, [type]);
 
   const sizeMap = { sm: 'w-20 h-20', md: 'w-40 h-40', lg: 'w-full h-full' };
 
@@ -339,10 +137,13 @@ export const ExerciseAnimation = ({
       {/* GIF real del ejercicio */}
       <img
         key={`${type}-${playing}`}
-        src={gifError ? FALLBACK_GIF : (playing ? data.gif : data.still)}
+        src={gifError ? FALLBACK_GIF : data.gif}
         alt={type}
         className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
-        onLoad={() => setLoaded(true)}
+        onLoad={() => {
+          if (timeoutRef.current) clearTimeout(timeoutRef.current);
+          setLoaded(true);
+        }}
         onError={(e) => {
           if (!gifError) {
             setGifError(true);
