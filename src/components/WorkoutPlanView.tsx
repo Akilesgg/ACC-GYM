@@ -1004,6 +1004,18 @@ export default function WorkoutPlanView({
               <div className="h-full flex flex-col pt-10">
                 <div className="px-8 pb-6 flex items-center justify-between shrink-0">
                   <div>
+                    <div className="flex items-center gap-3 mb-1">
+                      <span
+                        className="text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-full bg-primary text-black"
+                      >
+                        {sport.sport}
+                      </span>
+                      {sport.subtype && (
+                        <span className="text-[9px] font-bold uppercase text-primary/60 border border-primary/20 px-2 py-1 rounded-full">
+                          {sport.subtype}
+                        </span>
+                      )}
+                    </div>
                     <h3 className="text-4xl font-headline font-black uppercase italic leading-none tracking-tight">
                       {format(selectedDayDetail, 'EEEE', { locale: es })}
                     </h3>

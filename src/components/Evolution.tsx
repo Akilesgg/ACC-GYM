@@ -295,9 +295,9 @@ export default function Evolution({ profile, onUpdateProfile, onBack, language }
                   <h3 className="font-headline text-3xl font-black uppercase italic tracking-tight text-white">
                     {t('rutinaHoy')}
                   </h3>
-                  <div className="h-0.5 w-10 bg-[#22c55e]" />
-                  <span className="text-2xl font-black text-[#22c55e] uppercase italic tracking-tighter">
-                    {sportName || "FISICA"}
+                  <div className="h-0.5 w-10 bg-primary" />
+                  <span className="text-2xl font-black text-primary uppercase italic tracking-tighter">
+                    {sportName}
                   </span>
                 </div>
                 <p className="text-[#8e7b71] font-bold text-sm ml-auto">
