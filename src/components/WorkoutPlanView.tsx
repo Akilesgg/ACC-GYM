@@ -235,9 +235,17 @@ export default function WorkoutPlanView({
           if (s.plan) {
             allExercisesResults.push({ ...ex, sport: s.sport });
           } else {
-            // Otherwise (globalPlan), filter by current sport name
+            // Para globalPlan: incluir ejercicio si:
+            // 1. No tiene campo sport asignado (ejercicios sin asignar van al primer deporte)
+            // 2. O el sport del ejercicio coincide con este deporte
+            // 3. O solo hay un deporte activo (en ese caso todos los ejercicios son suyos)
             const sName = normalizeText(s.sport);
-            if (!ex.sport || normalizeText(ex.sport).includes(sName) || sName.includes(normalizeText(ex.sport))) {
+            const exSport = normalizeText(ex.sport || '');
+            const isMatch = !ex.sport || 
+                            exSport.includes(sName) || 
+                            sName.includes(exSport) ||
+                            sportsToQuery.length === 1;  // <- LÍNEA CLAVE
+            if (isMatch) {
               allExercisesResults.push({ ...ex, sport: s.sport });
             }
           }
