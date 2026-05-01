@@ -253,6 +253,20 @@ export default function WorkoutPlanView({
       });
     });
 
+    // Fallback: si no hay ejercicios para hoy pero el plan existe,
+    // mostrar los del primer día con ejercicios disponible
+    if (allExercisesResults.length === 0 && !forceAll) {
+      const planToUse = sport.plan || globalPlan;
+      if (planToUse?.table) {
+        const firstDayWithExercises = planToUse.table.find(d => d.exercises.length > 0);
+        if (firstDayWithExercises) {
+          allExercisesResults = firstDayWithExercises.exercises.map(ex => ({
+            ...ex, sport: sport.sport
+          }));
+        }
+      }
+    }
+
     return allExercisesResults;
   };
 

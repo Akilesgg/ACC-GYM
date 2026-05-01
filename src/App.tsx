@@ -13,6 +13,8 @@ import UserPanel from './components/UserPanel';
 import Devices from './components/Devices';
 import News from './components/News';
 import Movies from './components/Movies';
+import AdminDashboard from './components/AdminDashboard';
+import Supplements from './components/Supplements';
 import { motion, AnimatePresence } from 'motion/react';
 import { auth, onAuthStateChanged } from './lib/firebase';
 import { subscribeToProfile, createUserProfile, updateUserProfile } from './services/users';
@@ -306,6 +308,13 @@ export default function App() {
       case 'community': return <UserPanel language={language} />;
       case 'news': return <News language={language} />;
       case 'movies': return <Movies language={language} />;
+      case 'admin': 
+        if (profile?.role === 'admin') {
+          return <AdminDashboard profile={profile!} onBack={() => setActiveScreen('dashboard')} language={language} />;
+        }
+        setActiveScreen('dashboard');
+        return null;
+      case 'supplements': return <Supplements profile={profile!} onUpdateProfile={handleProfileUpdate} onBack={() => setActiveScreen('dashboard')} language={language} />;
       default: return <Dashboard profile={profile!} onUpdateProfile={handleProfileUpdate} onAddSport={() => setActiveScreen('workout')} onGoToTracking={() => setActiveScreen('evolution')} onGoToProfile={() => setActiveScreen('profile')} onGoToNews={() => setActiveScreen('news')} onGoToMovies={() => setActiveScreen('movies')} language={language} />;
     }
   };
@@ -369,6 +378,7 @@ export default function App() {
           activeScreen={activeScreen} 
           onScreenChange={setActiveScreen} 
           language={language}
+          profile={profile}
         />
       )}
     </div>

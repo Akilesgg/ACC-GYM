@@ -1,4 +1,4 @@
-export type Screen = 'dashboard' | 'nutrition' | 'evolution' | 'workout' | 'login' | 'onboarding' | 'news' | 'tracking' | 'profile' | 'community' | 'devices' | 'movies';
+export type Screen = 'dashboard' | 'nutrition' | 'evolution' | 'workout' | 'login' | 'onboarding' | 'news' | 'tracking' | 'profile' | 'community' | 'devices' | 'movies' | 'admin' | 'supplements';
 export type Language = 'es' | 'en';
 export type UserRole = 'user' | 'admin' | 'trainer';
 
@@ -122,6 +122,7 @@ export interface UserProfile {
     lastSync: string;
     connectedDevices: string[];
   };
+  supplements?: string[];
 }
 
 export interface TrainingPlan {
